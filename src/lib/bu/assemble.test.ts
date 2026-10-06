@@ -1,0 +1,149 @@
+import { readFileSync } from 'node:fs';
+import { expect, it } from 'vitest';
+import { BuError } from './errors';
+import { assembleBu } from './assemble';
+import type { BuQr } from './parse';
+import { parseQr } from './parse';
+
+const HASH = 'A'.repeat(128);
+const REAL_2026 = readFileSync(
+  new URL('../../../fixtures/2026/zz-29688-1-929/qrbu-1.txt', import.meta.url),
+  'utf8'
+);
+const REAL_2022 = readFileSync(
+  new URL('../../../fixtures/2022/zz-30198-1-265/qrbu-1.txt', import.meta.url),
+  'utf8'
+);
+
+function parseBu(raw: string): BuQr {
+  const parsed = parseQr(raw);
+  if (parsed.kind !== 'bu') throw new Error('expected a BU QR');
+  return parsed;
+}
+
+function syntheticPart(index: number, total: number, content = '', version = '6.0'): BuQr {
+  const body = [`QRBU:${index}:${total}`, `VRQR:${version}`, content, `HASH:${HASH}`]
+    .filter(Boolean)
+    .join(' ');
+  return parseBu(body);
+}
+
+function expectErrorCode(action: () => unknown, code: BuError['code']): void {
+  let thrown: unknown;
+  try {
+    action();
+  } catch (error) {
+    thrown = error;
+  }
+
+  expect(thrown).toBeInstanceOf(BuError);
+  expect((thrown as BuError).code).toBe(code);
+}
+
+it('assembles the real 2026 BU into its header and majoritarian cargo', () => {
+  const bu = assembleBu([parseBu(REAL_2026)]);
+
+  expect(bu.header).toMatchObject({
+    orig: 'VOTA',
+    proc: 1219,
+    plei: 3220,
+    turno: 1,
+    fase: 'O',
+    dtpl: '20261004',
+    uf: 'ZZ',
+    municipio: 29688,
+    zona: 1,
+    secao: 929,
+    agregadas: [3439],
+    urna: '1654174',
+    idca: '192430138112993362418449',
+    aptos: 746,
+    comparecimento: 310,
+    faltosos: 436
+  });
+  expect(bu.cargos).toHaveLength(1);
+  expect(bu.cargos[0]).toMatchObject({
+    idel: 6257,
+    cargo: 1,
+    tipo: 0,
+    candidates: { '13': 210, '14': 7, '16': 1, '21': 2, '22': 56, '30': 8, '55': 6, '70': 10, '80': 3 },
+    apta: 746,
+    nominais: 303,
+    brancos: 6,
+    nulos: 1,
+    total: 310
+  });
+});
+
+it('assembles the real 2022 VRQR 1.5 BU without optional APTS/APTT/HIQT/HICA fields', () => {
+  const bu = assembleBu([parseBu(REAL_2022)]);
+
+  expect(bu.header).toMatchObject({
+    proc: 395,
+    plei: 406,
+    secao: 265,
+    agregadas: [245],
+    aptos: 784,
+    comparecimento: 415,
+    faltosos: 369
+  });
+  expect(bu.cargos[0]).toMatchObject({
+    idel: 544,
+    cargo: 1,
+    tipo: 0,
+    candidates: { '12': 21, '13': 30, '15': 16, '22': 315, '27': 2, '30': 6, '44': 5 },
+    apta: 784,
+    nominais: 395,
+    brancos: 13,
+    nulos: 7,
+    total: 415
+  });
+});
+
+it('sorts and joins split QR content with one space', () => {
+  const first =
+    'ORIG:VOTA ORLC:LEG PROC:1 DTPL:20261004 PLEI:1 TURN:1 FASE:O UNFE:ZZ MUNI:1 ZONA:1 SECA:1 IDUE:1 IDCA:000000000000000000000001 HIQT:1 HICA:1:000000000000000000000001 VERS:10.0.0 LOCA:1 APTO:2 APTS:2 APTT:0 COMP:1 FALT:1 IDEL:1 CARG:1 TIPO:0 VERC:202610041234 13:1';
+  const second = 'APTA:2 APTS:2 APTT:0 NOMI:1 BRAN:0 NULO:0 TOTC:1';
+  const bu = assembleBu([syntheticPart(2, 2, second), syntheticPart(1, 2, first)]);
+
+  expect(bu.cargos[0]?.candidates).toEqual({ '13': 1 });
+});
+
+it('rejects empty, incomplete, duplicate-index, or mixed-version QR sets', () => {
+  expectErrorCode(() => assembleBu([]), 'QR_SET_INCOMPLETE');
+  expectErrorCode(() => assembleBu([syntheticPart(1, 2)]), 'QR_SET_INCOMPLETE');
+  expectErrorCode(
+    () => assembleBu([syntheticPart(1, 2), syntheticPart(1, 2)]),
+    'QR_SET_INCOMPLETE'
+  );
+  expectErrorCode(
+    () => assembleBu([syntheticPart(1, 2), syntheticPart(2, 2, '', '1.5')]),
+    'QR_SET_MIXED'
+  );
+});
+
+it('rejects unknown or origin-incompatible header fields', () => {
+  const header =
+    'ORIG:VOTA PROC:1 DTPL:20261004 PLEI:1 TURN:1 FASE:O UNFE:ZZ MUNI:1 ZONA:1 SECA:1 IDUE:1 IDCA:000000000000000000000001 HIQT:1 HICA:1:000000000000000000000001 VERS:10.0.0 LOCA:1 APTO:2 APTS:2 APTT:0 COMP:1 FALT:1';
+  expectErrorCode(
+    () => assembleBu([syntheticPart(1, 1, `${header} IDEL:1 FOO:1`)]),
+    'UNEXPECTED_FIELD'
+  );
+  expectErrorCode(
+    () => assembleBu([syntheticPart(1, 1, `${header.replace('ORIG:VOTA', 'ORIG:SA')} IDEL:1`)]),
+    'UNEXPECTED_FIELD'
+  );
+});
+
+it('rejects unknown and out-of-place cargo tokens', () => {
+  const header =
+    'ORIG:VOTA PROC:1 DTPL:20261004 PLEI:1 TURN:1 FASE:O UNFE:ZZ MUNI:1 ZONA:1 SECA:1 IDUE:1 IDCA:000000000000000000000001 HIQT:1 HICA:1:000000000000000000000001 VERS:10.0.0 LOCA:1 APTO:2 APTS:2 APTT:0 COMP:1 FALT:1';
+  expectErrorCode(
+    () => assembleBu([syntheticPart(1, 1, `${header} IDEL:1 CARG:1 TIPO:0 VERC:1 FOO:1`)]),
+    'UNEXPECTED_FIELD'
+  );
+  expectErrorCode(
+    () => assembleBu([syntheticPart(1, 1, `${header} IDEL:1 CARG:1 VERC:1`)]),
+    'MISSING_FIELD'
+  );
+});
