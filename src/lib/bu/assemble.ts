@@ -99,7 +99,9 @@ function allowedHeaderKey(key: string, origin: Origin): boolean {
     (origin !== 'VOTA' && SA_RED_HEADER_KEYS.has(key));
 }
 
-function parseHeader(tokens: Token[], version: string, electionIndex: number): Bu['header'] {
+type ParsedHeader = { header: Bu['header']; apts?: number; aptt?: number };
+
+function parseHeader(tokens: Token[], version: string, electionIndex: number): ParsedHeader {
   const headerTokens = tokens.slice(0, electionIndex);
   const originEntry = headerTokens[0];
   if (!originEntry || originEntry[0] !== 'ORIG') failMissing('ORIG at the start of the BU header');
@@ -170,7 +172,11 @@ function parseHeader(tokens: Token[], version: string, electionIndex: number): B
   if (values.has('COMP')) header.comparecimento = parseNumber(values.get('COMP')!, 'COMP');
   if (values.has('FALT')) header.faltosos = parseNumber(values.get('FALT')!, 'FALT');
 
-  return header;
+  return {
+    header,
+    ...(values.has('APTS') ? { apts: parseNumber(values.get('APTS')!, 'APTS') } : {}),
+    ...(values.has('APTT') ? { aptt: parseNumber(values.get('APTT')!, 'APTT') } : {})
+  };
 }
 
 function parseCargo(tokens: Token[], cursor: number, version: string): { cargo: BuCargo; next: number } {
@@ -259,6 +265,62 @@ function parseCargo(tokens: Token[], cursor: number, version: string): { cargo: 
   };
 }
 
+function sum(values: number[]): number {
+  return values.reduce((total, value) => total + value, 0);
+}
+
+function assertTotals(condition: boolean, detail: string): void {
+  if (!condition) throw new BuError('TOTALS_INCONSISTENT', detail);
+}
+
+function checkCargoTotals(cargo: BuCargo): void {
+  if (cargo.tipo === 1) {
+    for (const party of cargo.parties) {
+      assertTotals(
+        sum(Object.values(party.candidates)) + party.legenda === party.total,
+        `party ${party.party} candidates plus LEGP do not equal TOTP`
+      );
+    }
+  }
+
+  const reportedNominalAndPartyVotes = cargo.nominais + cargo.legenda;
+  const reportedNominalAndPartyAggregate = cargo.tipo === 1
+    ? sum(cargo.parties.map((party) => party.total))
+    : sum(Object.values(cargo.candidates));
+  assertTotals(
+    reportedNominalAndPartyAggregate === reportedNominalAndPartyVotes,
+    `cargo ${cargo.cargo} candidate/party votes do not equal NOMI plus LEGC`
+  );
+  assertTotals(
+    cargo.nominais + cargo.legenda + cargo.brancos + cargo.nulos === cargo.total,
+    `cargo ${cargo.cargo} totals do not equal TOTC`
+  );
+}
+
+function checkHeaderTotals(parsedHeader: ParsedHeader): void {
+  const { header, apts, aptt } = parsedHeader;
+  if (header.orig !== 'VOTA') return;
+
+  if (
+    header.aptos !== undefined &&
+    header.comparecimento !== undefined &&
+    header.faltosos !== undefined
+  ) {
+    assertTotals(
+      header.comparecimento + header.faltosos === header.aptos,
+      'COMP plus FALT does not equal APTO'
+    );
+  }
+
+  if (apts !== undefined || aptt !== undefined) {
+    assertTotals(
+      header.aptos !== undefined && apts !== undefined && aptt !== undefined &&
+        apts + aptt === header.aptos,
+      'APTS plus APTT does not equal APTO'
+    );
+  }
+}
+
 export function assembleBu(parts: BuQr[]): Bu {
   if (parts.length === 0) throw new BuError('QR_SET_INCOMPLETE', 'no BU QR parts were supplied');
 
@@ -277,7 +339,9 @@ export function assembleBu(parts: BuQr[]): Bu {
   const tokens = tokenize(content);
   const electionIndex = tokens.findIndex(([key]) => key === 'IDEL');
   if (electionIndex === -1) failMissing('IDEL');
-  const header = parseHeader(tokens, version, electionIndex);
+  const parsedHeader = parseHeader(tokens, version, electionIndex);
+  checkHeaderTotals(parsedHeader);
+  const { header } = parsedHeader;
 
   const cargos: BuCargo[] = [];
   let cursor = electionIndex;
@@ -299,6 +363,7 @@ export function assembleBu(parts: BuQr[]): Bu {
       if (tokens[cursor]?.[0] !== 'CARG') failUnexpected(tokens[cursor]![0], 'election body');
       const parsed = parseCargo(tokens, cursor, version);
       parsed.cargo.idel = idelValue.value;
+      checkCargoTotals(parsed.cargo);
       cargos.push(parsed.cargo);
       cursor = parsed.next;
     }

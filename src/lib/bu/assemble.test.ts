@@ -147,3 +147,46 @@ it('rejects unknown and out-of-place cargo tokens', () => {
     'MISSING_FIELD'
   );
 });
+
+const VALID_HEADER =
+  'ORIG:VOTA PROC:1 DTPL:20261004 PLEI:1 TURN:1 FASE:O UNFE:ZZ MUNI:1 ZONA:1 SECA:1 IDUE:1 IDCA:000000000000000000000001 HIQT:1 HICA:1:000000000000000000000001 VERS:10.0.0 LOCA:1 APTO:10 APTS:10 APTT:0 COMP:2 FALT:8';
+const VALID_MAJORITARIAN =
+  `${VALID_HEADER} IDEL:1 CARG:13 TIPO:0 VERC:1 10:3 11:2 APTA:10 APTS:10 APTT:0 NOMI:5 BRAN:0 NULO:1 TOTC:6`;
+
+it('accepts multi-vote cargos without equating TOTC to COMP', () => {
+  const bu = assembleBu([syntheticPart(1, 1, VALID_MAJORITARIAN)]);
+  expect(bu.header.comparecimento).toBe(2);
+  expect(bu.cargos[0]?.total).toBe(6);
+});
+
+it('rejects candidate, cargo-summary, and VOTA header total mismatches', () => {
+  expectErrorCode(
+    () => assembleBu([syntheticPart(1, 1, VALID_MAJORITARIAN.replace('10:3', '10:4'))]),
+    'TOTALS_INCONSISTENT'
+  );
+  expectErrorCode(
+    () => assembleBu([syntheticPart(1, 1, VALID_MAJORITARIAN.replace('TOTC:6', 'TOTC:7'))]),
+    'TOTALS_INCONSISTENT'
+  );
+  expectErrorCode(
+    () => assembleBu([syntheticPart(1, 1, VALID_MAJORITARIAN.replace('COMP:2 FALT:8', 'COMP:3 FALT:8'))]),
+    'TOTALS_INCONSISTENT'
+  );
+  expectErrorCode(
+    () => assembleBu([syntheticPart(1, 1, VALID_MAJORITARIAN.replace('APTS:10 APTT:0 COMP', 'APTS:9 APTT:0 COMP'))]),
+    'TOTALS_INCONSISTENT'
+  );
+});
+
+it('checks party subtotals and proportional cargo totals', () => {
+  const proportional =
+    `${VALID_HEADER} IDEL:1 CARG:13 TIPO:1 VERC:1 PART:20 10:2 LEGP:1 TOTP:4 APTA:10 APTS:10 APTT:0 NOMI:3 LEGC:1 BRAN:1 NULO:0 TOTC:5`;
+  expectErrorCode(
+    () => assembleBu([syntheticPart(1, 1, proportional)]),
+    'TOTALS_INCONSISTENT'
+  );
+  expectErrorCode(
+    () => assembleBu([syntheticPart(1, 1, proportional.replace('TOTP:4', 'TOTP:3'))]),
+    'TOTALS_INCONSISTENT'
+  );
+});
