@@ -11,7 +11,7 @@
     "check": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide --emit-ts-declarations && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test:unit": "vitest",
-    "test": "npm run test:unit -- --run"
+    "test": "vitest run"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.22.0",
