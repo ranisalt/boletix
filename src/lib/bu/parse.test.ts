@@ -8,10 +8,6 @@ const REAL_2026 = readFileSync(
   new URL('../../../fixtures/2026/zz-29688-1-929/qrbu-1.txt', import.meta.url),
   'utf8'
 );
-const REAL_2022 = readFileSync(
-  new URL('../../../fixtures/2022/zz-30198-1-265/qrbu-1.txt', import.meta.url),
-  'utf8'
-);
 
 function expectErrorCode(action: () => unknown, code: BuError['code']): void {
   let thrown: unknown;
@@ -25,10 +21,8 @@ function expectErrorCode(action: () => unknown, code: BuError['code']): void {
   expect((thrown as BuError).code).toBe(code);
 }
 
-it.each([
-  [REAL_2026, '6.0', 'QRBU:1:1 VRQR:6.0 ', 'ORIG'],
-  [REAL_2022, '1.5', 'QRBU:1:1 VRQR:1.5 VRCH:20220829 ', 'VRCH']
-])('parses real VRQR %s payloads and returns content after the full header', (raw, version, header, thirdKey) => {
+it('parses the real VRQR 6.0 payload and returns content after the header', () => {
+  const [raw, version, header, thirdKey] = [REAL_2026, '6.0', 'QRBU:1:1 VRQR:6.0 ', 'ORIG'];
   const parsed = parseQr(raw);
   const hashStart = raw.indexOf(' HASH:');
   const expectedHash = raw.match(/(?:^| )HASH:([0-9A-F]+)/)?.[1];
@@ -43,11 +37,6 @@ it.each([
   expect(parsed.assi).toBeDefined();
 });
 
-it('accepts VRQR 1.5 without VRCH because the token is optional', () => {
-  const parsed = parseQr(`QRBU:1:1 VRQR:1.5 ORIG:VOTA HASH:${HASH}`);
-  expect(parsed).toMatchObject({ kind: 'bu', version: '1.5', content: 'ORIG:VOTA', hash: HASH });
-});
-
 it('parses a certificate QR when one is present', () => {
   expect(parseQr('QRCE:2:2 IDUE:123456 MDUE:UE2020 CERT:ABCD')).toEqual({
     kind: 'cert',
@@ -59,9 +48,8 @@ it('parses a certificate QR when one is present', () => {
   });
 });
 
-it('does not require certificate QRs for the real single-QR BU payloads', () => {
+it('parses a BU QR independently of certificate QRs', () => {
   expect(parseQr(REAL_2026).kind).toBe('bu');
-  expect(parseQr(REAL_2022).kind).toBe('bu');
 });
 
 it('rejects an unknown first field', () => {
@@ -75,6 +63,7 @@ it('rejects QR indexes outside 1..total<=32', () => {
 
 it('rejects unsupported VRQR versions', () => {
   expectErrorCode(() => parseQr(`QRBU:1:1 VRQR:5.0 HASH:${HASH}`), 'UNSUPPORTED_VERSION');
+  expectErrorCode(() => parseQr(`QRBU:1:1 VRQR:1.5 HASH:${HASH}`), 'UNSUPPORTED_VERSION');
 });
 
 it('requires a 128-character hexadecimal HASH in the final position', () => {

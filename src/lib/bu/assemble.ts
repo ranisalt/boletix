@@ -101,7 +101,7 @@ function allowedHeaderKey(key: string, origin: Origin): boolean {
 
 type ParsedHeader = { header: Bu['header']; apts?: number; aptt?: number };
 
-function parseHeader(tokens: Token[], version: string, electionIndex: number): ParsedHeader {
+function parseHeader(tokens: Token[], electionIndex: number): ParsedHeader {
   const headerTokens = tokens.slice(0, electionIndex);
   const originEntry = headerTokens[0];
   if (!originEntry || originEntry[0] !== 'ORIG') failMissing('ORIG at the start of the BU header');
@@ -122,11 +122,9 @@ function parseHeader(tokens: Token[], version: string, electionIndex: number): P
 
   const requiredKeys = ['PROC', 'DTPL', 'PLEI', 'TURN', 'FASE', 'UNFE', 'MUNI', 'ZONA', 'SECA', 'IDUE', 'IDCA', 'VERS'];
   for (const key of requiredKeys) if (!values.has(key)) failMissing(key);
-  if (version === '6.0') {
-    for (const key of ['HIQT', 'HICA']) if (!values.has(key)) failMissing(key);
-    if (origin !== 'SA') {
-      for (const key of ['APTS', 'APTT']) if (!values.has(key)) failMissing(key);
-    }
+  for (const key of ['HIQT', 'HICA']) if (!values.has(key)) failMissing(key);
+  if (origin !== 'SA') {
+    for (const key of ['APTS', 'APTT']) if (!values.has(key)) failMissing(key);
   }
 
   const turno = parseNumber(values.get('TURN')!, 'TURN');
@@ -179,7 +177,7 @@ function parseHeader(tokens: Token[], version: string, electionIndex: number): P
   };
 }
 
-function parseCargo(tokens: Token[], cursor: number, version: string): { cargo: BuCargo; next: number } {
+function parseCargo(tokens: Token[], cursor: number): { cargo: BuCargo; next: number } {
   const cargoValue = requireNumber(tokens, cursor, 'CARG');
   const tipoValue = requireNumber(tokens, cargoValue.next, 'TIPO');
   if (tipoValue.value !== 0 && tipoValue.value !== 1 && tipoValue.value !== 2) {
@@ -233,7 +231,7 @@ function parseCargo(tokens: Token[], cursor: number, version: string): { cargo: 
   next = aptsValue.next;
   const apttValue = optionalNumber(tokens, next, 'APTT');
   next = apttValue.next;
-  if (version === '6.0' && (aptsValue.value === undefined || apttValue.value === undefined)) {
+  if ((aptsValue.value === undefined || apttValue.value === undefined)) {
     failMissing('APTS/APTT');
   }
   const csecValue = optionalNumber(tokens, next, 'CSEC');
@@ -325,9 +323,8 @@ export function assembleBu(parts: BuQr[]): Bu {
   if (parts.length === 0) throw new BuError('QR_SET_INCOMPLETE', 'no BU QR parts were supplied');
 
   const total = parts[0]!.total;
-  const version = parts[0]!.version;
-  if (parts.some((part) => part.total !== total || part.version !== version)) {
-    throw new BuError('QR_SET_MIXED', 'BU QR parts have different totals or versions');
+  if (parts.some((part) => part.total !== total)) {
+    throw new BuError('QR_SET_MIXED', 'BU QR parts have different totals');
   }
 
   const sorted = [...parts].sort((left, right) => left.index - right.index);
@@ -339,7 +336,7 @@ export function assembleBu(parts: BuQr[]): Bu {
   const tokens = tokenize(content);
   const electionIndex = tokens.findIndex(([key]) => key === 'IDEL');
   if (electionIndex === -1) failMissing('IDEL');
-  const parsedHeader = parseHeader(tokens, version, electionIndex);
+  const parsedHeader = parseHeader(tokens, electionIndex);
   checkHeaderTotals(parsedHeader);
   const { header } = parsedHeader;
 
@@ -361,7 +358,7 @@ export function assembleBu(parts: BuQr[]): Bu {
     const cargoCountBeforeElection = cargos.length;
     while (cursor < tokens.length && tokens[cursor]?.[0] !== 'IDEL') {
       if (tokens[cursor]?.[0] !== 'CARG') failUnexpected(tokens[cursor]![0], 'election body');
-      const parsed = parseCargo(tokens, cursor, version);
+      const parsed = parseCargo(tokens, cursor);
       parsed.cargo.idel = idelValue.value;
       checkCargoTotals(parsed.cargo);
       cargos.push(parsed.cargo);

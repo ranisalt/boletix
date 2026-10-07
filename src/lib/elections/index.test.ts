@@ -9,7 +9,6 @@ it('finds the 2026 general election only for a registered pleito and QR version'
     pleitos: [{ plei: 3220, turno: 1 }],
     vrqr: ['6.0']
   });
-  expect(findElection(1219, 3220, '1.5')).toBeUndefined();
   expect(findElection(1219, 9999, '6.0')).toBeUndefined();
   expect(findElection(9999, 3220, '6.0')).toBeUndefined();
 });

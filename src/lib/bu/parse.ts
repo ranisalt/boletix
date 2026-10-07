@@ -1,7 +1,7 @@
 import { BuError } from './errors';
 import { tokenize } from './tokenize';
 
-export const SUPPORTED_VRQR_VERSIONS = ['1.5', '6.0'] as const;
+export const SUPPORTED_VRQR_VERSIONS = ['6.0'] as const;
 
 export interface BuQr {
   kind: 'bu';
@@ -80,8 +80,6 @@ function parseBu(raw: string, tokens: [string, string][]): BuQr {
     throw new BuError('UNSUPPORTED_VERSION', `unsupported VRQR:${version}`);
   }
 
-  const hasRevision = tokens[2]?.[0] === 'VRCH';
-  const headerTokenCount = hasRevision ? 3 : 2;
   const hashEntries = tokens.filter(([key]) => key === 'HASH');
   if (hashEntries.length === 0) throw new BuError('MISSING_FIELD', 'missing HASH');
   if (hashEntries.length !== 1) throw new BuError('INVALID_FIELD', 'HASH must appear exactly once');
@@ -121,7 +119,7 @@ function parseBu(raw: string, tokens: [string, string][]): BuQr {
     index,
     total,
     version,
-    content: contentAfterHeader(raw, headerTokenCount, hashStart),
+    content: contentAfterHeader(raw, 2, hashStart),
     tokens,
     hash,
     ...(assi === undefined ? {} : { assi })

@@ -10,10 +10,6 @@ const REAL_2026 = readFileSync(
   new URL('../../../fixtures/2026/zz-29688-1-929/qrbu-1.txt', import.meta.url),
   'utf8'
 );
-const REAL_2022 = readFileSync(
-  new URL('../../../fixtures/2022/zz-30198-1-265/qrbu-1.txt', import.meta.url),
-  'utf8'
-);
 
 function parseBu(raw: string): BuQr {
   const parsed = parseQr(raw);
@@ -21,8 +17,8 @@ function parseBu(raw: string): BuQr {
   return parsed;
 }
 
-function syntheticPart(index: number, total: number, content = '', version = '6.0'): BuQr {
-  const body = [`QRBU:${index}:${total}`, `VRQR:${version}`, content, `HASH:${HASH}`]
+function syntheticPart(index: number, total: number, content = ''): BuQr {
+  const body = [`QRBU:${index}:${total}`, 'VRQR:6.0', content, `HASH:${HASH}`]
     .filter(Boolean)
     .join(' ');
   return parseBu(body);
@@ -75,31 +71,6 @@ it('assembles the real 2026 BU into its header and majoritarian cargo', () => {
   });
 });
 
-it('assembles the real 2022 VRQR 1.5 BU without optional APTS/APTT/HIQT/HICA fields', () => {
-  const bu = assembleBu([parseBu(REAL_2022)]);
-
-  expect(bu.header).toMatchObject({
-    proc: 395,
-    plei: 406,
-    secao: 265,
-    agregadas: [245],
-    aptos: 784,
-    comparecimento: 415,
-    faltosos: 369
-  });
-  expect(bu.cargos[0]).toMatchObject({
-    idel: 544,
-    cargo: 1,
-    tipo: 0,
-    candidates: { '12': 21, '13': 30, '15': 16, '22': 315, '27': 2, '30': 6, '44': 5 },
-    apta: 784,
-    nominais: 395,
-    brancos: 13,
-    nulos: 7,
-    total: 415
-  });
-});
-
 it('sorts and joins split QR content with one space', () => {
   const first =
     'ORIG:VOTA ORLC:LEG PROC:1 DTPL:20261004 PLEI:1 TURN:1 FASE:O UNFE:ZZ MUNI:1 ZONA:1 SECA:1 IDUE:1 IDCA:000000000000000000000001 HIQT:1 HICA:1:000000000000000000000001 VERS:10.0.0 LOCA:1 APTO:2 APTS:2 APTT:0 COMP:1 FALT:1 IDEL:1 CARG:1 TIPO:0 VERC:202610041234 13:1';
@@ -109,7 +80,7 @@ it('sorts and joins split QR content with one space', () => {
   expect(bu.cargos[0]?.candidates).toEqual({ '13': 1 });
 });
 
-it('rejects empty, incomplete, duplicate-index, or mixed-version QR sets', () => {
+it('rejects empty, incomplete, duplicate-index, or mixed-total QR sets', () => {
   expectErrorCode(() => assembleBu([]), 'QR_SET_INCOMPLETE');
   expectErrorCode(() => assembleBu([syntheticPart(1, 2)]), 'QR_SET_INCOMPLETE');
   expectErrorCode(
@@ -117,7 +88,7 @@ it('rejects empty, incomplete, duplicate-index, or mixed-version QR sets', () =>
     'QR_SET_INCOMPLETE'
   );
   expectErrorCode(
-    () => assembleBu([syntheticPart(1, 2), syntheticPart(2, 2, '', '1.5')]),
+    () => assembleBu([syntheticPart(1, 2), syntheticPart(2, 3)]),
     'QR_SET_MIXED'
   );
 });
