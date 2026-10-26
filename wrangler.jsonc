@@ -16,6 +16,12 @@
       "migrations_dir": "migrations"
     }
   ],
+  "r2_buckets": [
+    {
+      "binding": "ORIGINALS",
+      "bucket_name": "boletix-originals"
+    }
+  ],
   "ratelimits": [
     {
       "name": "SUBMIT_LIMITER",

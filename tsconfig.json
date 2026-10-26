@@ -1,7 +1,9 @@
 {
 	"extends": "$app/tsconfig",
 	"compilerOptions": {
-		"strict": true
+		"strict": true,
+		// worker-configuration.d.ts types the main module from the build output; don't type-check that JS.
+		"checkJs": false
 	},
-	"include": ["src", "vite.config.ts"]
+	"include": ["src", "vite.config.ts", "worker-configuration.d.ts"]
 }
