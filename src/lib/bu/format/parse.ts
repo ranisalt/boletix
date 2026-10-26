@@ -1,8 +1,11 @@
 import { BuError } from "../errors";
 import { tokenize } from "./tokenize";
 
+// Decodes a single printed QR: either a part of the BU (QRBU) or a part of the urna certificate (QRCE).
+
 export const SUPPORTED_VRQR_VERSIONS = ["6.0"] as const;
 
+/** One QR of the BU. `content` is what the HASH chain covers: the text between the QRBU/VRQR prefix and HASH. */
 export interface BuQr {
   kind: "bu";
   index: number;
@@ -11,9 +14,11 @@ export interface BuQr {
   content: string;
   tokens: [string, string][];
   hash: string;
+  /** Signature over the final HASH; only on the last QR. */
   assi?: string;
 }
 
+/** One QR of the urna certificate (hex-encoded, split over several QRs). */
 export interface CertQr {
   kind: "cert";
   index: number;
@@ -42,6 +47,7 @@ function parseIndexTotal(value: string): { index: number; total: number } {
     !Number.isSafeInteger(total) ||
     index < 1 ||
     index > total ||
+    // The manual caps a BU or certificate at 32 QR codes.
     total > 32
   ) {
     throw new BuError("QR_INDEX_INVALID", `QR index ${index} of ${total} is outside 1..total<=32`);
@@ -63,6 +69,7 @@ function parseCertificate(tokens: [string, string][]): CertQr {
   return { kind: "cert", index, total, idue, mdue, cert };
 }
 
+// Slices from the raw text rather than re-joining tokens, so the hashed bytes are exactly what was printed.
 function contentAfterHeader(raw: string, headerTokenCount: number, hashStart: number): string {
   let cursor = 0;
   for (let token = 0; token < headerTokenCount; token += 1) {

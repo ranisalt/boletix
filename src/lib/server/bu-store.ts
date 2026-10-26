@@ -77,6 +77,8 @@ export async function storeBu(
   if (stored) return resolveExisting(stored);
 
   await env.ORIGINALS.put(originalKey, JSON.stringify(submission));
+  // One atomic batch. Cargos and votes are bound as a single JSON array each and expanded with
+  // json_each, so the statement size doesn't grow with the number of candidates.
   const buId = "(SELECT id FROM bu WHERE hash = ?1)";
   try {
     await env.DB.batch([

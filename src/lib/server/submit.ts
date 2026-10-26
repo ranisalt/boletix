@@ -42,6 +42,7 @@ export async function handleSubmission(
   if (!(await env.SUBMIT_LIMITER.limit({ key: clientAddress })).success) {
     return json(429, { error: "RATE_LIMITED" });
   }
+  // Content-Length can be absent or wrong, so the real size is checked again after reading.
   if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY_BYTES) {
     return json(413, { error: "PAYLOAD_TOO_LARGE" });
   }

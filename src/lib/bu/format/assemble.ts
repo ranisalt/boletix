@@ -2,14 +2,24 @@ import { BuError } from "../errors";
 import type { BuQr } from "./parse";
 import { tokenize } from "./tokenize";
 
+// Field names follow the TSE "Manual do QR Code no Boletim de Urna" (docs/tse/2026); the QR key each
+// one comes from is noted where the name alone doesn't say it.
+
+/** One office (cargo) of one election inside the BU. */
 export interface BuCargo {
+  /** IDEL: the election this cargo belongs to; a BU can carry several (e.g. federal and state). */
   idel: number;
   cargo: number;
+  /** TIPO: 0 majoritário, 1 proporcional (votes grouped by party), 2 consulta. */
   tipo: 0 | 1 | 2;
+  /** VERC: version of the candidate data package loaded on the urna. */
   verc: string;
+  /** Proporcional only; majoritário and consulta use `candidates`. */
   parties: { party: number; candidates: Record<string, number>; legenda: number; total: number }[];
   candidates: Record<string, number>;
+  /** APTA: electors eligible for this cargo. */
   apta: number;
+  /** NOMI: votes for a candidate number (as opposed to legenda, branco or nulo). */
   nominais: number;
   legenda: number;
   brancos: number;
@@ -19,10 +29,12 @@ export interface BuCargo {
 
 export interface Bu {
   header: {
+    /** ORIG: printed by the urna (VOTA), by the Recuperador de Dados (RED) or by the Sistema de Apuração (SA, paper ballots). */
     orig: "VOTA" | "RED" | "SA";
     proc: number;
     plei: number;
     turno: 1 | 2;
+    /** FASE: oficial, simulado or treinamento. */
     fase: "O" | "S" | "T";
     dtpl: string;
     uf: string;
@@ -30,8 +42,11 @@ export interface Bu {
     zona: number;
     secao: number;
     agregadas: number[];
+    /** IDUE: urna serial number, also the subject of its certificate. */
     urna: string;
+    /** IDCA: identifier of the software/data load (carga) on the urna. */
     idca: string;
+    /** VERS: urna software version. */
     vers: string;
     aptos?: number;
     comparecimento?: number;
@@ -42,6 +57,8 @@ export interface Bu {
 
 type Token = [string, string];
 type Origin = Bu["header"]["orig"];
+
+// --- Header field rules: which keys each ORIG may carry, and which must be numeric ----------
 
 const COMMON_HEADER_KEYS = new Set([
   "ORIG",
@@ -78,7 +95,9 @@ const VOTA_RED_HEADER_KEYS = new Set([
   "HRFC",
 ]);
 const SA_HEADER_KEYS = new Set(["JUNT", "TURM"]);
+// Emission date/time: printed by RED and SA, never by the urna itself.
 const SA_RED_HEADER_KEYS = new Set(["DTEM", "HREM"]);
+// HICA is the load history, one entry per load (count in HIQT).
 const REPEATED_HEADER_KEYS = new Set(["HICA"]);
 const NUMBER_FIELDS = new Set([
   "PROC",
@@ -108,6 +127,7 @@ const NUMBER_FIELDS = new Set([
   "DTEM",
   "HREM",
 ]);
+// The first of these ends a cargo's candidate list.
 const CARGO_SUMMARY_KEYS = new Set([
   "APTA",
   "APTS",
@@ -119,6 +139,8 @@ const CARGO_SUMMARY_KEYS = new Set([
   "NULO",
   "TOTC",
 ]);
+
+// --- Token cursor helpers ------------------------------------------------------------------
 
 function failMissing(key: string): never {
   throw new BuError("MISSING_FIELD", `missing ${key}`);
@@ -174,6 +196,9 @@ function allowedHeaderKey(key: string, origin: Origin): boolean {
   );
 }
 
+// --- Header ---------------------------------------------------------------------------------
+
+// APTS/APTT are kept beside the header only to cross-check APTO.
 type ParsedHeader = { header: Bu["header"]; apts?: number; aptt?: number };
 
 function parseHeader(tokens: Token[], electionIndex: number): ParsedHeader {
@@ -268,6 +293,8 @@ function parseHeader(tokens: Token[], electionIndex: number): ParsedHeader {
   };
 }
 
+// --- Cargo body -----------------------------------------------------------------------------
+
 function parseCargo(tokens: Token[], cursor: number): { cargo: BuCargo; next: number } {
   const cargoValue = requireNumber(tokens, cursor, "CARG");
   const tipoValue = requireNumber(tokens, cargoValue.next, "TIPO");
@@ -317,6 +344,7 @@ function parseCargo(tokens: Token[], cursor: number): { cargo: BuCargo; next: nu
     }
   }
 
+  // Summary keys come in this fixed order; CSEC and LEGC appear only when they apply.
   const aptaValue = requireNumber(tokens, next, "APTA");
   next = aptaValue.next;
   const aptsValue = optionalNumber(tokens, next, "APTS");
@@ -354,6 +382,8 @@ function parseCargo(tokens: Token[], cursor: number): { cargo: BuCargo; next: nu
     next: totalValue.next,
   };
 }
+
+// --- Arithmetic consistency: the printed totals must add up -----------------------------------
 
 function sum(values: number[]): number {
   return values.reduce((total, value) => total + value, 0);
@@ -414,6 +444,9 @@ function checkHeaderTotals(parsedHeader: ParsedHeader): void {
   }
 }
 
+// --- Entry point ----------------------------------------------------------------------------
+
+/** Joins the parsed QR parts of one BU and decodes it, rejecting anything outside the 2026 layout. */
 export function assembleBu(parts: BuQr[]): Bu {
   if (parts.length === 0) throw new BuError("QR_SET_INCOMPLETE", "no BU QR parts were supplied");
 
@@ -441,6 +474,7 @@ export function assembleBu(parts: BuQr[]): Bu {
     const idelValue = requireNumber(tokens, cursor, "IDEL");
     cursor = idelValue.next;
 
+    // SA prefixes each election with its vote counts; they carry no per-cargo data.
     if (header.orig === "SA") {
       for (const key of ["MAJO", "PROP"]) {
         if (tokens[cursor]?.[0] === key) {

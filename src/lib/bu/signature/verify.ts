@@ -19,6 +19,7 @@ export interface SignatureVerification {
   root: string;
 }
 
+// Ed521 has no standard OID; this private arc is the one TSE uses.
 const ALGORITHM_BY_SPKI_OID: Record<string, SignatureAlgorithm> = {
   "1.3.6.1.4.1.44588.2.1": "ed521",
   "1.2.840.10045.2.1": "ecdsa-p521",
@@ -142,6 +143,7 @@ export function chainHashes(contents: string[]): string[] {
   });
 }
 
+/** The hash the urna signed: the chain value of the last QR. */
 export function chainedBuHash(parts: BuQr[]): string {
   return (
     chainHashes([...parts].sort((a, b) => a.index - b.index).map((part) => part.content)).at(-1) ??
@@ -149,6 +151,7 @@ export function chainedBuHash(parts: BuQr[]): string {
   );
 }
 
+/** Full check from scanned QRs: assembles the certificate, then {@link verifyBuWithCertificate}. */
 export function verifyBuSignature(
   parts: BuQr[],
   certs: CertQr[],
