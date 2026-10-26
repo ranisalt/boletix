@@ -1,9 +1,8 @@
 <script lang="ts">
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
 
-  import OfficialSources from "#lib/components/OfficialSources.svelte";
-  import PageHead from "#lib/components/PageHead.svelte";
   import { m } from "#lib/paraglide/messages.js";
+  import { OfficialSources, PageHead } from "#lib/ui/index.js";
 
   const METHODOLOGY = [
     [m.about_crypto_title, m.about_crypto],

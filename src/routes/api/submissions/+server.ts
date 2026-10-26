@@ -1,7 +1,7 @@
 import { captureMessage } from "@sentry/sveltekit";
 import { env } from "cloudflare:workers";
 
-import { handleSubmission } from "#lib/server/submit.js";
+import { handleSubmission } from "#lib/server/index.js";
 
 import type { RequestHandler } from "./$types";
 

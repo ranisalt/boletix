@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { assembleBu, type Bu } from "../bu/assemble";
-import { loadBuFixture } from "../bu/fixtures";
-import { parseQr, type BuQr } from "../bu/parse";
+import { assembleBu, type Bu, parseQr, type BuQr } from "../bu";
+import { loadBuFixture } from "../bu/testing/fixtures";
 import { buildNameFiles, parseTseCsv, resultsView } from "./names";
 
 const HEADER =

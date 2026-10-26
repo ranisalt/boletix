@@ -3,11 +3,17 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { BuCargo } from "../bu/assemble";
-import { loadBuFixture } from "../bu/fixtures";
-import { parseQr, type BuQr, type CertQr } from "../bu/parse";
-import { toSubmission, verifySubmission, type BuSubmission } from "../bu/submission";
-import { TSE_ROOTS } from "../bu/tse-roots";
+import {
+  type BuCargo,
+  parseQr,
+  type BuQr,
+  type CertQr,
+  toSubmission,
+  verifySubmission,
+  type BuSubmission,
+  TSE_ROOTS,
+} from "../bu";
+import { loadBuFixture } from "../bu/testing/fixtures";
 import { storeBu } from "./bu-store";
 
 const ELECTION = "br-2026-general";

@@ -4,16 +4,16 @@
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import * as v from "valibot";
 
-import { assembleBu, type Bu } from "./assemble";
 import { BuError } from "./errors";
-import { parseQr, type BuQr, type CertQr } from "./parse";
-import type { TrustedRoot } from "./tse-roots";
+import { assembleBu, type Bu } from "./format/assemble";
+import { parseQr, type BuQr, type CertQr } from "./format/parse";
+import type { TrustedRoot } from "./signature/tse-roots";
 import {
   assembleCertificate,
   chainHashes,
   verifyBuWithCertificate,
   type SignatureVerification,
-} from "./verify";
+} from "./signature/verify";
 
 const HEX = /^(?:[0-9A-Fa-f]{2})+$/;
 const hex = (maxLength: number) => v.pipe(v.string(), v.maxLength(maxLength), v.regex(HEX));

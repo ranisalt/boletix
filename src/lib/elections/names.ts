@@ -1,4 +1,4 @@
-import type { Bu } from "../bu/assemble";
+import type { Bu } from "../bu";
 
 /**
  * Display names for one area (a UF, `BR` for president, `ZZ` abroad), generated from TSE open data

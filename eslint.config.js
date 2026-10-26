@@ -31,6 +31,47 @@ export default defineConfig(
     },
   },
   {
+    // Each folder in src/lib is a module that may become its own package: other code goes
+    // through its index.ts. `testing/` helpers are the exception, for specs only.
+    files: ["src/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              regex:
+                "^(\\.\\./)+(bu|elections|scan|submission|contributions|ui|server)/(?!testing/)",
+              message: "Import another module through its index.ts.",
+            },
+            {
+              regex: "^#lib/(bu|elections|scan|submission|contributions|ui|server)/(?!index\\.js$)",
+              message: "Import another module through its index.ts.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The protocol and election data are framework-free so they run in browser, workerd and Node alike.
+    files: ["src/lib/bu/**", "src/lib/elections/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              regex:
+                "^(svelte|\\$app|\\$env|@sveltejs/)|paraglide|^(\\.\\./)+(scan|submission|contributions|ui|server)(/|$)",
+              message: "bu/ and elections/ must not depend on Svelte, i18n or app modules.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
     languageOptions: {
       parserOptions: {

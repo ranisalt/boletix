@@ -9,11 +9,9 @@
   import ScanLine from "@lucide/svelte/icons/scan-line";
 
   import favicon from "#lib/assets/favicon.svg";
-  import NoticeBanner from "#lib/components/NoticeBanner.svelte";
-  import OfficialSources from "#lib/components/OfficialSources.svelte";
-  import ThemeToggle from "#lib/components/ThemeToggle.svelte";
   import { m } from "#lib/paraglide/messages.js";
   import { locales, localizeHref } from "#lib/paraglide/runtime.js";
+  import { NoticeBanner, OfficialSources, ThemeToggle } from "#lib/ui/index.js";
 
   import type { LayoutProps } from "./$types";
 

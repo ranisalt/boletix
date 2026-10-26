@@ -5,8 +5,8 @@
   import Send from "@lucide/svelte/icons/send";
   import ShieldCheck from "@lucide/svelte/icons/shield-check";
 
-  import PageHead from "#lib/components/PageHead.svelte";
   import { m } from "#lib/paraglide/messages.js";
+  import { PageHead } from "#lib/ui/index.js";
 
   const STEPS = [
     { icon: ScanLine, title: m.home_step_scan_title, text: m.home_step_scan },

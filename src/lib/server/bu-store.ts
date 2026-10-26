@@ -1,5 +1,4 @@
-import type { BuCargo } from "../bu/assemble";
-import type { BuSubmission, VerifiedSubmission } from "../bu/submission";
+import { type BuCargo, type BuSubmission, type VerifiedSubmission } from "../bu";
 
 export interface BuStoreEnv {
   DB: D1Database;

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import ContributionList from "#lib/components/ContributionList.svelte";
-  import PageHead from "#lib/components/PageHead.svelte";
+  import { ContributionList } from "#lib/contributions/index.js";
   import { m } from "#lib/paraglide/messages.js";
+  import { PageHead } from "#lib/ui/index.js";
 </script>
 
 <PageHead title={m.contributions_title()} description={m.contributions_intro()} />

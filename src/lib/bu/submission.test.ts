@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { BuError } from "./errors";
-import { loadBuFixture, loadBuFixtures } from "./fixtures";
-import { parseQr, type BuQr, type CertQr } from "./parse";
+import { parseQr, type BuQr, type CertQr } from "./format/parse";
+import { TSE_ROOTS } from "./signature/tse-roots";
+import { chainHashes } from "./signature/verify";
 import { toSubmission, verifySubmission, type BuSubmission } from "./submission";
-import { TSE_ROOTS } from "./tse-roots";
-import { chainHashes } from "./verify";
+import { loadBuFixture, loadBuFixtures } from "./testing/fixtures";
 
 /** What an attacker would do: alter the contents and send their recomputed HASH. */
 function withContents(submission: BuSubmission, contents: string[]): BuSubmission {
