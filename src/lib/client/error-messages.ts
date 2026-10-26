@@ -23,6 +23,11 @@ const BU_ERROR_MESSAGES: Record<BuErrorCode, () => string> = {
   TOTALS_INCONSISTENT: m.error_totals_inconsistent
 };
 
+/** Whether the server rejected the boletim itself, as opposed to failing to process it. */
+export function isBuErrorCode(code: string): code is BuErrorCode {
+  return Object.hasOwn(BU_ERROR_MESSAGES, code);
+}
+
 /** User-facing text for a verification error, whether raised locally or returned by the server. */
 export function buErrorMessage(code: string): string {
   if (code === 'RATE_LIMITED') return m.submit_rate_limited();

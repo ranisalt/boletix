@@ -1,10 +1,12 @@
 <script lang="ts">
+  import CameraOff from '@lucide/svelte/icons/camera-off';
   import { m } from '../paraglide/messages.js';
+  import StatusBox from './StatusBox.svelte';
 
   interface Props {
     /** Called with the text of every QR code seen; the caller dedupes. */
     onscan: (text: string) => void;
-    /** Stops the camera when false, e.g. once every QR is in. */
+    /** Stops the camera when false, e.g. once every QR is in; reopens it when true again. */
     active?: boolean;
   }
 
@@ -19,6 +21,7 @@
   let video: HTMLVideoElement | undefined = $state();
   let stream: MediaStream | undefined = $state.raw();
   let denied = $state(false);
+  let opening = false;
 
   const SCAN_INTERVAL_MS = 250;
 
@@ -33,11 +36,13 @@
   }
 
   async function open() {
-    denied = false;
+    opening = true;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
     } catch {
       denied = true;
+    } finally {
+      opening = false;
     }
   }
 
@@ -48,6 +53,7 @@
 
   $effect(() => {
     if (!active) close();
+    else if (supported && !stream && !denied && !opening) void open();
   });
 
   $effect(() => {
@@ -90,12 +96,15 @@
 </script>
 
 {#if !supported}
-  <p>{m.camera_unsupported()}</p>
-{:else if stream}
-  <!-- svelte-ignore a11y_media_has_caption -->
-  <video bind:this={video} aria-label={m.camera_preview()} autoplay muted playsinline></video>
-  <button type="button" onclick={close}>{m.camera_close()}</button>
-{:else if active}
-  <button type="button" onclick={open}>{m.camera_open()}</button>
-  {#if denied}<p role="alert">{m.camera_denied()}</p>{/if}
+  <StatusBox tone="warning" role="alert" title={m.camera_unsupported_title()}>{m.camera_unsupported()}</StatusBox>
+{:else if denied}
+  <StatusBox tone="warning" role="alert" title={m.camera_denied_title()}>{m.camera_denied()}</StatusBox>
 {/if}
+<div class="relative aspect-square overflow-hidden rounded-lg bg-viewfinder">
+  <!-- svelte-ignore a11y_media_has_caption -->
+  <video bind:this={video} class="size-full object-cover" aria-label={m.camera_preview()} autoplay muted playsinline></video>
+  {#if !stream}
+    <CameraOff class="absolute inset-0 m-auto size-12 text-muted-foreground" aria-hidden="true" />
+  {/if}
+  <div class="pointer-events-none absolute inset-[15%] rounded-lg border-4 border-primary"></div>
+</div>
