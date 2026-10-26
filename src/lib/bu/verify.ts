@@ -28,7 +28,10 @@ interface ParsedCert {
   signature: Uint8Array;
   algorithm: SignatureAlgorithm;
   publicKey: Uint8Array;
+  commonName: string | undefined;
 }
+
+const COMMON_NAME_OID = '2.5.4.3';
 
 function base64ToBytes(base64: string): Uint8Array {
   return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
@@ -40,11 +43,16 @@ function parseCertificate(der: Uint8Array): ParsedCert {
   const spki = certificate.tbsCertificate.subjectPublicKeyInfo;
   const algorithm = ALGORITHM_BY_SPKI_OID[spki.algorithm.algorithm];
   if (!algorithm) throw new BuError('UNSUPPORTED_ALGORITHM', `key algorithm ${spki.algorithm.algorithm}`);
+  const commonName = certificate.tbsCertificate.subject
+    .flatMap((rdn) => [...rdn])
+    .find((attribute) => attribute.type === COMMON_NAME_OID)
+    ?.value.toString();
   return {
     tbs: new Uint8Array(AsnConvert.serialize(certificate.tbsCertificate)),
     signature: new Uint8Array(certificate.signatureValue),
     algorithm,
-    publicKey: new Uint8Array(spki.subjectPublicKey)
+    publicKey: new Uint8Array(spki.subjectPublicKey),
+    commonName
   };
 }
 
@@ -86,7 +94,8 @@ function findIssuingRoot(leaf: ParsedCert, roots: TrustedRoot[]): string | undef
   return undefined;
 }
 
-function assembleCertificate(certs: CertQr[]): { der: Uint8Array; idue: string } {
+/** Joins the QRCE parts into the urna certificate as DER, whether it was printed as DER or PEM. */
+export function assembleCertificate(certs: CertQr[]): { der: Uint8Array; idue: string } {
   if (certs.length === 0) throw new BuError('CERT_MISSING', 'urna certificate QR codes are required');
   const total = certs[0]!.total;
   const sorted = [...certs].sort((a, b) => a.index - b.index);
@@ -110,21 +119,37 @@ function buIdue(parts: BuQr[]): string | undefined {
 const sha512Hex = (text: string) => bytesToHex(sha512(new TextEncoder().encode(text))).toUpperCase();
 
 /**
- * HASH of a BU spread over several QRs, as the TSE app computes it: in index order, each QR's content is
- * appended to the previous text as `<previous text> HASH:<previous hash> <content>` and re-hashed.
+ * HASH of each QR of a BU, as the TSE app computes it: in order, each QR's content is appended to the
+ * previous text as `<previous text> HASH:<previous hash> <content>` and re-hashed. The last one is signed.
  */
-export function chainedBuHash(parts: BuQr[]): string {
+export function chainHashes(contents: string[]): string[] {
   let text: string | undefined;
   let hash = '';
-  for (const part of [...parts].sort((a, b) => a.index - b.index)) {
-    const content = part.content.trimEnd();
+  return contents.map((untrimmed) => {
+    const content = untrimmed.trimEnd();
     text = text === undefined ? content : `${text} HASH:${hash} ${content}`;
     hash = sha512Hex(text);
-  }
-  return hash;
+    return hash;
+  });
+}
+
+export function chainedBuHash(parts: BuQr[]): string {
+  return chainHashes([...parts].sort((a, b) => a.index - b.index).map((part) => part.content)).at(-1) ?? '';
 }
 
 export function verifyBuSignature(parts: BuQr[], certs: CertQr[], roots: TrustedRoot[]): SignatureVerification {
+  if (parts.length === 0) throw new BuError('QR_SET_INCOMPLETE', 'no BU QR codes');
+  const { der, idue } = assembleCertificate(certs);
+  if (idue !== buIdue(parts)) throw new BuError('CERT_URNA_MISMATCH', 'certificate belongs to another urna');
+  return verifyBuWithCertificate(parts, der, roots);
+}
+
+/** Verifies HASH, the urna certificate (issuer and CN `UEAO0<IDUE>`) and ASSI, given the certificate DER. */
+export function verifyBuWithCertificate(
+  parts: BuQr[],
+  der: Uint8Array,
+  roots: TrustedRoot[]
+): SignatureVerification {
   const last = [...parts].sort((a, b) => a.index - b.index).at(-1);
   if (!last) throw new BuError('QR_SET_INCOMPLETE', 'no BU QR codes');
   if (chainedBuHash(parts) !== last.hash.toUpperCase()) {
@@ -132,15 +157,16 @@ export function verifyBuSignature(parts: BuQr[], certs: CertQr[], roots: Trusted
   }
   if (!last.assi) throw new BuError('SIGNATURE_MISSING', 'BU has no ASSI');
 
-  const { der, idue } = assembleCertificate(certs);
-  if (idue !== buIdue(parts)) throw new BuError('CERT_URNA_MISMATCH', 'certificate belongs to another urna');
-
   let leaf: ParsedCert;
   try {
     leaf = parseCertificate(der);
   } catch (error) {
     if (error instanceof BuError) throw error;
     throw new BuError('CERT_INVALID', 'urna certificate is not X.509');
+  }
+  // Leaf CNs seen: `UEAO0<IDUE>` (UE2020) and `ueao0<IDUE>` (AC URNA).
+  if (leaf.commonName?.toUpperCase() !== `UEAO0${buIdue(parts)}`) {
+    throw new BuError('CERT_URNA_MISMATCH', 'certificate subject is another urna');
   }
   const root = findIssuingRoot(leaf, roots);
   if (!root) throw new BuError('CERT_INVALID', 'urna certificate was not issued by a TSE root');
