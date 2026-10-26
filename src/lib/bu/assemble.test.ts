@@ -80,6 +80,22 @@ it('sorts and joins split QR content with one space', () => {
   expect(bu.cargos[0]?.candidates).toEqual({ '13': 1 });
 });
 
+it('assembles a multi-QR BU whose joined content exceeds the single-QR size limit', () => {
+  const candidates = Array.from({ length: 150 }, (_, i) => `${1000 + i}:1`);
+  const header =
+    'ORIG:VOTA ORLC:LEG PROC:1 DTPL:20261004 PLEI:1 TURN:1 FASE:O UNFE:ZZ MUNI:1 ZONA:1 SECA:1 IDUE:1 IDCA:000000000000000000000001 HIQT:1 HICA:1:000000000000000000000001 VERS:10.0.0 LOCA:1 APTO:200 APTS:200 APTT:0 COMP:150 FALT:50 IDEL:1 CARG:1 TIPO:0 VERC:202610041234';
+  const parts = [
+    `${header} ${candidates.slice(0, 75).join(' ')}`,
+    candidates.slice(75).join(' '),
+    'APTA:200 APTS:200 APTT:0 NOMI:150 BRAN:0 NULO:0 TOTC:150'
+  ];
+  expect(parts.join(' ').length).toBeGreaterThan(1100);
+
+  const bu = assembleBu(parts.map((content, i) => syntheticPart(i + 1, 3, content)));
+
+  expect(Object.keys(bu.cargos[0]!.candidates)).toHaveLength(150);
+});
+
 it('rejects empty, incomplete, duplicate-index, or mixed-total QR sets', () => {
   expectErrorCode(() => assembleBu([]), 'QR_SET_INCOMPLETE');
   expectErrorCode(() => assembleBu([syntheticPart(1, 2)]), 'QR_SET_INCOMPLETE');

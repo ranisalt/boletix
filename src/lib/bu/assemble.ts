@@ -332,8 +332,8 @@ export function assembleBu(parts: BuQr[]): Bu {
     throw new BuError('QR_SET_INCOMPLETE', `expected QR indexes 1..${total}`);
   }
 
-  const content = sorted.map((part) => part.content).join(' ');
-  const tokens = tokenize(content);
+  // Each part already passed the single-QR size limit when parsed; the joined BU may be larger.
+  const tokens = sorted.flatMap((part) => tokenize(part.content));
   const electionIndex = tokens.findIndex(([key]) => key === 'IDEL');
   if (electionIndex === -1) failMissing('IDEL');
   const parsedHeader = parseHeader(tokens, electionIndex);
