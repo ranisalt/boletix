@@ -12,11 +12,12 @@
 
   let { onscan, active = true }: Props = $props();
 
+  // Unknown until mounted: the server can't tell, and guessing there flashes a false warning.
   // Old browsers keep the rest of the page; only scanning is unavailable.
-  const supported =
-    typeof navigator !== 'undefined' &&
-    typeof navigator.mediaDevices?.getUserMedia === 'function' &&
-    typeof WebAssembly === 'object';
+  let supported: boolean | undefined = $state();
+  $effect(() => {
+    supported = typeof navigator.mediaDevices?.getUserMedia === 'function' && typeof WebAssembly === 'object';
+  });
 
   let video: HTMLVideoElement | undefined = $state();
   let stream: MediaStream | undefined = $state.raw();
@@ -95,7 +96,7 @@
   $effect(() => close);
 </script>
 
-{#if !supported}
+{#if supported === false}
   <StatusBox tone="warning" role="alert" title={m.camera_unsupported_title()}>{m.camera_unsupported()}</StatusBox>
 {:else if denied}
   <StatusBox tone="warning" role="alert" title={m.camera_denied_title()}>{m.camera_denied()}</StatusBox>
