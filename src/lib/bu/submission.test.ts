@@ -4,6 +4,12 @@ import { loadBuFixture, loadBuFixtures } from './fixtures';
 import { parseQr, type BuQr, type CertQr } from './parse';
 import { toSubmission, verifySubmission, type BuSubmission } from './submission';
 import { TSE_ROOTS } from './tse-roots';
+import { chainHashes } from './verify';
+
+/** What an attacker would do: alter the contents and send their recomputed HASH. */
+function withContents(submission: BuSubmission, contents: string[]): BuSubmission {
+  return { ...submission, contents, hash: chainHashes(contents).at(-1)! };
+}
 
 function scan(name: string): { parts: BuQr[]; certs: CertQr[] } {
   const fixture = loadBuFixture(name);
@@ -33,12 +39,13 @@ const ED521 = 'df-97012-11-178';
 const ECDSA = 'zz-29386-1-1709';
 
 describe('toSubmission', () => {
-  it('keeps only each QR content, the ASSI and the certificate as DER hex', () => {
+  it('keeps only each QR content, the final HASH, the ASSI and the certificate as DER hex', () => {
     const { parts } = scan(ECDSA);
     const submission = submissionFor(ECDSA);
 
-    expect(Object.keys(submission).sort()).toEqual(['assi', 'certDer', 'contents']);
+    expect(Object.keys(submission).sort()).toEqual(['assi', 'certDer', 'contents', 'hash']);
     expect(submission.contents).toEqual([parts[0]!.content.trimEnd()]);
+    expect(submission.hash).toBe(parts[0]!.hash.toUpperCase());
     expect(submission.assi).toBe(parts[0]!.assi);
     expect(submission.certDer).toMatch(/^30[0-9a-f]+$/);
   });
@@ -77,8 +84,15 @@ describe('verifySubmission', () => {
       'UNEXPECTED_FIELD'
     );
     expectErrorCode(
-      () => verifySubmission({ ...submissionFor(ECDSA), hash: 'A'.repeat(128) }, TSE_ROOTS),
+      () => verifySubmission({ ...submissionFor(ECDSA), votes: { '13': 1 } }, TSE_ROOTS),
       'UNEXPECTED_FIELD'
+    );
+  });
+
+  it('rejects a HASH that does not match the submitted contents', () => {
+    expectErrorCode(
+      () => verifySubmission({ ...submissionFor(ECDSA), hash: 'A'.repeat(128) }, TSE_ROOTS),
+      'HASH_MISMATCH'
     );
   });
 
@@ -90,6 +104,7 @@ describe('verifySubmission', () => {
       { ...valid, contents: [] },
       { ...valid, contents: 'ORIG:VOTA' },
       { ...valid, assi: 'not hex' },
+      { ...valid, hash: 'ABC' },
       { ...valid, certDer: '' },
       { assi: valid.assi, certDer: valid.certDer }
     ]) {
@@ -102,7 +117,7 @@ describe('verifySubmission', () => {
     const content = valid.contents[0]!.replace(/APTA:(\d+)/, (_: string, n: string) => `APTA:${Number(n) + 1}`);
     expect(content).not.toBe(valid.contents[0]);
     expectErrorCode(
-      () => verifySubmission({ ...valid, contents: [content] }, TSE_ROOTS),
+      () => verifySubmission(withContents(valid, [content]), TSE_ROOTS),
       'SIGNATURE_INVALID'
     );
   });
@@ -113,7 +128,7 @@ describe('verifySubmission', () => {
     const half = Math.floor(tokens.length / 2);
     const resplit = [tokens.slice(0, half).join(' '), tokens.slice(half).join(' ')];
     expectErrorCode(
-      () => verifySubmission({ ...valid, contents: resplit }, TSE_ROOTS),
+      () => verifySubmission(withContents(valid, resplit), TSE_ROOTS),
       'SIGNATURE_INVALID'
     );
   });

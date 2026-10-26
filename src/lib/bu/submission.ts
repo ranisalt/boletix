@@ -1,6 +1,6 @@
-// What the client sends once every BU and certificate QR is scanned: only the signed data. The server
-// rebuilds each QR (header, chained HASH, ASSI) from it, so intermediate hashes never cross the wire and
-// no verification result or total is accepted from the client.
+// What the client sends once every BU and certificate QR is scanned: only the signed data and its final
+// HASH. The server rebuilds each QR (header, chained HASH, ASSI) from it, so intermediate hashes never
+// cross the wire and no verification result or total is accepted from the client.
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import * as v from 'valibot';
 import { assembleBu, type Bu } from './assemble';
@@ -16,9 +16,10 @@ const SubmissionSchema = v.object({
   // Boundaries matter: the chained HASH is inserted between consecutive QR contents.
   contents: v.pipe(v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(1100))), v.minLength(1), v.maxLength(64)),
   assi: hex(512),
+  hash: v.pipe(v.string(), v.regex(/^[0-9A-Fa-f]{128}$/)),
   certDer: hex(8192)
 });
-const SUBMISSION_KEYS = new Set(['contents', 'assi', 'certDer']);
+const SUBMISSION_KEYS = new Set(['contents', 'assi', 'hash', 'certDer']);
 
 export type BuSubmission = v.InferOutput<typeof SubmissionSchema>;
 
@@ -31,11 +32,12 @@ export interface VerifiedSubmission {
 /** Client side: build the payload once every QR is scanned (and verifyBuSignature has passed). */
 export function toSubmission(parts: BuQr[], certs: CertQr[]): BuSubmission {
   const sorted = [...parts].sort((a, b) => a.index - b.index);
-  const assi = sorted.at(-1)?.assi;
-  if (!assi) throw new BuError('SIGNATURE_MISSING', 'BU has no ASSI');
+  const last = sorted.at(-1);
+  if (!last?.assi) throw new BuError('SIGNATURE_MISSING', 'BU has no ASSI');
   return {
     contents: sorted.map((part) => part.content.trimEnd()),
-    assi,
+    assi: last.assi,
+    hash: last.hash.toUpperCase(),
     certDer: bytesToHex(assembleCertificate(certs).der)
   };
 }
@@ -62,7 +64,11 @@ export function verifySubmission(input: unknown, roots: TrustedRoot[]): Verified
   if (!parsed.success) throw new BuError('INVALID_FIELD', v.summarize(parsed.issues));
 
   const parts = rebuildParts(parsed.output);
+  const hash = parts.at(-1)!.hash;
+  if (hash !== parsed.output.hash.toUpperCase()) {
+    throw new BuError('HASH_MISMATCH', 'submitted HASH does not match the submitted contents');
+  }
   const signature = verifyBuWithCertificate(parts, hexToBytes(parsed.output.certDer), roots);
-  return { bu: assembleBu(parts), hash: parts.at(-1)!.hash, signature };
+  return { bu: assembleBu(parts), hash, signature };
 }
 
