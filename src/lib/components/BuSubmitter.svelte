@@ -5,8 +5,11 @@
   import { resolve } from '$app/paths';
   import { recordContribution } from '../client/contributions';
   import { buErrorMessage, isBuErrorCode } from '../client/error-messages';
+  import { loadNameFiles } from '../client/names';
   import { ScanSession, type ScanResult } from '../client/scan-session.svelte';
+  import { nameFileKeys, resultsView, type NameFile } from '../elections/names';
   import { m } from '../paraglide/messages.js';
+  import BuResults from './BuResults.svelte';
   import QrCamera from './QrCamera.svelte';
   import ScanSlot from './ScanSlot.svelte';
   import StatusBox, { type Tone } from './StatusBox.svelte';
@@ -31,6 +34,19 @@
   let submit: SubmitState = $state.raw({ phase: 'idle' });
 
   const verification = $derived(session.complete ? session.verify() : undefined);
+
+  let names: NameFile[] = $state.raw([]);
+  $effect(() => {
+    if (!verification?.ok) return;
+    let current = true;
+    loadNameFiles(nameFileKeys(verification.bu)).then((files) => {
+      if (current) names = files;
+    });
+    return () => {
+      current = false;
+      names = [];
+    };
+  });
 
   function onscan(text: string) {
     const result = session.add(text);
@@ -142,9 +158,10 @@
 
         {#if verification?.ok}
           {@const { header } = verification.bu}
+          {@const municipio = resultsView(verification.bu, names).municipio}
           {@const fields = [
             [m.field_uf(), header.uf],
-            [m.field_municipio(), header.municipio],
+            [m.field_municipio(), municipio ? `${header.municipio} – ${municipio}` : header.municipio],
             [m.field_zona(), header.zona],
             [m.field_secao(), header.secao],
             [m.field_urna(), header.urna]
@@ -162,6 +179,7 @@
                 </div>
               {/each}
             </dl>
+            <BuResults bu={verification.bu} {names} />
             <button type="button" class="btn w-full bg-primary text-primary-foreground" onclick={send} disabled={submit.phase === 'sending'}>
               {#if submit.phase === 'sending'}
                 <ShieldCheck class="size-5 animate-pulse" aria-hidden="true" />

@@ -24,11 +24,16 @@ function multiPart(total: number): string[] {
 
 const received: unknown[] = [];
 let reply: () => Response = () => HttpResponse.json({ status: 'new', hash: 'A'.repeat(128) }, { status: 201 });
+const NAMES: Record<string, object> = {
+  BR: { geradoEm: '25/10/2026 12:30:51', municipios: {}, candidatos: { '6258': { '1': { '13': ['LULA', 'PT'] } } }, partidos: {} },
+  DF: { geradoEm: '25/10/2026 12:30:51', municipios: { '97012': 'BRASÍLIA' }, candidatos: {}, partidos: {} }
+};
 const server = setupServer(
   http.post('*/api/submissions', async ({ request }) => {
     received.push(await request.json());
     return reply();
-  })
+  }),
+  http.get('*/tse/2026/:area.json', ({ params }) => HttpResponse.json(NAMES[params.area as string]))
 );
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
@@ -84,6 +89,26 @@ describe('BuSubmitter', () => {
       Seção: '178',
       Urna: '2028869'
     });
+    expect(screen.getByRole('button', { name: 'Enviar boletim' })).toBeEnabled();
+  });
+
+  it('names the municipality and lists the votes of every role for comparison with the paper', async () => {
+    const { scan } = setup();
+    scan(cert2, buQr, cert1);
+
+    expect(await screen.findByText('97012 – BRASÍLIA')).toBeInTheDocument();
+    expect(within(screen.getByRole('table', { name: 'Presidente' })).getByRole('row', { name: '13 LULA PT 121' })).toBeInTheDocument();
+    expect(within(screen.getByRole('table', { name: 'Governador' })).getByRole('row', { name: '11 122' })).toBeInTheDocument();
+  });
+
+  it('still shows the votes by number when the names cannot be loaded', async () => {
+    server.use(http.get('*/tse/2026/:area.json', () => HttpResponse.error()));
+    const { scan } = setup();
+    scan(cert2, buQr, cert1);
+
+    expect(within(screen.getByRole('table', { name: 'Presidente' })).getByRole('row', { name: '13 121' })).toBeInTheDocument();
+    await new Promise((settle) => setTimeout(settle, 20));
+    expect(screen.getByText('97012')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Enviar boletim' })).toBeEnabled();
   });
 
