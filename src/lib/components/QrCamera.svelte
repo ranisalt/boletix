@@ -10,10 +10,11 @@
     active?: boolean;
   }
 
-  let { onscan, active = true }: Props = $props();
+  const { onscan, active = true }: Props = $props();
 
   // Unknown until mounted: the server can't tell, and guessing there flashes a false warning.
   // Old browsers keep the rest of the page; only scanning is unavailable.
+  // eslint-disable-next-line svelte/prefer-writable-derived -- a $derived would also run on the server.
   let supported: boolean | undefined = $state();
   $effect(() => {
     supported = typeof navigator.mediaDevices?.getUserMedia === 'function' && typeof WebAssembly === 'object';
@@ -102,7 +103,6 @@
   <StatusBox tone="warning" role="alert" title={m.camera_denied_title()}>{m.camera_denied()}</StatusBox>
 {/if}
 <div class="relative aspect-square overflow-hidden rounded-lg bg-viewfinder">
-  <!-- svelte-ignore a11y_media_has_caption -->
   <video bind:this={video} class="size-full object-cover" aria-label={m.camera_preview()} autoplay muted playsinline></video>
   {#if !stream}
     <CameraOff class="absolute inset-0 m-auto size-12 text-muted-foreground" aria-hidden="true" />

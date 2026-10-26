@@ -9,7 +9,7 @@
     names: NameFile[];
   }
 
-  let { bu, names }: Props = $props();
+  const { bu, names }: Props = $props();
 
   const view = $derived(resultsView(bu, names));
   const geradoEm = $derived(names[0]?.geradoEm);

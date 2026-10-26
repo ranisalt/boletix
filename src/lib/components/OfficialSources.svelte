@@ -13,7 +13,7 @@
 </script>
 
 <script lang="ts">
-  let { class: className = '' }: { class?: string } = $props();
+  const { class: className = '' }: { class?: string } = $props();
 </script>
 
 <ul class={className}>

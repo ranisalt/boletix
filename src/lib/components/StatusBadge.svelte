@@ -8,7 +8,7 @@
     children: Snippet;
   }
 
-  let { tone, children }: Props = $props();
+  const { tone, children }: Props = $props();
 
   const Icon = $derived(tone === 'neutral' ? Circle : TONE_ICONS[tone]);
 </script>

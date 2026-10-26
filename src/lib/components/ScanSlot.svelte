@@ -8,7 +8,7 @@
     done: boolean;
   }
 
-  let { label, done }: Props = $props();
+  const { label, done }: Props = $props();
 </script>
 
 <li data-state={done ? 'read' : 'pending'} class="flex min-h-12 items-center justify-between gap-2 rounded-md border-2 bg-card px-3 {done ? 'border-success' : ''}">

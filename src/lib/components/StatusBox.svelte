@@ -29,7 +29,7 @@
     children?: Snippet;
   }
 
-  let { tone, title, role = 'status', children }: Props = $props();
+  const { tone, title, role = 'status', children }: Props = $props();
 
   const id = $props.id();
   const Icon = $derived(TONE_ICONS[tone]);

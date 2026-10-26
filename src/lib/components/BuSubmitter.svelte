@@ -18,7 +18,7 @@
     session?: ScanSession;
   }
 
-  let { session = new ScanSession() }: Props = $props();
+  const { session = new ScanSession() }: Props = $props();
 
   interface Outcome {
     tone: Tone;

@@ -102,7 +102,7 @@ describe('verifyBuSignature', () => {
 
   it('requires ASSI on the BU', () => {
     const { parts, certs } = parsed(ED521);
-    const { assi: _assi, ...unsigned } = parts[0]!;
+    const { assi, ...unsigned } = parts[0]!;
     expectBuError(() => verifyBuSignature([unsigned], certs, TSE_ROOTS), 'SIGNATURE_MISSING');
   });
 

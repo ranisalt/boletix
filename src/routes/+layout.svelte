@@ -15,7 +15,7 @@
   import favicon from '#lib/assets/favicon.svg';
   import type { LayoutProps } from './$types';
 
-  let { children }: LayoutProps = $props();
+  const { children }: LayoutProps = $props();
 
   const NAV = [
     { href: resolve('/'), label: m.nav_home, short: m.nav_home, icon: House },

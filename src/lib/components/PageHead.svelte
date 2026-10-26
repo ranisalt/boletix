@@ -5,7 +5,7 @@
     description: string;
   }
 
-  let { title, description }: Props = $props();
+  const { title, description }: Props = $props();
 
   const full = $derived(title ? `${title} · Boletix` : 'Boletix');
 </script>

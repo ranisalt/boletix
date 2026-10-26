@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { assembleBu, type Bu } from '../bu/assemble';
 import { loadBuFixture } from '../bu/fixtures';
 import { parseQr, type BuQr } from '../bu/parse';
-import { buildNameFiles, parseTseCsv, resultsView, type NameFile } from './names';
+import { buildNameFiles, parseTseCsv, resultsView } from './names';
 
 const HEADER =
   '"DT_GERACAO";"HH_GERACAO";"CD_ELEICAO";"SG_UE";"CD_CARGO";"NR_CANDIDATO";"NM_URNA_CANDIDATO";"NR_PARTIDO";"SG_PARTIDO";"DS_SIT_TOT_TURNO"';
