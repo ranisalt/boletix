@@ -10,7 +10,10 @@ export const ELECTIONS: ElectionDef[] = [
   {
     id: 'br-2026-general',
     proc: 1219,
-    pleitos: [{ plei: 3220, turno: 1 }],
+    pleitos: [
+      { plei: 3220, turno: 1 },
+      { plei: 3221, turno: 2 }
+    ],
     vrqr: ['6.0'],
     trustedRoots: []
   }
