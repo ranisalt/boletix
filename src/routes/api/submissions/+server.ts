@@ -1,6 +1,6 @@
 import { captureMessage } from '@sentry/sveltekit';
 import { error } from '@sveltejs/kit';
-import { handleSubmission } from '#lib/server/submit';
+import { handleSubmission } from '#lib/server/submit.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = ({ request, platform, getClientAddress }) => {
