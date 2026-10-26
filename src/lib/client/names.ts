@@ -1,4 +1,4 @@
-import type { NameFile } from '../elections/names';
+import type { NameFile } from "../elections/names";
 
 /** Fetches the static TSE name files; a missing or failed file just leaves those numbers unnamed. */
 export async function loadNameFiles(areas: string[]): Promise<NameFile[]> {
@@ -6,8 +6,8 @@ export async function loadNameFiles(areas: string[]): Promise<NameFile[]> {
     areas.map((area) =>
       fetch(new URL(`/tse/2026/${area}.json`, location.href))
         .then((response) => (response.ok ? (response.json() as Promise<NameFile>) : undefined))
-        .catch(() => undefined)
-    )
+        .catch(() => undefined),
+    ),
   );
   return files.filter((file): file is NameFile => file !== undefined);
 }

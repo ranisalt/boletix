@@ -1,5 +1,5 @@
-import type { BuCargo } from '../bu/assemble';
-import type { BuSubmission, VerifiedSubmission } from '../bu/submission';
+import type { BuCargo } from "../bu/assemble";
+import type { BuSubmission, VerifiedSubmission } from "../bu/submission";
 
 export interface BuStoreEnv {
   DB: D1Database;
@@ -7,13 +7,13 @@ export interface BuStoreEnv {
 }
 
 export type StoreOutcome =
-  | { status: 'new' | 'duplicate'; hash: string }
-  | { status: 'conflict'; hash: string; existingHash: string };
+  | { status: "new" | "duplicate"; hash: string }
+  | { status: "conflict"; hash: string; existingHash: string };
 
 interface VoteRow {
   idel: number;
   cargo: number;
-  kind: 'nominal' | 'legenda';
+  kind: "nominal" | "legenda";
   code: string;
   votes: number;
 }
@@ -21,11 +21,23 @@ interface VoteRow {
 function voteRows(cargos: BuCargo[]): VoteRow[] {
   return cargos.flatMap(({ idel, cargo, candidates, parties }) => [
     ...[candidates, ...parties.map((party) => party.candidates)].flatMap((votes) =>
-      Object.entries(votes).map(([code, count]) => ({ idel, cargo, kind: 'nominal' as const, code, votes: count }))
+      Object.entries(votes).map(([code, count]) => ({
+        idel,
+        cargo,
+        kind: "nominal" as const,
+        code,
+        votes: count,
+      })),
     ),
     ...parties
       .filter((party) => party.legenda > 0)
-      .map((party) => ({ idel, cargo, kind: 'legenda' as const, code: String(party.party), votes: party.legenda }))
+      .map((party) => ({
+        idel,
+        cargo,
+        kind: "legenda" as const,
+        code: String(party.party),
+        votes: party.legenda,
+      })),
   ]);
 }
 
@@ -43,52 +55,68 @@ export async function storeBu(
   submission: BuSubmission,
   { bu, hash, signature }: VerifiedSubmission,
   electionId: string,
-  receivedAt = Date.now()
+  receivedAt = Date.now(),
 ): Promise<StoreOutcome> {
   const { header } = bu;
   const section = [header.plei, header.uf, header.municipio, header.zona, header.secao] as const;
-  const originalKey = `${electionId}/${section.join('/')}/${hash}.json`;
+  const originalKey = `${electionId}/${section.join("/")}/${hash}.json`;
 
   const existing = () =>
-    env.DB.prepare('SELECT hash FROM bu WHERE plei = ? AND uf = ? AND municipio = ? AND zona = ? AND secao = ?')
+    env.DB.prepare(
+      "SELECT hash FROM bu WHERE plei = ? AND uf = ? AND municipio = ? AND zona = ? AND secao = ?",
+    )
       .bind(...section)
-      .first<string>('hash');
+      .first<string>("hash");
 
   const resolveExisting = async (existingHash: string): Promise<StoreOutcome> => {
-    if (existingHash === hash) return { status: 'duplicate', hash };
+    if (existingHash === hash) return { status: "duplicate", hash };
     await env.ORIGINALS.put(originalKey, JSON.stringify(submission));
-    return { status: 'conflict', hash, existingHash };
+    return { status: "conflict", hash, existingHash };
   };
 
   const stored = await existing();
   if (stored) return resolveExisting(stored);
 
   await env.ORIGINALS.put(originalKey, JSON.stringify(submission));
-  const buId = '(SELECT id FROM bu WHERE hash = ?1)';
+  const buId = "(SELECT id FROM bu WHERE hash = ?1)";
   try {
     await env.DB.batch([
       env.DB.prepare(
         `INSERT INTO bu (election_id, plei, turno, fase, uf, municipio, zona, secao, agregadas, urna, hash,
                          algorithm, root, aptos, comparecimento, original_key, received_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(
-        electionId, header.plei, header.turno, header.fase, header.uf, header.municipio, header.zona, header.secao,
-        JSON.stringify(header.agregadas), header.urna, hash, signature.algorithm, signature.root,
-        header.aptos ?? null, header.comparecimento ?? null, originalKey, receivedAt
+        electionId,
+        header.plei,
+        header.turno,
+        header.fase,
+        header.uf,
+        header.municipio,
+        header.zona,
+        header.secao,
+        JSON.stringify(header.agregadas),
+        header.urna,
+        hash,
+        signature.algorithm,
+        signature.root,
+        header.aptos ?? null,
+        header.comparecimento ?? null,
+        originalKey,
+        receivedAt,
       ),
       env.DB.prepare(
         `INSERT INTO bu_cargo (bu_id, idel, cargo, tipo, apta, nominais, legenda, brancos, nulos, total)
          SELECT ${buId}, c.value ->> 'idel', c.value ->> 'cargo', c.value ->> 'tipo', c.value ->> 'apta',
                 c.value ->> 'nominais', c.value ->> 'legenda', c.value ->> 'brancos', c.value ->> 'nulos',
                 c.value ->> 'total'
-           FROM json_each(?2) AS c`
+           FROM json_each(?2) AS c`,
       ).bind(hash, JSON.stringify(bu.cargos)),
       env.DB.prepare(
         `INSERT INTO bu_vote (bu_id, idel, cargo, kind, code, votes)
          SELECT ${buId}, v.value ->> 'idel', v.value ->> 'cargo', v.value ->> 'kind', v.value ->> 'code',
                 v.value ->> 'votes'
-           FROM json_each(?2) AS v`
-      ).bind(hash, JSON.stringify(voteRows(bu.cargos)))
+           FROM json_each(?2) AS v`,
+      ).bind(hash, JSON.stringify(voteRows(bu.cargos))),
     ]);
   } catch (error) {
     // Another request stored this section between our lookup and insert.
@@ -96,5 +124,5 @@ export async function storeBu(
     if (!winner) throw error;
     return resolveExisting(winner);
   }
-  return { status: 'new', hash };
+  return { status: "new", hash };
 }

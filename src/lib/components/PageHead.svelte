@@ -7,7 +7,7 @@
 
   const { title, description }: Props = $props();
 
-  const full = $derived(title ? `${title} · Boletix` : 'Boletix');
+  const full = $derived(title ? `${title} · Boletix` : "Boletix");
 </script>
 
 <svelte:head>

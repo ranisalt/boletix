@@ -1,13 +1,10 @@
 {
-	"extends": "$app/tsconfig",
-	"compilerOptions": {
-		"strict": true,
-		// worker-configuration.d.ts types the main module from the build output; don't type-check that JS.
-		"checkJs": false,
-		"types": [
-			"$app/types",
-			"node"
-		]
-	},
-	"include": ["src", "vite.config.ts", "worker-configuration.d.ts"]
+  "extends": "$app/tsconfig",
+  "compilerOptions": {
+    "strict": true,
+    // worker-configuration.d.ts types the main module from the build output; don't type-check that JS.
+    "checkJs": false,
+    "types": ["$app/types", "node"]
+  },
+  "include": ["src", "vite.config.ts", "worker-configuration.d.ts"]
 }

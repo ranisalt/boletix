@@ -1,13 +1,14 @@
 <script lang="ts">
-  import ChevronDown from '@lucide/svelte/icons/chevron-down';
-  import OfficialSources from '#lib/components/OfficialSources.svelte';
-  import PageHead from '#lib/components/PageHead.svelte';
-  import { m } from '#lib/paraglide/messages.js';
+  import ChevronDown from "@lucide/svelte/icons/chevron-down";
+
+  import OfficialSources from "#lib/components/OfficialSources.svelte";
+  import PageHead from "#lib/components/PageHead.svelte";
+  import { m } from "#lib/paraglide/messages.js";
 
   const METHODOLOGY = [
     [m.about_crypto_title, m.about_crypto],
     [m.about_privacy_title, m.about_privacy],
-    [m.about_transparency_title, m.about_transparency]
+    [m.about_transparency_title, m.about_transparency],
   ];
 
   const FAQ = [
@@ -15,7 +16,7 @@
     [m.faq_authentic_q, m.faq_authentic_a],
     [m.faq_data_q, m.faq_data_a],
     [m.faq_missing_q, m.faq_missing_a],
-    [m.faq_conflict_q, m.faq_conflict_a]
+    [m.faq_conflict_q, m.faq_conflict_a],
   ];
 </script>
 
@@ -37,9 +38,14 @@
     <div class="divide-y rounded-lg border bg-card">
       {#each FAQ as [question, answer], i (i)}
         <details class="group">
-          <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 font-medium">
+          <summary
+            class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 font-medium"
+          >
             {question()}
-            <ChevronDown class="size-5 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
+            <ChevronDown
+              class="size-5 shrink-0 transition-transform group-open:rotate-180"
+              aria-hidden="true"
+            />
           </summary>
           <p class="px-4 pb-4 text-muted-foreground">{answer()}</p>
         </details>

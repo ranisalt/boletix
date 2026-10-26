@@ -1,7 +1,8 @@
 <script lang="ts">
-  import CameraOff from '@lucide/svelte/icons/camera-off';
-  import { m } from '../paraglide/messages.js';
-  import StatusBox from './StatusBox.svelte';
+  import CameraOff from "@lucide/svelte/icons/camera-off";
+
+  import { m } from "../paraglide/messages.js";
+  import StatusBox from "./StatusBox.svelte";
 
   interface Props {
     /** Called with the text of every QR code seen; the caller dedupes. */
@@ -17,7 +18,8 @@
   // eslint-disable-next-line svelte/prefer-writable-derived -- a $derived would also run on the server.
   let supported: boolean | undefined = $state();
   $effect(() => {
-    supported = typeof navigator.mediaDevices?.getUserMedia === 'function' && typeof WebAssembly === 'object';
+    supported =
+      typeof navigator.mediaDevices?.getUserMedia === "function" && typeof WebAssembly === "object";
   });
 
   let video: HTMLVideoElement | undefined = $state();
@@ -29,18 +31,26 @@
 
   async function loadReader() {
     const [{ prepareZXingModule, readBarcodes }, { default: wasmUrl }] = await Promise.all([
-      import('zxing-wasm/reader'),
-      import('zxing-wasm/reader/zxing_reader.wasm?url')
+      import("zxing-wasm/reader"),
+      import("zxing-wasm/reader/zxing_reader.wasm?url"),
     ]);
     // Serve the WASM with the app instead of the package's default CDN.
-    prepareZXingModule({ overrides: { locateFile: (path: string, prefix: string) => (path.endsWith('.wasm') ? wasmUrl : prefix + path) } });
+    prepareZXingModule({
+      overrides: {
+        locateFile: (path: string, prefix: string) =>
+          path.endsWith(".wasm") ? wasmUrl : prefix + path,
+      },
+    });
     return readBarcodes;
   }
 
   async function open() {
     opening = true;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      });
     } catch {
       denied = true;
     } finally {
@@ -62,8 +72,8 @@
     if (!stream || !video) return;
     const element = video;
     element.srcObject = stream;
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d', { willReadFrequently: true });
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d", { willReadFrequently: true });
     let stopped = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -75,11 +85,14 @@
           canvas.height = element.videoHeight;
           context.drawImage(element, 0, 0);
           // A BU sheet prints several QRs side by side; read them all from one frame.
-          const results = await readBarcodes(context.getImageData(0, 0, canvas.width, canvas.height), {
-            formats: ['QRCode'],
-            tryHarder: true,
-            maxNumberOfSymbols: 8
-          });
+          const results = await readBarcodes(
+            context.getImageData(0, 0, canvas.width, canvas.height),
+            {
+              formats: ["QRCode"],
+              tryHarder: true,
+              maxNumberOfSymbols: 8,
+            },
+          );
           for (const result of results) if (result.isValid) onscan(result.text);
         }
         if (!stopped) timer = setTimeout(tick, SCAN_INTERVAL_MS);
@@ -98,12 +111,23 @@
 </script>
 
 {#if supported === false}
-  <StatusBox tone="warning" role="alert" title={m.camera_unsupported_title()}>{m.camera_unsupported()}</StatusBox>
+  <StatusBox tone="warning" role="alert" title={m.camera_unsupported_title()}
+    >{m.camera_unsupported()}</StatusBox
+  >
 {:else if denied}
-  <StatusBox tone="warning" role="alert" title={m.camera_denied_title()}>{m.camera_denied()}</StatusBox>
+  <StatusBox tone="warning" role="alert" title={m.camera_denied_title()}
+    >{m.camera_denied()}</StatusBox
+  >
 {/if}
 <div class="relative aspect-square overflow-hidden rounded-lg bg-viewfinder">
-  <video bind:this={video} class="size-full object-cover" aria-label={m.camera_preview()} autoplay muted playsinline></video>
+  <video
+    bind:this={video}
+    class="size-full object-cover"
+    aria-label={m.camera_preview()}
+    autoplay
+    muted
+    playsinline
+  ></video>
   {#if !stream}
     <CameraOff class="absolute inset-0 m-auto size-12 text-muted-foreground" aria-hidden="true" />
   {/if}

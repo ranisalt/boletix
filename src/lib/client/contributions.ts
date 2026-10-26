@@ -8,21 +8,24 @@ export interface Contribution {
   secao: number;
   urna: string;
   enviadoEm: string;
-  status: 'aceito' | 'conflito';
+  status: "aceito" | "conflito";
 }
 
-const KEY = 'boletix:contribuicoes';
+const KEY = "boletix:contribuicoes";
 
 export function listContributions(storage: Storage = localStorage): Contribution[] {
   try {
-    const list: unknown = JSON.parse(storage.getItem(KEY) ?? '[]');
+    const list: unknown = JSON.parse(storage.getItem(KEY) ?? "[]");
     return Array.isArray(list) ? (list as Contribution[]) : [];
   } catch {
     return [];
   }
 }
 
-export function recordContribution(contribution: Contribution, storage: Storage = localStorage): void {
+export function recordContribution(
+  contribution: Contribution,
+  storage: Storage = localStorage,
+): void {
   const others = listContributions(storage).filter(({ id }) => id !== contribution.id);
   storage.setItem(KEY, JSON.stringify([contribution, ...others]));
 }

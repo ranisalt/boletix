@@ -1,5 +1,5 @@
-import type { BuErrorCode } from '../bu/errors';
-import { m } from '../paraglide/messages.js';
+import type { BuErrorCode } from "../bu/errors";
+import { m } from "../paraglide/messages.js";
 
 const BU_ERROR_MESSAGES: Record<BuErrorCode, () => string> = {
   PAYLOAD_TOO_LARGE: m.error_payload_too_large,
@@ -20,7 +20,7 @@ const BU_ERROR_MESSAGES: Record<BuErrorCode, () => string> = {
   HASH_MISMATCH: m.error_hash_mismatch,
   SIGNATURE_MISSING: m.error_signature_missing,
   SIGNATURE_INVALID: m.error_signature_invalid,
-  TOTALS_INCONSISTENT: m.error_totals_inconsistent
+  TOTALS_INCONSISTENT: m.error_totals_inconsistent,
 };
 
 /** Whether the server rejected the boletim itself, as opposed to failing to process it. */
@@ -30,6 +30,6 @@ export function isBuErrorCode(code: string): code is BuErrorCode {
 
 /** User-facing text for a verification error, whether raised locally or returned by the server. */
 export function buErrorMessage(code: string): string {
-  if (code === 'RATE_LIMITED') return m.submit_rate_limited();
+  if (code === "RATE_LIMITED") return m.submit_rate_limited();
   return (BU_ERROR_MESSAGES[code as BuErrorCode] ?? m.submit_server_error)();
 }

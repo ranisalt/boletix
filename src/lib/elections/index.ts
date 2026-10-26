@@ -8,21 +8,22 @@ export interface ElectionDef {
 
 export const ELECTIONS: ElectionDef[] = [
   {
-    id: 'br-2026-general',
+    id: "br-2026-general",
     proc: 1219,
     pleitos: [
       { plei: 3220, turno: 1 },
-      { plei: 3221, turno: 2 }
+      { plei: 3221, turno: 2 },
     ],
-    vrqr: ['6.0'],
-    trustedRoots: []
-  }
+    vrqr: ["6.0"],
+    trustedRoots: [],
+  },
 ];
 
 export function findElection(proc: number, plei: number, vrqr: string): ElectionDef | undefined {
   return ELECTIONS.find(
-    (election) => election.proc === proc &&
+    (election) =>
+      election.proc === proc &&
       election.pleitos.some((pleito) => pleito.plei === plei) &&
-      election.vrqr.includes(vrqr)
+      election.vrqr.includes(vrqr),
   );
 }

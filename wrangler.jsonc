@@ -6,21 +6,21 @@
   "compatibility_flags": ["nodejs_als"],
   "assets": {
     "binding": "ASSETS",
-    "directory": ".svelte-kit/cloudflare"
+    "directory": ".svelte-kit/cloudflare",
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "boletix",
       "database_id": "TBD",
-      "migrations_dir": "migrations"
-    }
+      "migrations_dir": "migrations",
+    },
   ],
   "r2_buckets": [
     {
       "binding": "ORIGINALS",
-      "bucket_name": "boletix-originals"
-    }
+      "bucket_name": "boletix-originals",
+    },
   ],
   "ratelimits": [
     {
@@ -28,12 +28,12 @@
       "namespace_id": "1001",
       "simple": {
         "limit": 30,
-        "period": 60
-      }
-    }
+        "period": 60,
+      },
+    },
   ],
   "vars": {
-    "ALLOW_TEST_FASES": "true"
+    "ALLOW_TEST_FASES": "true",
   },
-  "upload_source_maps": true
+  "upload_source_maps": true,
 }

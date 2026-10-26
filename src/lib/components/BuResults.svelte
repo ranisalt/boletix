@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { Bu } from '../bu/assemble';
-  import { resultsView, type NameFile } from '../elections/names';
-  import { m } from '../paraglide/messages.js';
+  import type { Bu } from "../bu/assemble";
+  import { resultsView, type NameFile } from "../elections/names";
+  import { m } from "../paraglide/messages.js";
 
   interface Props {
     bu: Bu;
@@ -20,7 +20,7 @@
     5: m.cargo_5,
     6: m.cargo_6,
     7: m.cargo_7,
-    8: m.cargo_8
+    8: m.cargo_8,
   };
   const cargoName = (cargo: number) => CARGOS[cargo]?.() ?? m.cargo_other({ cargo });
 </script>
@@ -42,7 +42,8 @@
           <tr>
             <td class="py-1">{row.numero}</td>
             <td class="py-1 font-sans">
-              {#if row.nome}{row.nome} <span class="text-xs text-muted-foreground">{row.partido}</span>{/if}
+              {#if row.nome}{row.nome}
+                <span class="text-xs text-muted-foreground">{row.partido}</span>{/if}
             </td>
             <td class="py-1 text-right font-semibold">{row.votos}</td>
           </tr>
