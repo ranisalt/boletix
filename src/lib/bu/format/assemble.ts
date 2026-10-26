@@ -7,7 +7,7 @@ import { tokenize } from "./tokenize";
 
 /** One office (cargo) of one election inside the BU. */
 export interface BuCargo {
-  /** IDEL: the election this cargo belongs to; a BU can carry several (e.g. federal and state). */
+  /** IDEL: the election this cargo belongs to; a BU can carry several. */
   idel: number;
   cargo: number;
   /** TIPO: 0 majoritário, 1 proporcional (votes grouped by party), 2 consulta. */
@@ -29,7 +29,7 @@ export interface BuCargo {
 
 export interface Bu {
   header: {
-    /** ORIG: printed by the urna (VOTA), by the Recuperador de Dados (RED) or by the Sistema de Apuração (SA, paper ballots). */
+    /** ORIG: printed by the urna (VOTA), by the Recuperador de Dados (RED) or by the Sistema de Apuração (SA). */
     orig: "VOTA" | "RED" | "SA";
     proc: number;
     plei: number;
@@ -42,7 +42,7 @@ export interface Bu {
     zona: number;
     secao: number;
     agregadas: number[];
-    /** IDUE: urna serial number, also the subject of its certificate. */
+    /** IDUE: urna serial number. */
     urna: string;
     /** IDCA: identifier of the software/data load (carga) on the urna. */
     idca: string;
@@ -344,7 +344,7 @@ function parseCargo(tokens: Token[], cursor: number): { cargo: BuCargo; next: nu
     }
   }
 
-  // Summary keys come in this fixed order; CSEC and LEGC appear only when they apply.
+  // Summary keys come in this fixed order; APTS/APTT, CSEC and LEGC are optional here.
   const aptaValue = requireNumber(tokens, next, "APTA");
   next = aptaValue.next;
   const aptsValue = optionalNumber(tokens, next, "APTS");

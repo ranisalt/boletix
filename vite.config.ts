@@ -56,6 +56,7 @@ export default defineConfig({
           cloudflareTest(async () => ({
             wrangler: { configPath: path.resolve("./wrangler.jsonc") },
             miniflare: {
+              // Behind wrangler.jsonc: the pool (0.23.0) bundles an older workerd that rejects newer dates.
               compatibilityDate: "2026-08-22",
               bindings: {
                 TEST_MIGRATIONS: await readD1Migrations(path.resolve("./migrations")),

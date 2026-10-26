@@ -9,6 +9,14 @@ import ts from "typescript-eslint";
 
 const gitignorePath = path.resolve(import.meta.dirname, ".gitignore");
 
+const APP_MODULES = "scan|submission|contributions|ui|server";
+// Any spelling that reaches into src/lib: relative (`../`, `../../lib/`), `$lib/` or `#lib/`.
+const MODULE_PREFIX = "^(?:(?:\\.\\./)+(?:lib/)?|\\$lib/|#lib/)";
+const MODULE_BOUNDARY = {
+  regex: `${MODULE_PREFIX}(bu|elections|${APP_MODULES})/(?!testing/|index(?:\\.[jt]s)?$)`,
+  message: "Import another module through its index.ts.",
+};
+
 export default defineConfig(
   includeIgnoreFile(gitignorePath),
   { ignores: [".hermes/", "worker-configuration.d.ts"] },
@@ -34,36 +42,20 @@ export default defineConfig(
     // Each folder in src/lib is a module that may become its own package: other code goes
     // through its index.ts. `testing/` helpers are the exception, for specs only.
     files: ["src/**"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              regex:
-                "^(\\.\\./)+(bu|elections|scan|submission|contributions|ui|server)/(?!testing/)",
-              message: "Import another module through its index.ts.",
-            },
-            {
-              regex: "^#lib/(bu|elections|scan|submission|contributions|ui|server)/(?!index\\.js$)",
-              message: "Import another module through its index.ts.",
-            },
-          ],
-        },
-      ],
-    },
+    rules: { "no-restricted-imports": ["error", { patterns: [MODULE_BOUNDARY] }] },
   },
   {
     // The protocol and election data are framework-free so they run in browser, workerd and Node alike.
+    // Flat config replaces rule options per block, so the boundary pattern is repeated here.
     files: ["src/lib/bu/**", "src/lib/elections/**"],
     rules: {
       "no-restricted-imports": [
         "error",
         {
           patterns: [
+            MODULE_BOUNDARY,
             {
-              regex:
-                "^(svelte|\\$app|\\$env|@sveltejs/)|paraglide|^(\\.\\./)+(scan|submission|contributions|ui|server)(/|$)",
+              regex: `^(svelte|\\$app|\\$env|@sveltejs/)|paraglide|${MODULE_PREFIX}(${APP_MODULES})(/|$)`,
               message: "bu/ and elections/ must not depend on Svelte, i18n or app modules.",
             },
           ],
