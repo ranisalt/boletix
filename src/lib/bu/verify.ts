@@ -100,18 +100,37 @@ function assembleCertificate(certs: CertQr[]): { der: Uint8Array; idue: string }
 }
 
 function buIdue(parts: BuQr[]): string | undefined {
-  return parts[0]?.tokens.find(([key]) => key === 'IDUE')?.[1];
+  for (const part of parts) {
+    const idue = part.tokens.find(([key]) => key === 'IDUE')?.[1];
+    if (idue) return idue;
+  }
+  return undefined;
+}
+
+const sha512Hex = (text: string) => bytesToHex(sha512(new TextEncoder().encode(text))).toUpperCase();
+
+/**
+ * HASH of a BU spread over several QRs, as the TSE app computes it: in index order, each QR's content is
+ * appended to the previous text as `<previous text> HASH:<previous hash> <content>` and re-hashed.
+ */
+export function chainedBuHash(parts: BuQr[]): string {
+  let text: string | undefined;
+  let hash = '';
+  for (const part of [...parts].sort((a, b) => a.index - b.index)) {
+    const content = part.content.trimEnd();
+    text = text === undefined ? content : `${text} HASH:${hash} ${content}`;
+    hash = sha512Hex(text);
+  }
+  return hash;
 }
 
 export function verifyBuSignature(parts: BuQr[], certs: CertQr[], roots: TrustedRoot[]): SignatureVerification {
-  for (const part of parts) {
-    const expected = bytesToHex(sha512(new TextEncoder().encode(part.content))).toUpperCase();
-    if (expected !== part.hash.toUpperCase()) {
-      throw new BuError('HASH_MISMATCH', `QR ${part.index} content does not match HASH`);
-    }
+  const last = [...parts].sort((a, b) => a.index - b.index).at(-1);
+  if (!last) throw new BuError('QR_SET_INCOMPLETE', 'no BU QR codes');
+  if (chainedBuHash(parts) !== last.hash.toUpperCase()) {
+    throw new BuError('HASH_MISMATCH', 'BU content does not match HASH');
   }
-  const last = parts.at(-1);
-  if (!last?.assi) throw new BuError('SIGNATURE_MISSING', 'BU has no ASSI');
+  if (!last.assi) throw new BuError('SIGNATURE_MISSING', 'BU has no ASSI');
 
   const { der, idue } = assembleCertificate(certs);
   if (idue !== buIdue(parts)) throw new BuError('CERT_URNA_MISMATCH', 'certificate belongs to another urna');
