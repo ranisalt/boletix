@@ -25,9 +25,6 @@
     3: m.cargo_3,
     5: m.cargo_5,
   };
-  const ELECTION_NAMES: Record<string, () => string> = {
-    "br-2026-general": m.election_br_2026_general,
-  };
   const number = new Intl.NumberFormat("pt-BR");
   // Voting days are calendar dates; UTC keeps them from shifting a day.
   const day = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" });
@@ -54,7 +51,7 @@
       <span>{m.field_election()}</span>
       <select name="eleicao" class="select" value={query.election}>
         {#each ELECTIONS as election (election.id)}
-          <option value={election.id}>{ELECTION_NAMES[election.id]?.() ?? election.id}</option>
+          <option value={election.id}>{election.name}</option>
         {/each}
       </select>
     </label>

@@ -5,6 +5,7 @@ import { ELECTIONS, findElection, latestPleito } from "./calendar";
 it("finds the 2026 general election only for a registered pleito, turno and QR version", () => {
   expect(findElection(1219, 3220, 1, "6.0")).toMatchObject({
     id: "br-2026-general",
+    name: "Eleições Gerais 2026",
     proc: 1219,
     pleitos: [
       { plei: 3220, turno: 1, date: "2026-10-04" },

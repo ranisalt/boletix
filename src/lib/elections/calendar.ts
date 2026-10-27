@@ -1,5 +1,7 @@
 export type ElectionDef = {
   id: string;
+  /** Display name; election names are proper nouns, so they are not translated. */
+  name: string;
   proc: number;
   /** In order; `date` is the voting day (YYYY-MM-DD). */
   pleitos: { plei: number; turno: 1 | 2; date: string }[];
@@ -10,6 +12,7 @@ export type ElectionDef = {
 export const ELECTIONS: ElectionDef[] = [
   {
     id: "br-2026-general",
+    name: "Eleições Gerais 2026",
     proc: 1219,
     pleitos: [
       { plei: 3220, turno: 1, date: "2026-10-04" },

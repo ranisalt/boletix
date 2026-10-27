@@ -146,7 +146,6 @@
   "totals_unofficial": "Coletados por voluntários e possivelmente incompletos. Os resultados oficiais são apenas os divulgados pelo TSE.",
   "totals_filters": "Filtros",
   "field_election": "Eleição",
-  "election_br_2026_general": "Eleições Gerais 2026",
   "field_turno": "Turno",
   "turno_option": "{turno}º turno · {date}",
   "field_cargo": "Cargo",
