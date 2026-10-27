@@ -19,6 +19,21 @@ export default defineConfig({
         experimental: { async: true },
       },
       adapter: adapter(),
+      csp: {
+        directives: {
+          "default-src": ["self"],
+          // zxing-wasm compiles its QR decoder at runtime.
+          "script-src": ["self", "wasm-unsafe-eval"],
+          "style-src": ["self", "unsafe-inline"],
+          "img-src": ["self", "data:"],
+          "connect-src": ["self", "https://*.sentry.io"],
+          // Sentry Replay compresses recordings in a blob worker.
+          "worker-src": ["self", "blob:"],
+          "frame-ancestors": ["none"],
+          "base-uri": ["self"],
+          "form-action": ["self"],
+        },
+      },
     }),
     paraglideVitePlugin({
       project: "./project.inlang",
