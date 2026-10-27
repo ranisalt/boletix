@@ -42,10 +42,25 @@
   <NoticeBanner />
   <header class="border-b bg-card">
     <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-2">
-      <a href={resolve("/")} class="flex items-center gap-2 font-mono text-lg font-semibold">
-        <span class="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground"
-          >B</span
-        >Boletix
+      <a href={resolve("/")} class="flex items-center gap-2 text-lg font-semibold">
+        <span class="grid size-9 place-items-center rounded-md bg-primary text-primary-foreground">
+          <!-- A ticked BU in a QR viewfinder -->
+          <svg viewBox="0 0 32 32" class="size-6" fill="none" aria-hidden="true">
+            <path
+              d="M3 10V5a2 2 0 0 1 2-2h5M22 3h5a2 2 0 0 1 2 2v5M29 22v5a2 2 0 0 1-2 2h-5M10 29H5a2 2 0 0 1-2-2v-5"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+            />
+            <path
+              d="M9.5 16.5l4.5 4.5 8.5-9.5"
+              stroke="currentColor"
+              stroke-width="3.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>Boletix
       </a>
       <nav class="hidden gap-1 md:flex" aria-label={m.nav_label()}>
         {#each NAV as item (item.href)}
