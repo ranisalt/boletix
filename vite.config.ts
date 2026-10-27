@@ -19,14 +19,18 @@ export default defineConfig({
         experimental: { async: true },
       },
       adapter: adapter(),
+      // The whole stylesheet (~23 KB, ~7 KB compressed) fits in the first round trip, so inlining
+      // it saves a render-blocking request.
+      inlineStyleThreshold: 32_000,
       csp: {
         directives: {
           "default-src": ["self"],
           // zxing-wasm compiles its QR decoder at runtime.
-          "script-src": ["self", "wasm-unsafe-eval"],
+          // Cloudflare injects its Web Analytics beacon into every page.
+          "script-src": ["self", "wasm-unsafe-eval", "https://static.cloudflareinsights.com"],
           "style-src": ["self", "unsafe-inline"],
           "img-src": ["self", "data:"],
-          "connect-src": ["self", "https://*.sentry.io"],
+          "connect-src": ["self", "https://*.sentry.io", "https://cloudflareinsights.com"],
           // Sentry Replay compresses recordings in a blob worker.
           "worker-src": ["self", "blob:"],
           "frame-ancestors": ["none"],
