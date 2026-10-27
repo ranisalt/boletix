@@ -1,39 +1,19 @@
 import { describe, expect, it } from "vitest";
 
-import { BuError } from "./errors";
-import { MAX_QR_CODES, parseQr, type BuQr, type CertQr } from "./format/parse";
+import { MAX_QR_CODES } from "./format/parse";
 import { TSE_ROOTS } from "./signature/tse-roots";
 import { chainHashes } from "./signature/verify";
 import { toSubmission, verifySubmission, type BuSubmission } from "./submission";
-import { loadBuFixture, loadBuFixtures } from "./testing/fixtures";
+import { expectBuError, loadBuFixtures, loadBuScan } from "./testing/fixtures";
 
 /** What an attacker would do: alter the contents and send their recomputed HASH. */
 function withContents(submission: BuSubmission, contents: string[]): BuSubmission {
   return { ...submission, contents, hash: chainHashes(contents).at(-1)! };
 }
 
-function scan(name: string): { parts: BuQr[]; certs: CertQr[] } {
-  const fixture = loadBuFixture(name);
-  return {
-    parts: fixture.qrbu.map((raw) => parseQr(raw) as BuQr),
-    certs: fixture.qrce.map((raw) => parseQr(raw) as CertQr),
-  };
-}
-
 function submissionFor(name: string): BuSubmission {
-  const { parts, certs } = scan(name);
+  const { parts, certs } = loadBuScan(name);
   return toSubmission(parts, certs);
-}
-
-function expectErrorCode(action: () => unknown, code: BuError["code"]): void {
-  let thrown: unknown;
-  try {
-    action();
-  } catch (error) {
-    thrown = error;
-  }
-  expect(thrown).toBeInstanceOf(BuError);
-  expect((thrown as BuError).code).toBe(code);
 }
 
 const ED521 = "df-97012-11-178";
@@ -41,7 +21,7 @@ const ECDSA = "zz-29386-1-1709";
 
 describe("toSubmission", () => {
   it("keeps only each QR content, the final HASH, the ASSI and the certificate as DER hex", () => {
-    const { parts } = scan(ECDSA);
+    const { parts } = loadBuScan(ECDSA);
     const submission = submissionFor(ECDSA);
 
     expect(Object.keys(submission).sort()).toEqual(["assi", "certDer", "contents", "hash"]);
@@ -56,8 +36,8 @@ describe("toSubmission", () => {
   });
 
   it("refuses to build a submission before every certificate QR is scanned", () => {
-    const { parts, certs } = scan(ECDSA);
-    expectErrorCode(() => toSubmission(parts, certs.slice(1)), "QR_SET_INCOMPLETE");
+    const { parts, certs } = loadBuScan(ECDSA);
+    expectBuError(() => toSubmission(parts, certs.slice(1)), "QR_SET_INCOMPLETE");
   });
 });
 
@@ -67,7 +47,7 @@ describe("verifySubmission", () => {
       .filter((f) => f.qrce.length > 0)
       .map((f) => f.name),
   )("accepts the real BU %s and returns the assembled BU", (name) => {
-    const { parts } = scan(name);
+    const { parts } = loadBuScan(name);
     const result = verifySubmission(submissionFor(name), TSE_ROOTS);
 
     expect(result.hash).toBe(parts.at(-1)!.hash.toUpperCase());
@@ -81,18 +61,18 @@ describe("verifySubmission", () => {
   });
 
   it("rejects client-supplied fields beyond the signed data", () => {
-    expectErrorCode(
+    expectBuError(
       () => verifySubmission({ ...submissionFor(ECDSA), verified: true }, TSE_ROOTS),
       "UNEXPECTED_FIELD",
     );
-    expectErrorCode(
+    expectBuError(
       () => verifySubmission({ ...submissionFor(ECDSA), votes: { "13": 1 } }, TSE_ROOTS),
       "UNEXPECTED_FIELD",
     );
   });
 
   it("rejects a HASH that does not match the submitted contents", () => {
-    expectErrorCode(
+    expectBuError(
       () => verifySubmission({ ...submissionFor(ECDSA), hash: "A".repeat(128) }, TSE_ROOTS),
       "HASH_MISMATCH",
     );
@@ -111,7 +91,7 @@ describe("verifySubmission", () => {
       { ...valid, certDer: "" },
       { assi: valid.assi, certDer: valid.certDer },
     ]) {
-      expectErrorCode(() => verifySubmission(bad, TSE_ROOTS), "INVALID_FIELD");
+      expectBuError(() => verifySubmission(bad, TSE_ROOTS), "INVALID_FIELD");
     }
   });
 
@@ -122,7 +102,7 @@ describe("verifySubmission", () => {
       (_: string, n: string) => `APTA:${Number(n) + 1}`,
     );
     expect(content).not.toBe(valid.contents[0]);
-    expectErrorCode(
+    expectBuError(
       () => verifySubmission(withContents(valid, [content]), TSE_ROOTS),
       "SIGNATURE_INVALID",
     );
@@ -133,7 +113,7 @@ describe("verifySubmission", () => {
     const tokens = valid.contents[0]!.split(" ");
     const half = Math.floor(tokens.length / 2);
     const resplit = [tokens.slice(0, half).join(" "), tokens.slice(half).join(" ")];
-    expectErrorCode(
+    expectBuError(
       () => verifySubmission(withContents(valid, resplit), TSE_ROOTS),
       "SIGNATURE_INVALID",
     );
@@ -142,18 +122,18 @@ describe("verifySubmission", () => {
   it("rejects another urna's certificate", () => {
     const valid = submissionFor(ECDSA);
     const other = submissionFor("zz-29386-1-1710");
-    expectErrorCode(
+    expectBuError(
       () => verifySubmission({ ...valid, certDer: other.certDer }, TSE_ROOTS),
       "CERT_URNA_MISMATCH",
     );
   });
 
   it("rejects a certificate that is not issued by a pinned TSE root", () => {
-    expectErrorCode(() => verifySubmission(submissionFor(ECDSA), []), "CERT_INVALID");
+    expectBuError(() => verifySubmission(submissionFor(ECDSA), []), "CERT_INVALID");
   });
 
   it("rejects a certificate that is not X.509", () => {
-    expectErrorCode(
+    expectBuError(
       () => verifySubmission({ ...submissionFor(ECDSA), certDer: "3003020101" }, TSE_ROOTS),
       "CERT_INVALID",
     );

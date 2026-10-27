@@ -1,7 +1,6 @@
 import { expect, it } from "vitest";
 
-import { BuError } from "../errors";
-import { loadBuFixture } from "../testing/fixtures";
+import { expectBuError, loadBuFixture } from "../testing/fixtures";
 import { assembleBu } from "./assemble";
 import { type BuQr, parseQr } from "./parse";
 
@@ -19,18 +18,6 @@ function syntheticPart(index: number, total: number, content = ""): BuQr {
     .filter(Boolean)
     .join(" ");
   return parseBu(body);
-}
-
-function expectErrorCode(action: () => unknown, code: BuError["code"]): void {
-  let thrown: unknown;
-  try {
-    action();
-  } catch (error) {
-    thrown = error;
-  }
-
-  expect(thrown).toBeInstanceOf(BuError);
-  expect((thrown as BuError).code).toBe(code);
 }
 
 it("assembles the real 2026 BU into its header and majoritarian cargo", () => {
@@ -104,23 +91,20 @@ it("assembles a multi-QR BU whose joined content exceeds the single-QR size limi
 });
 
 it("rejects empty, incomplete, duplicate-index, or mixed-total QR sets", () => {
-  expectErrorCode(() => assembleBu([]), "QR_SET_INCOMPLETE");
-  expectErrorCode(() => assembleBu([syntheticPart(1, 2)]), "QR_SET_INCOMPLETE");
-  expectErrorCode(
-    () => assembleBu([syntheticPart(1, 2), syntheticPart(1, 2)]),
-    "QR_SET_INCOMPLETE",
-  );
-  expectErrorCode(() => assembleBu([syntheticPart(1, 2), syntheticPart(2, 3)]), "QR_SET_MIXED");
+  expectBuError(() => assembleBu([]), "QR_SET_INCOMPLETE");
+  expectBuError(() => assembleBu([syntheticPart(1, 2)]), "QR_SET_INCOMPLETE");
+  expectBuError(() => assembleBu([syntheticPart(1, 2), syntheticPart(1, 2)]), "QR_SET_INCOMPLETE");
+  expectBuError(() => assembleBu([syntheticPart(1, 2), syntheticPart(2, 3)]), "QR_SET_MIXED");
 });
 
 it("rejects unknown or origin-incompatible header fields", () => {
   const header =
     "ORIG:VOTA PROC:1 DTPL:20261004 PLEI:1 TURN:1 FASE:O UNFE:ZZ MUNI:1 ZONA:1 SECA:1 IDUE:1 IDCA:000000000000000000000001 HIQT:1 HICA:1:000000000000000000000001 VERS:10.0.0 LOCA:1 APTO:2 APTS:2 APTT:0 COMP:1 FALT:1";
-  expectErrorCode(
+  expectBuError(
     () => assembleBu([syntheticPart(1, 1, `${header} IDEL:1 FOO:1`)]),
     "UNEXPECTED_FIELD",
   );
-  expectErrorCode(
+  expectBuError(
     () => assembleBu([syntheticPart(1, 1, `${header.replace("ORIG:VOTA", "ORIG:SA")} IDEL:1`)]),
     "UNEXPECTED_FIELD",
   );
@@ -129,11 +113,11 @@ it("rejects unknown or origin-incompatible header fields", () => {
 it("rejects unknown and out-of-place cargo tokens", () => {
   const header =
     "ORIG:VOTA PROC:1 DTPL:20261004 PLEI:1 TURN:1 FASE:O UNFE:ZZ MUNI:1 ZONA:1 SECA:1 IDUE:1 IDCA:000000000000000000000001 HIQT:1 HICA:1:000000000000000000000001 VERS:10.0.0 LOCA:1 APTO:2 APTS:2 APTT:0 COMP:1 FALT:1";
-  expectErrorCode(
+  expectBuError(
     () => assembleBu([syntheticPart(1, 1, `${header} IDEL:1 CARG:1 TIPO:0 VERC:1 FOO:1`)]),
     "UNEXPECTED_FIELD",
   );
-  expectErrorCode(
+  expectBuError(
     () => assembleBu([syntheticPart(1, 1, `${header} IDEL:1 CARG:1 VERC:1`)]),
     "MISSING_FIELD",
   );
@@ -150,22 +134,22 @@ it("accepts multi-vote cargos without equating TOTC to COMP", () => {
 });
 
 it("rejects candidate, cargo-summary, and VOTA header total mismatches", () => {
-  expectErrorCode(
+  expectBuError(
     () => assembleBu([syntheticPart(1, 1, VALID_MAJORITARIAN.replace("10:3", "10:4"))]),
     "TOTALS_INCONSISTENT",
   );
-  expectErrorCode(
+  expectBuError(
     () => assembleBu([syntheticPart(1, 1, VALID_MAJORITARIAN.replace("TOTC:6", "TOTC:7"))]),
     "TOTALS_INCONSISTENT",
   );
-  expectErrorCode(
+  expectBuError(
     () =>
       assembleBu([
         syntheticPart(1, 1, VALID_MAJORITARIAN.replace("COMP:2 FALT:8", "COMP:3 FALT:8")),
       ]),
     "TOTALS_INCONSISTENT",
   );
-  expectErrorCode(
+  expectBuError(
     () =>
       assembleBu([
         syntheticPart(
@@ -180,8 +164,8 @@ it("rejects candidate, cargo-summary, and VOTA header total mismatches", () => {
 
 it("checks party subtotals and proportional cargo totals", () => {
   const proportional = `${VALID_HEADER} IDEL:1 CARG:13 TIPO:1 VERC:1 PART:20 10:2 LEGP:1 TOTP:4 APTA:10 APTS:10 APTT:0 NOMI:3 LEGC:1 BRAN:1 NULO:0 TOTC:5`;
-  expectErrorCode(() => assembleBu([syntheticPart(1, 1, proportional)]), "TOTALS_INCONSISTENT");
-  expectErrorCode(
+  expectBuError(() => assembleBu([syntheticPart(1, 1, proportional)]), "TOTALS_INCONSISTENT");
+  expectBuError(
     () => assembleBu([syntheticPart(1, 1, proportional.replace("TOTP:4", "TOTP:3"))]),
     "TOTALS_INCONSISTENT",
   );

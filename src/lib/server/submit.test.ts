@@ -3,16 +3,13 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { parseQr, type BuQr, type CertQr, toSubmission, type BuSubmission } from "../bu";
-import { loadBuFixture } from "../bu/testing/fixtures";
+import { toSubmission, type BuSubmission } from "../bu";
+import { loadBuScan } from "../bu/testing/fixtures";
 import { handleSubmission, MAX_BODY_BYTES, type SubmitOptions } from "./submit";
 
 function submissionFor(name: string): BuSubmission {
-  const fixture = loadBuFixture(name);
-  return toSubmission(
-    fixture.qrbu.map((raw) => parseQr(raw) as BuQr),
-    fixture.qrce.map((raw) => parseQr(raw) as CertQr),
-  );
+  const { parts, certs } = loadBuScan(name);
+  return toSubmission(parts, certs);
 }
 
 function post(body: unknown, init: RequestInit = {}): Request {

@@ -53,6 +53,7 @@ export function verifyEd521(
   try {
     return ed521.verify(signature, message, publicKey);
   } catch {
+    // The library throws on malformed points or encodings: still just an invalid signature.
     return false;
   }
 }

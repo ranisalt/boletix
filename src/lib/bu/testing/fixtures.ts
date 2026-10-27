@@ -1,3 +1,8 @@
+import { expect } from "vitest";
+
+import { BuError } from "../errors";
+import { parseQr, type BuQr, type CertQr } from "../format/parse";
+
 // Test-only loader for the real 2026 BU fixtures under /fixtures/2026/<uf>-<mun>-<zona>-<secao>/.
 // Each directory holds qrbu-<i>.txt (BU QRs) and qrce-<i>.txt (urna certificate QRs).
 const files = import.meta.glob("/fixtures/2026/*/*.txt", {
@@ -35,4 +40,24 @@ export function loadBuFixture(name: string): BuFixture {
   const fixture = loadBuFixtures().find((f) => f.name === name);
   if (!fixture) throw new Error(`unknown fixture ${name}`);
   return fixture;
+}
+
+/** A fixture as the scanner would hand it over: parsed BU and certificate QRs. */
+export function loadBuScan(name: string): { parts: BuQr[]; certs: CertQr[] } {
+  const fixture = loadBuFixture(name);
+  return {
+    parts: fixture.qrbu.map((raw) => parseQr(raw) as BuQr),
+    certs: fixture.qrce.map((raw) => parseQr(raw) as CertQr),
+  };
+}
+
+export function expectBuError(action: () => unknown, code: BuError["code"]): void {
+  let thrown: unknown;
+  try {
+    action();
+  } catch (error) {
+    thrown = error;
+  }
+  expect(thrown).toBeInstanceOf(BuError);
+  expect((thrown as BuError).code).toBe(code);
 }

@@ -1,9 +1,12 @@
 import { BuError } from "../errors";
 
+/** Each printed QR holds at most 1100 characters (manual, section 1.4). */
+export const MAX_QR_CHARS = 1100;
+
 const QR_ALPHANUMERIC = /^[0-9A-Z $%*+\-./:]+$/;
 
 export function tokenize(raw: string): [string, string][] {
-  if (raw.length > 1100) {
+  if (raw.length > MAX_QR_CHARS) {
     throw new BuError("PAYLOAD_TOO_LARGE", `payload has ${raw.length} characters`);
   }
 

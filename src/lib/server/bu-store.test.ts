@@ -3,27 +3,15 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import {
-  type BuCargo,
-  parseQr,
-  type BuQr,
-  type CertQr,
-  toSubmission,
-  verifySubmission,
-  type BuSubmission,
-  TSE_ROOTS,
-} from "../bu";
-import { loadBuFixture } from "../bu/testing/fixtures";
+import { type BuCargo, toSubmission, verifySubmission, type BuSubmission, TSE_ROOTS } from "../bu";
+import { loadBuScan } from "../bu/testing/fixtures";
 import { storeBu } from "./bu-store";
 
 const ELECTION = "br-2026-general";
 
 function submissionFor(name: string): BuSubmission {
-  const fixture = loadBuFixture(name);
-  return toSubmission(
-    fixture.qrbu.map((raw) => parseQr(raw) as BuQr),
-    fixture.qrce.map((raw) => parseQr(raw) as CertQr),
-  );
+  const { parts, certs } = loadBuScan(name);
+  return toSubmission(parts, certs);
 }
 
 async function store(submission: BuSubmission) {

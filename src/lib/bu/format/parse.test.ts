@@ -1,23 +1,10 @@
 import { expect, it } from "vitest";
 
-import { BuError } from "../errors";
-import { loadBuFixture } from "../testing/fixtures";
+import { expectBuError, loadBuFixture } from "../testing/fixtures";
 import { MAX_QR_CODES, parseQr } from "./parse";
 
 const HASH = "A".repeat(128);
 const REAL_2026 = loadBuFixture("zz-29688-1-929").qrbu[0]!;
-
-function expectErrorCode(action: () => unknown, code: BuError["code"]): void {
-  let thrown: unknown;
-  try {
-    action();
-  } catch (error) {
-    thrown = error;
-  }
-
-  expect(thrown).toBeInstanceOf(BuError);
-  expect((thrown as BuError).code).toBe(code);
-}
 
 it("parses the real VRQR 6.0 payload and returns content after the header", () => {
   const [raw, version, header, thirdKey] = [REAL_2026, "6.0", "QRBU:1:1 VRQR:6.0 ", "ORIG"];
@@ -51,36 +38,36 @@ it("parses a BU QR independently of certificate QRs", () => {
 });
 
 it("rejects an unknown first field", () => {
-  expectErrorCode(() => parseQr(`ORIG:VOTA HASH:${HASH}`), "MISSING_FIELD");
+  expectBuError(() => parseQr(`ORIG:VOTA HASH:${HASH}`), "MISSING_FIELD");
 });
 
 it("rejects QR indexes outside 1..total<=MAX_QR_CODES", () => {
-  expectErrorCode(() => parseQr(`QRBU:0:2 VRQR:6.0 HASH:${HASH}`), "QR_INDEX_INVALID");
-  expectErrorCode(
+  expectBuError(() => parseQr(`QRBU:0:2 VRQR:6.0 HASH:${HASH}`), "QR_INDEX_INVALID");
+  expectBuError(
     () => parseQr(`QRBU:1:${MAX_QR_CODES + 1} VRQR:6.0 HASH:${HASH}`),
     "QR_INDEX_INVALID",
   );
 });
 
 it("rejects unsupported VRQR versions", () => {
-  expectErrorCode(() => parseQr(`QRBU:1:1 VRQR:5.0 HASH:${HASH}`), "UNSUPPORTED_VERSION");
-  expectErrorCode(() => parseQr(`QRBU:1:1 VRQR:1.5 HASH:${HASH}`), "UNSUPPORTED_VERSION");
+  expectBuError(() => parseQr(`QRBU:1:1 VRQR:5.0 HASH:${HASH}`), "UNSUPPORTED_VERSION");
+  expectBuError(() => parseQr(`QRBU:1:1 VRQR:1.5 HASH:${HASH}`), "UNSUPPORTED_VERSION");
 });
 
 it("requires a 128-character hexadecimal HASH in the final position", () => {
-  expectErrorCode(() => parseQr("QRBU:1:1 VRQR:6.0 ORIG:VOTA"), "MISSING_FIELD");
-  expectErrorCode(() => parseQr("QRBU:1:1 VRQR:6.0 HASH:ABC"), "INVALID_FIELD");
-  expectErrorCode(() => parseQr(`QRBU:1:1 VRQR:6.0 HASH:${HASH} EXTRA:1`), "INVALID_FIELD");
+  expectBuError(() => parseQr("QRBU:1:1 VRQR:6.0 ORIG:VOTA"), "MISSING_FIELD");
+  expectBuError(() => parseQr("QRBU:1:1 VRQR:6.0 HASH:ABC"), "INVALID_FIELD");
+  expectBuError(() => parseQr(`QRBU:1:1 VRQR:6.0 HASH:${HASH} EXTRA:1`), "INVALID_FIELD");
 });
 
 it("requires a final-QR signature to be hexadecimal and present only after HASH", () => {
-  expectErrorCode(() => parseQr(`QRBU:1:2 VRQR:6.0 HASH:${HASH} ASSI:DEAD`), "UNEXPECTED_FIELD");
-  expectErrorCode(() => parseQr(`QRBU:1:1 VRQR:6.0 HASH:${HASH} ASSI:DE-AD`), "INVALID_FIELD");
-  expectErrorCode(() => parseQr(`QRBU:1:1 VRQR:6.0 ASSI:DEAD HASH:${HASH}`), "INVALID_FIELD");
+  expectBuError(() => parseQr(`QRBU:1:2 VRQR:6.0 HASH:${HASH} ASSI:DEAD`), "UNEXPECTED_FIELD");
+  expectBuError(() => parseQr(`QRBU:1:1 VRQR:6.0 HASH:${HASH} ASSI:DE-AD`), "INVALID_FIELD");
+  expectBuError(() => parseQr(`QRBU:1:1 VRQR:6.0 ASSI:DEAD HASH:${HASH}`), "INVALID_FIELD");
 });
 
 it("rejects malformed certificate headers and missing certificate fields", () => {
-  expectErrorCode(() => parseQr("QRCE:0:1 IDUE:123 MDUE:UE2020 CERT:ABCD"), "QR_INDEX_INVALID");
-  expectErrorCode(() => parseQr("QRCE:1:1 IDUE:123 CERT:ABCD"), "MISSING_FIELD");
-  expectErrorCode(() => parseQr("QRCE:1:1 IDUE:123 MDUE:UE2020 CERT:AB-G"), "INVALID_FIELD");
+  expectBuError(() => parseQr("QRCE:0:1 IDUE:123 MDUE:UE2020 CERT:ABCD"), "QR_INDEX_INVALID");
+  expectBuError(() => parseQr("QRCE:1:1 IDUE:123 CERT:ABCD"), "MISSING_FIELD");
+  expectBuError(() => parseQr("QRCE:1:1 IDUE:123 MDUE:UE2020 CERT:AB-G"), "INVALID_FIELD");
 });

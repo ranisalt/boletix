@@ -18,6 +18,7 @@ export function listContributions(storage: Storage = localStorage): Contribution
     const list: unknown = JSON.parse(storage.getItem(KEY) ?? "[]");
     return Array.isArray(list) ? (list as Contribution[]) : [];
   } catch {
+    // Corrupt history is dropped; the next recorded contribution overwrites it.
     return [];
   }
 }

@@ -3,7 +3,6 @@ export interface ElectionDef {
   proc: number;
   pleitos: { plei: number; turno: 1 | 2 }[];
   vrqr: string[];
-  trustedRoots: { name: string; sha256: string; derBase64: string; source: string }[];
 }
 
 export const ELECTIONS: ElectionDef[] = [
@@ -15,7 +14,6 @@ export const ELECTIONS: ElectionDef[] = [
       { plei: 3221, turno: 2 },
     ],
     vrqr: ["6.0"],
-    trustedRoots: [],
   },
 ];
 

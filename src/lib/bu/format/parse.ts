@@ -3,7 +3,7 @@ import { tokenize } from "./tokenize";
 
 // Decodes a single printed QR: either a part of the BU (QRBU) or a part of the urna certificate (QRCE).
 
-export const SUPPORTED_VRQR_VERSIONS = ["6.0"] as const;
+const SUPPORTED_VRQR_VERSIONS: readonly string[] = ["6.0"];
 
 /** One QR of the BU. `content` is what the HASH chain covers: the text between the QRBU/VRQR prefix and HASH. */
 export interface BuQr {
@@ -41,9 +41,6 @@ function requiredValue(tokens: [string, string][], key: string): string {
  * this only rejects garbage before it costs any work.
  */
 export const MAX_QR_CODES = 32;
-
-/** Each printed QR holds at most 1100 characters (manual, section 1.4). */
-export const MAX_QR_CHARS = 1100;
 
 function parseIndexTotal(value: string): { index: number; total: number } {
   const match = /^(\d+):(\d+)$/.exec(value);
@@ -100,7 +97,7 @@ function parseBu(raw: string, tokens: [string, string][]): BuQr {
   }
 
   const version = versionEntry[1];
-  if (!(SUPPORTED_VRQR_VERSIONS as readonly string[]).includes(version)) {
+  if (!SUPPORTED_VRQR_VERSIONS.includes(version)) {
     throw new BuError("UNSUPPORTED_VERSION", `unsupported VRQR:${version}`);
   }
 

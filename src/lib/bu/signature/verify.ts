@@ -83,6 +83,7 @@ function verifyWith(
       lowS: false,
     });
   } catch {
+    // Malformed DER or an off-curve key throws: still just an invalid signature.
     return false;
   }
 }
@@ -143,14 +144,6 @@ export function chainHashes(contents: string[]): string[] {
   });
 }
 
-/** The hash the urna signed: the chain value of the last QR. */
-export function chainedBuHash(parts: BuQr[]): string {
-  return (
-    chainHashes([...parts].sort((a, b) => a.index - b.index).map((part) => part.content)).at(-1) ??
-    ""
-  );
-}
-
 /** Full check from scanned QRs: assembles the certificate, then {@link verifyBuWithCertificate}. */
 export function verifyBuSignature(
   parts: BuQr[],
@@ -170,9 +163,11 @@ export function verifyBuWithCertificate(
   der: Uint8Array,
   roots: TrustedRoot[],
 ): SignatureVerification {
-  const last = [...parts].sort((a, b) => a.index - b.index).at(-1);
+  const sorted = [...parts].sort((a, b) => a.index - b.index);
+  const last = sorted.at(-1);
   if (!last) throw new BuError("QR_SET_INCOMPLETE", "no BU QR codes");
-  if (chainedBuHash(parts) !== last.hash.toUpperCase()) {
+  // Only the last QR's HASH is signed; it covers the whole chain.
+  if (chainHashes(sorted.map((part) => part.content)).at(-1) !== last.hash.toUpperCase()) {
     throw new BuError("HASH_MISMATCH", "BU content does not match HASH");
   }
   if (!last.assi) throw new BuError("SIGNATURE_MISSING", "BU has no ASSI");

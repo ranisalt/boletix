@@ -6,7 +6,8 @@ import * as v from "valibot";
 
 import { BuError } from "./errors";
 import { assembleBu, type Bu } from "./format/assemble";
-import { MAX_QR_CHARS, MAX_QR_CODES, parseQr, type BuQr, type CertQr } from "./format/parse";
+import { MAX_QR_CODES, parseQr, type BuQr, type CertQr } from "./format/parse";
+import { MAX_QR_CHARS } from "./format/tokenize";
 import type { TrustedRoot } from "./signature/tse-roots";
 import {
   assembleCertificate,
