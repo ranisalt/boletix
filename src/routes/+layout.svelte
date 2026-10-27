@@ -3,6 +3,7 @@
   import { resolve } from "$app/paths";
   import { page } from "$app/state";
   import type { Path } from "$app/types";
+  import ChartColumn from "@lucide/svelte/icons/chart-column";
   import House from "@lucide/svelte/icons/house";
   import Info from "@lucide/svelte/icons/info";
   import ListChecks from "@lucide/svelte/icons/list-checks";
@@ -20,6 +21,7 @@
   const NAV = [
     { href: resolve("/"), label: m.nav_home, short: m.nav_home, icon: House },
     { href: resolve("/enviar"), label: m.nav_submit, short: m.nav_submit, icon: ScanLine },
+    { href: resolve("/totais"), label: m.nav_totals, short: m.nav_totals, icon: ChartColumn },
     {
       href: resolve("/contribuicoes"),
       label: m.nav_contributions,
@@ -71,7 +73,7 @@
 
   <nav
     aria-label={m.nav_label()}
-    class="fixed inset-x-0 bottom-0 z-10 grid grid-cols-4 border-t bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
+    class="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
   >
     {#each NAV as item (item.href)}
       <a

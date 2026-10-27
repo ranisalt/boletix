@@ -33,6 +33,10 @@
         <ScanLine class="size-5" aria-hidden="true" />
         {m.submit_button()}
       </a>
+      <a href={resolve("/totais")} class="btn border-2 border-input text-lg">
+        <ChartColumn class="size-5" aria-hidden="true" />
+        {m.home_totals_button()}
+      </a>
     </div>
   </section>
 

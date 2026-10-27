@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { assembleBu, type Bu, parseQr, type BuQr } from "../bu";
 import { loadBuFixture } from "../bu/testing/fixtures";
-import { buildNameFiles, parseTseCsv, resultsView } from "./names";
+import type { NameFile } from "./names";
+import { buildNameFiles, candidateName, parseTseCsv, resultsView } from "./names";
 
 const HEADER =
   '"DT_GERACAO";"HH_GERACAO";"CD_ELEICAO";"SG_UE";"CD_CARGO";"NR_CANDIDATO";"NM_URNA_CANDIDATO";"NR_PARTIDO";"SG_PARTIDO";"DS_SIT_TOT_TURNO"';
@@ -166,5 +167,24 @@ describe("resultsView", () => {
       nulos: 0,
       total: 10,
     });
+  });
+});
+
+describe("candidateName", () => {
+  const BR: NameFile = {
+    geradoEm: "",
+    municipios: {},
+    candidatos: { "6258": { "1": { "13": ["LULA", "PT"] } } },
+    partidos: {},
+  };
+  const DF: NameFile = { ...BR, candidatos: { "6260": { "3": { "11": ["CELINA LEÃO", "PP"] } } } };
+
+  it("finds a number in whichever file lists it", () => {
+    expect(candidateName([BR, DF], 6260, 3, "11")).toEqual(["CELINA LEÃO", "PP"]);
+    expect(candidateName([BR, DF], 6258, 1, "13")).toEqual(["LULA", "PT"]);
+  });
+
+  it("leaves an unknown number unnamed", () => {
+    expect(candidateName([BR], 6258, 1, "99")).toBeUndefined();
   });
 });

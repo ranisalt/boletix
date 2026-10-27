@@ -5,4 +5,4 @@
  * Framework-free.
  */
 export { findElection } from "./calendar";
-export { nameFileKeys, resultsView, type NameFile } from "./names";
+export { candidateName, nameFileKeys, resultsView, type NameFile } from "./names";

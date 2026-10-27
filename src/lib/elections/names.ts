@@ -82,6 +82,16 @@ export function nameFileKeys(bu: Bu): string[] {
   return ["BR", bu.header.uf];
 }
 
+/** Ballot name and party of a candidate number, from whichever name file lists it. */
+export function candidateName(
+  files: NameFile[],
+  idel: number,
+  cargo: number,
+  numero: string,
+): [string, string] | undefined {
+  return files.map((file) => file.candidatos[idel]?.[cargo]?.[numero]).find(Boolean);
+}
+
 type CandidateRow = {
   numero: string;
   nome?: string;
@@ -111,8 +121,7 @@ export function resultsView(bu: Bu, files: NameFile[]): ResultsView {
   return {
     municipio: find((file) => file.municipios[municipio]),
     cargos: bu.cargos.map((cargo) => {
-      const names = (numero: string) =>
-        find((file) => file.candidatos[cargo.idel]?.[cargo.cargo]?.[numero]);
+      const names = (numero: string) => candidateName(files, cargo.idel, cargo.cargo, numero);
       const row = (numero: string, votos: number): CandidateRow => {
         const name = names(numero);
         return name ? { numero, nome: name[0], partido: name[1], votos } : { numero, votos };
