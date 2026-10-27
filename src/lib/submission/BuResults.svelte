@@ -3,11 +3,11 @@
   import { resultsView, type NameFile } from "../elections";
   import { m } from "../paraglide/messages.js";
 
-  interface Props {
+  type Props = {
     bu: Bu;
     /** TSE name files; empty while loading or when unavailable, which leaves bare numbers. */
     names: NameFile[];
-  }
+  };
 
   const { bu, names }: Props = $props();
 

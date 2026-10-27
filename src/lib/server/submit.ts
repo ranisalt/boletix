@@ -45,11 +45,11 @@ const BAD_REQUEST_CODES = new Set<BuError["code"]>([
   "MALFORMED_TOKEN",
 ]);
 
-export interface SubmitEnv extends BuStoreEnv {
+export type SubmitEnv = BuStoreEnv & {
   SUBMIT_LIMITER: Pick<RateLimit, "limit">;
   /** "true" also accepts simulated (S) and training (T) BUs, for previews fed with TSE samples. */
   ALLOW_TEST_FASES?: string;
-}
+};
 
 export function assertPhaseAllowed(
   fase: Bu["header"]["fase"],
@@ -60,21 +60,21 @@ export function assertPhaseAllowed(
   }
 }
 
-export interface ConflictReport {
+export type ConflictReport = {
   uf: string;
   municipio: number;
   zona: number;
   secao: number;
   hash: string;
   existingHash: string;
-}
+};
 
-export interface SubmitOptions {
+export type SubmitOptions = {
   clientAddress: string;
   /** Raises the "should be impossible" case — two different signed BUs for one section. */
   report: (conflict: ConflictReport) => void;
   store?: typeof storeBu;
-}
+};
 
 const json = (status: number, body: object) => Response.json(body, { status });
 

@@ -34,11 +34,11 @@ const SUBMISSION_KEYS = new Set(["contents", "assi", "hash", "certDer"]);
 
 export type BuSubmission = v.InferOutput<typeof SubmissionSchema>;
 
-export interface VerifiedSubmission {
+export type VerifiedSubmission = {
   bu: Bu;
   hash: string;
   signature: SignatureVerification;
-}
+};
 
 /** Client side: build the payload once every QR is scanned (and verifyBuSignature has passed). */
 export function toSubmission(parts: BuQr[], certs: CertQr[]): BuSubmission {

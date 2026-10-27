@@ -4,12 +4,12 @@
   import { m } from "../paraglide/messages.js";
   import { StatusBox } from "../ui";
 
-  interface Props {
+  type Props = {
     /** Called with the text of every QR code seen; the caller dedupes. */
     onscan: (text: string) => void;
     /** Stops the camera when false, e.g. once every QR is in; reopens it when true again. */
     active?: boolean;
-  }
+  };
 
   const { onscan, active = true }: Props = $props();
 

@@ -6,7 +6,7 @@ import { tokenize } from "./tokenize";
 const SUPPORTED_VRQR_VERSIONS: readonly string[] = ["6.0"];
 
 /** One QR of the BU. `content` is what the HASH chain covers: the text between the QRBU/VRQR prefix and HASH. */
-export interface BuQr {
+export type BuQr = {
   kind: "bu";
   index: number;
   total: number;
@@ -16,17 +16,17 @@ export interface BuQr {
   hash: string;
   /** Signature over the final HASH; only on the last QR. */
   assi?: string;
-}
+};
 
 /** One QR of the urna certificate (hex-encoded, split over several QRs). */
-export interface CertQr {
+export type CertQr = {
   kind: "cert";
   index: number;
   total: number;
   idue: string;
   mdue: string;
   cert: string;
-}
+};
 
 export type ParsedQr = BuQr | CertQr;
 

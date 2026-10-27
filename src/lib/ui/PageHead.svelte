@@ -1,9 +1,9 @@
 <script lang="ts">
-  interface Props {
+  type Props = {
     /** Page name; the home page has none. */
     title?: string;
     description: string;
-  }
+  };
 
   const { title, description }: Props = $props();
 

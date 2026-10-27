@@ -11,11 +11,11 @@ const files = import.meta.glob("/fixtures/2026/*/*.txt", {
   eager: true,
 }) as Record<string, string>;
 
-export interface BuFixture {
+export type BuFixture = {
   name: string;
   qrbu: string[];
   qrce: string[];
-}
+};
 
 function byIndex(a: string, b: string): number {
   return Number(/-(\d+)\.txt$/.exec(a)![1]) - Number(/-(\d+)\.txt$/.exec(b)![1]);

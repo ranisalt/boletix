@@ -13,19 +13,19 @@
   import { buErrorMessage, isBuErrorCode } from "./error-messages";
   import { loadNameFiles } from "./name-files";
 
-  interface Props {
+  type Props = {
     session?: ScanSession;
-  }
+  };
 
   const { session = new ScanSession() }: Props = $props();
 
-  interface Outcome {
+  type Outcome = {
     tone: Tone;
     title: string;
     message: string;
     /** Only transient failures can succeed by sending the same boletim again. */
     retry: boolean;
-  }
+  };
 
   type SubmitState = { phase: "idle" } | { phase: "sending" } | { phase: "done"; outcome: Outcome };
 

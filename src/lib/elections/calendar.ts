@@ -1,9 +1,9 @@
-export interface ElectionDef {
+export type ElectionDef = {
   id: string;
   proc: number;
   pleitos: { plei: number; turno: 1 | 2 }[];
   vrqr: string[];
-}
+};
 
 export const ELECTIONS: ElectionDef[] = [
   {

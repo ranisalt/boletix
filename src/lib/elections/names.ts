@@ -4,7 +4,7 @@ import type { Bu } from "../bu";
  * Display names for one area (a UF, `BR` for president, `ZZ` abroad), generated from TSE open data
  * by `scripts/tse-names.ts`. Labels only: nothing here is covered by the BU signature.
  */
-export interface NameFile {
+export type NameFile = {
   /** `DT_GERACAO HH_GERACAO` of the TSE extract, so stale lists are visible. */
   geradoEm: string;
   /** TSE municipality code (the BU's `MUNI`) → name. */
@@ -13,7 +13,7 @@ export interface NameFile {
   candidatos: Record<string, Record<string, Record<string, [string, string]>>>;
   /** Party number → acronym, for party-only (legenda) votes. */
   partidos: Record<string, string>;
-}
+};
 
 export type TseRow = Record<string, string>;
 
@@ -82,26 +82,26 @@ export function nameFileKeys(bu: Bu): string[] {
   return ["BR", bu.header.uf];
 }
 
-export interface CandidateRow {
+export type CandidateRow = {
   numero: string;
   nome?: string;
   partido?: string;
   votos: number;
-}
+};
 
-export interface CargoView {
+export type CargoView = {
   cargo: number;
   candidatos: CandidateRow[];
   legendas: { numero: string; partido?: string; votos: number }[];
   brancos: number;
   nulos: number;
   total: number;
-}
+};
 
-export interface ResultsView {
+export type ResultsView = {
   municipio?: string;
   cargos: CargoView[];
-}
+};
 
 export function resultsView(bu: Bu, files: NameFile[]): ResultsView {
   const municipio = String(bu.header.municipio);

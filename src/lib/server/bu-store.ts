@@ -1,21 +1,21 @@
 import { type BuCargo, type BuSubmission, type VerifiedSubmission } from "../bu";
 
-export interface BuStoreEnv {
+export type BuStoreEnv = {
   DB: D1Database;
   ORIGINALS: R2Bucket;
-}
+};
 
 export type StoreOutcome =
   | { status: "new" | "duplicate"; hash: string }
   | { status: "conflict"; hash: string; existingHash: string };
 
-interface VoteRow {
+type VoteRow = {
   idel: number;
   cargo: number;
   kind: "nominal" | "legenda";
   code: string;
   votes: number;
-}
+};
 
 function voteRows(cargos: BuCargo[]): VoteRow[] {
   return cargos.flatMap(({ idel, cargo, candidates, parties }) => [

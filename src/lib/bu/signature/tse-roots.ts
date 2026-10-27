@@ -1,12 +1,12 @@
 // TSE certification authorities embedded in the official "Boletim na Mão" app (br.jus.tse.boletimnamao),
 // trusted directly (the app does not walk to a higher root). Pinned here so the Worker never fetches from TSE.
 // Generated from fixtures/tse-roots/*.pem; AC URNA expired 2026-07-18 but still certifies MDUE 2013/2015 urnas.
-export interface TrustedRoot {
+export type TrustedRoot = {
   name: string;
   sha256: string;
   derBase64: string;
   source: string;
-}
+};
 
 export const TSE_ROOTS: TrustedRoot[] = [
   {

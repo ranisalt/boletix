@@ -6,7 +6,7 @@ import { tokenize } from "./tokenize";
 // one comes from is noted where the name alone doesn't say it.
 
 /** One office (cargo) of one election inside the BU. */
-export interface BuCargo {
+export type BuCargo = {
   /** IDEL: the election this cargo belongs to; a BU can carry several. */
   idel: number;
   cargo: number;
@@ -25,9 +25,9 @@ export interface BuCargo {
   brancos: number;
   nulos: number;
   total: number;
-}
+};
 
-export interface Bu {
+export type Bu = {
   header: {
     /** ORIG: printed by the urna (VOTA), by the Recuperador de Dados (RED) or by the Sistema de Apuração (SA). */
     orig: "VOTA" | "RED" | "SA";
@@ -53,7 +53,7 @@ export interface Bu {
     faltosos?: number;
   };
   cargos: BuCargo[];
-}
+};
 
 type Token = [string, string];
 type Origin = Bu["header"]["orig"];

@@ -27,7 +27,7 @@
   </p>
 {/if}
 <ul class="space-y-3">
-  {#each contributions ?? [] as contribution (contribution.id)}
+  {#each contributions as contribution (contribution.id)}
     {@const status = STATUS[contribution.status]}
     <li class="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4">
       <div>

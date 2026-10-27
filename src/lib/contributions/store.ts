@@ -1,5 +1,5 @@
 /** Boletins sent from this device. Kept only in its storage; nothing personal goes to the server. */
-export interface Contribution {
+export type Contribution = {
   /** The BU hash: one entry per boletim. */
   id: string;
   uf: string;
@@ -9,7 +9,7 @@ export interface Contribution {
   urna: string;
   enviadoEm: string;
   status: "aceito" | "conflito";
-}
+};
 
 const KEY = "boletix:contribuicoes";
 

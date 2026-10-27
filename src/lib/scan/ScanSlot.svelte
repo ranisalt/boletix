@@ -4,19 +4,18 @@
 
   import { m } from "../paraglide/messages.js";
 
-  interface Props {
+  type Props = {
     label: string;
     done: boolean;
-  }
+  };
 
   const { label, done }: Props = $props();
 </script>
 
 <li
   data-state={done ? "read" : "pending"}
-  class="flex min-h-12 items-center justify-between gap-2 rounded-md border-2 bg-card px-3 {done
-    ? 'border-success'
-    : ''}"
+  class="flex min-h-12 items-center justify-between gap-2 rounded-md border-2 bg-card px-3"
+  class:border-success={done}
 >
   <span class="font-mono text-sm">{label}</span>
   {#if done}

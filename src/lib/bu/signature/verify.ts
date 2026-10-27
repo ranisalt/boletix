@@ -14,10 +14,10 @@ import type { TrustedRoot } from "./tse-roots";
 
 export type SignatureAlgorithm = "ed521" | "ecdsa-p521";
 
-export interface SignatureVerification {
+export type SignatureVerification = {
   algorithm: SignatureAlgorithm;
   root: string;
-}
+};
 
 // Ed521 has no standard OID; this private arc is the one TSE uses.
 const ALGORITHM_BY_SPKI_OID: Record<string, SignatureAlgorithm> = {
@@ -25,13 +25,13 @@ const ALGORITHM_BY_SPKI_OID: Record<string, SignatureAlgorithm> = {
   "1.2.840.10045.2.1": "ecdsa-p521",
 };
 
-interface ParsedCert {
+type ParsedCert = {
   tbs: Uint8Array;
   signature: Uint8Array;
   algorithm: SignatureAlgorithm;
   publicKey: Uint8Array;
   commonName: string | undefined;
-}
+};
 
 const COMMON_NAME_OID = "2.5.4.3";
 
