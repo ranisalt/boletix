@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { toSubmission, type BuSubmission } from "../bu";
 import { loadBuScan } from "../bu/testing/fixtures";
-import { handleSubmission, MAX_BODY_BYTES, type SubmitOptions } from "./submit";
+import { assertPhaseAllowed, handleSubmission, MAX_BODY_BYTES, type SubmitOptions } from "./submit";
 
 function submissionFor(name: string): BuSubmission {
   const { parts, certs } = loadBuScan(name);
@@ -154,5 +154,19 @@ describe("handleSubmission", () => {
 
     expect(response.status).toBe(429);
     expect(limit).toHaveBeenCalledWith({ key: "192.0.2.1" });
+  });
+});
+
+describe("assertPhaseAllowed", () => {
+  it("accepts the official vote everywhere", () => {
+    expect(() => assertPhaseAllowed("O", {})).not.toThrow();
+  });
+
+  it.each(["S", "T"] as const)("rejects FASE:%s unless test phases are allowed", (fase) => {
+    expect(() => assertPhaseAllowed(fase, {})).toThrow(
+      expect.objectContaining({ code: "TEST_PHASE_REJECTED" }),
+    );
+    expect(() => assertPhaseAllowed(fase, { ALLOW_TEST_FASES: "false" })).toThrow();
+    expect(() => assertPhaseAllowed(fase, { ALLOW_TEST_FASES: "true" })).not.toThrow();
   });
 });

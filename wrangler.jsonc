@@ -33,7 +33,7 @@
     },
   ],
   "vars": {
-    "ALLOW_TEST_FASES": "true",
+    "ALLOW_TEST_FASES": "false",
   },
   "upload_source_maps": true,
 }

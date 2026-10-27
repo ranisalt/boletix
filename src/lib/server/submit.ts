@@ -3,6 +3,7 @@ import {
   MAX_QR_CHARS,
   MAX_QR_CODES,
   verifySubmission,
+  type Bu,
   type BuSubmission,
   TSE_ROOTS,
 } from "../bu";
@@ -46,6 +47,17 @@ const BAD_REQUEST_CODES = new Set<BuError["code"]>([
 
 export interface SubmitEnv extends BuStoreEnv {
   SUBMIT_LIMITER: Pick<RateLimit, "limit">;
+  /** "true" also accepts simulated (S) and training (T) BUs, for previews fed with TSE samples. */
+  ALLOW_TEST_FASES?: string;
+}
+
+export function assertPhaseAllowed(
+  fase: Bu["header"]["fase"],
+  env: Pick<SubmitEnv, "ALLOW_TEST_FASES">,
+): void {
+  if (fase !== "O" && env.ALLOW_TEST_FASES !== "true") {
+    throw new BuError("TEST_PHASE_REJECTED", `FASE:${fase} is not the official vote`);
+  }
 }
 
 export interface ConflictReport {
@@ -91,7 +103,8 @@ export async function handleSubmission(
   let outcome: StoreOutcome;
   try {
     const verified = verifySubmission(body, TSE_ROOTS);
-    const { proc, plei } = verified.bu.header;
+    const { proc, plei, fase } = verified.bu.header;
+    assertPhaseAllowed(fase, env);
     const election = findElection(proc, plei, "6.0");
     if (!election)
       throw new BuError("UNSUPPORTED_ELECTION", `no election for PROC ${proc} PLEI ${plei}`);
