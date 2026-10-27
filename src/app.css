@@ -6,9 +6,8 @@
 @import "@fontsource/ibm-plex-mono/500.css";
 @import "@fontsource/ibm-plex-mono/600.css";
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
+  color-scheme: light dark;
   --radius: 0.5rem;
   --background: oklch(98.5% 0.003 230);
   --foreground: oklch(20% 0.02 245);
@@ -31,26 +30,28 @@
   --ring: oklch(42% 0.08 200);
 }
 
-.dark {
-  --background: oklch(17% 0.012 245);
-  --foreground: oklch(95% 0.005 230);
-  --card: oklch(21% 0.014 245);
-  --card-foreground: oklch(95% 0.005 230);
-  --primary: oklch(75% 0.1 195);
-  --primary-foreground: oklch(17% 0.02 245);
-  --muted: oklch(27% 0.014 245);
-  --muted-foreground: oklch(75% 0.01 230);
-  --accent: oklch(30% 0.04 200);
-  --accent-foreground: oklch(92% 0.03 195);
-  --destructive: oklch(72% 0.16 25);
-  --success: oklch(76% 0.13 150);
-  --warning: oklch(80% 0.12 75);
-  --notice: oklch(30% 0.05 75);
-  --notice-foreground: oklch(94% 0.04 85);
-  --viewfinder: oklch(10% 0.01 245);
-  --border: oklch(32% 0.014 245);
-  --input: oklch(38% 0.014 245);
-  --ring: oklch(75% 0.1 195);
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(17% 0.012 245);
+    --foreground: oklch(95% 0.005 230);
+    --card: oklch(21% 0.014 245);
+    --card-foreground: oklch(95% 0.005 230);
+    --primary: oklch(75% 0.1 195);
+    --primary-foreground: oklch(17% 0.02 245);
+    --muted: oklch(27% 0.014 245);
+    --muted-foreground: oklch(75% 0.01 230);
+    --accent: oklch(30% 0.04 200);
+    --accent-foreground: oklch(92% 0.03 195);
+    --destructive: oklch(72% 0.16 25);
+    --success: oklch(76% 0.13 150);
+    --warning: oklch(80% 0.12 75);
+    --notice: oklch(30% 0.05 75);
+    --notice-foreground: oklch(94% 0.04 85);
+    --viewfinder: oklch(10% 0.01 245);
+    --border: oklch(32% 0.014 245);
+    --input: oklch(38% 0.014 245);
+    --ring: oklch(75% 0.1 195);
+  }
 }
 
 @theme inline {

@@ -11,7 +11,7 @@
   import favicon from "#lib/assets/favicon.svg";
   import { m } from "#lib/paraglide/messages.js";
   import { locales, localizeHref } from "#lib/paraglide/runtime.js";
-  import { NoticeBanner, OfficialSources, ThemeToggle } from "#lib/ui/index.js";
+  import { NoticeBanner, OfficialSources } from "#lib/ui/index.js";
 
   import type { LayoutProps } from "./$types";
 
@@ -55,7 +55,6 @@
           >
         {/each}
       </nav>
-      <ThemeToggle />
     </div>
   </header>
 
