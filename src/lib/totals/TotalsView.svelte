@@ -9,6 +9,8 @@
     /** Null when the choice can't be totalled: a state role with no UF. */
     totals: {
       secoes: number;
+      /** Sections TSE counts for this choice; unknown before its data is published. */
+      secoesTotal?: number;
       candidatos: { numero: string; nome?: string; partido?: string; votos: number }[];
       brancos: number;
       nulos: number;
@@ -23,6 +25,7 @@
     5: m.cargo_5,
   };
   const number = new Intl.NumberFormat("pt-BR");
+  const percent = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 });
   const leader = $derived(totals?.candidatos[0]?.votos ?? 0);
 </script>
 
@@ -85,7 +88,32 @@
       aria-labelledby="cobertura"
     >
       <h2 id="cobertura" class="font-semibold">{m.totals_coverage()}</h2>
-      <p class="font-mono text-sm">{m.totals_sections({ count: number.format(totals.secoes) })}</p>
+      {#if totals.secoesTotal}
+        <p class="font-mono text-sm">
+          {m.totals_sections_of({
+            count: number.format(totals.secoes),
+            total: number.format(totals.secoesTotal),
+            percent: percent.format(totals.secoes / totals.secoesTotal),
+          })}
+        </p>
+        <div
+          role="progressbar"
+          aria-labelledby="cobertura"
+          aria-valuemin={0}
+          aria-valuenow={totals.secoes}
+          aria-valuemax={totals.secoesTotal}
+          class="h-2 w-full overflow-hidden rounded-full bg-muted"
+        >
+          <div
+            class="h-full bg-primary"
+            style:width="{Math.min(100, (totals.secoes / totals.secoesTotal) * 100)}%"
+          ></div>
+        </div>
+      {:else}
+        <p class="font-mono text-sm">
+          {m.totals_sections({ count: number.format(totals.secoes) })}
+        </p>
+      {/if}
     </section>
 
     <ul aria-label={m.totals_votes()} class="divide-y rounded-lg border bg-card">

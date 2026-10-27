@@ -1,6 +1,11 @@
 import { env } from "cloudflare:workers";
 
-import { candidateName, type NameFile } from "#lib/elections/index.js";
+import {
+  candidateName,
+  sectionTotal,
+  type NameFile,
+  type SectionCounts,
+} from "#lib/elections/index.js";
 import { loadTotals } from "#lib/server/index.js";
 import { parseTotalsQuery } from "#lib/totals/index.js";
 
@@ -17,11 +22,15 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
   if (query.cargo !== 1 && !query.uf) return { query, totals: null };
 
   const area = query.cargo === 1 ? "BR" : query.uf!;
-  const [totals, names] = await Promise.all([
+  // Static TSE files; a missing one only loses names or the coverage total.
+  const json = <T>(path: string) =>
+    fetch(path)
+      .then((response) => (response.ok ? (response.json() as Promise<T>) : undefined))
+      .catch(() => undefined);
+  const [totals, names, sections] = await Promise.all([
     loadTotals(env.DB, { election: ELECTION, ...query }),
-    fetch(`/tse/2026/${area}.json`)
-      .then((response) => (response.ok ? (response.json() as Promise<NameFile>) : undefined))
-      .catch(() => undefined),
+    json<NameFile>(`/tse/2026/${area}.json`),
+    json<SectionCounts>("/tse/2026/secoes.json"),
   ]);
   const files = names ? [names] : [];
 
@@ -29,6 +38,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
     query,
     totals: {
       ...totals,
+      secoesTotal: sections && sectionTotal(sections, query.turno, query.uf),
       candidatos: totals.candidatos.map(({ idel, numero, votos }) => {
         const name = candidateName(files, idel, query.cargo, numero);
         return name ? { numero, nome: name[0], partido: name[1], votos } : { numero, votos };

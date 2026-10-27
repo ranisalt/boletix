@@ -6,3 +6,4 @@
  */
 export { findElection } from "./calendar";
 export { candidateName, nameFileKeys, resultsView, type NameFile } from "./names";
+export { sectionTotal, type SectionCounts } from "./sections";

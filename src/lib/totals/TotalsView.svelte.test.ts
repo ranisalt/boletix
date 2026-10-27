@@ -47,9 +47,21 @@ describe("TotalsView", () => {
     ]);
   });
 
-  it("shows how many sections were collected", () => {
+  it("shows collected sections out of the TSE total", () => {
+    render(TotalsView, {
+      query: { turno: 1, cargo: 1 },
+      totals: { ...TOTALS, secoesTotal: 499248 },
+    });
+    expect(screen.getByText("2.883 de 499.248 seções (0,6%)")).toBeTruthy();
+    const progress = screen.getByRole("progressbar", { name: "Cobertura" });
+    expect(progress).toHaveAttribute("aria-valuenow", "2883");
+    expect(progress).toHaveAttribute("aria-valuemax", "499248");
+  });
+
+  it("shows only the collected count when the TSE total is unknown", () => {
     render(TotalsView, { query: { turno: 1, cargo: 1 }, totals: TOTALS });
     expect(screen.getByText("Seções coletadas: 2.883")).toBeTruthy();
+    expect(screen.queryByRole("progressbar")).toBeNull();
   });
 
   it("keeps the current choice selected in the filters", () => {

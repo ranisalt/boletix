@@ -1,6 +1,6 @@
 /**
- * Regenerates static/tse/2026/*.json (display names for municipalities, candidates and parties)
- * from TSE open data. Re-run before each round: candidacies change until election day.
+ * Regenerates static/tse/2026/*.json (display names for municipalities, candidates and parties,
+ * and secoes.json with the section count per round and UF) from TSE open data. Re-run before each round: candidacies change until election day.
  *
  *   node scripts/tse-names.ts
  */
@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { buildNameFiles, parseTseCsv } from "../src/lib/elections/names.ts";
+import { buildSectionCounts } from "../src/lib/elections/sections.ts";
 
 const BASE = "https://cdn.tse.jus.br/estatistica/sead/odsele";
 const OUT = "static/tse/2026";
@@ -35,10 +36,12 @@ try {
     "detalhe_votacao_munzona/detalhe_votacao_munzona_2026.zip",
     "detalhe_votacao_munzona_2026_BRASIL.csv",
   );
-  const files = buildNameFiles(parseTseCsv(candidates), parseTseCsv(municipalities));
+  const munzona = parseTseCsv(municipalities);
+  const files = buildNameFiles(parseTseCsv(candidates), munzona);
   mkdirSync(OUT, { recursive: true });
   for (const [area, file] of Object.entries(files))
     writeFileSync(join(OUT, `${area}.json`), JSON.stringify(file));
+  writeFileSync(join(OUT, "secoes.json"), JSON.stringify(buildSectionCounts(munzona)));
   console.log(
     `wrote ${Object.keys(files).length} files to ${OUT} (TSE ${Object.values(files)[0]?.geradoEm})`,
   );

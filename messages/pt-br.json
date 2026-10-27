@@ -155,6 +155,7 @@
   "totals_apply": "Ver totais",
   "totals_coverage": "Cobertura",
   "totals_sections": "Seções coletadas: {count}",
+  "totals_sections_of": "{count} de {total} seções ({percent})",
   "totals_votes": "Votos",
   "totals_pick_uf": "Escolha uma UF para ver os totais de {cargo}.",
   "totals_empty": "Nenhum boletim coletado para esta seleção."
