@@ -32,6 +32,10 @@ export default defineConfig({
           "frame-ancestors": ["none"],
           "base-uri": ["self"],
           "form-action": ["self"],
+          // Sentry's security endpoint; violations go unreported without it.
+          ...(process.env.SENTRY_CSP_REPORT_URI && {
+            "report-uri": [process.env.SENTRY_CSP_REPORT_URI],
+          }),
         },
       },
     }),
