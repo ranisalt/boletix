@@ -11,11 +11,8 @@
   "observability": {
     "logs": {
       "enabled": true,
-      "invocation_logs": true,
-      "persist": true,
-    },
-    "traces": {
-      "enabled": true,
+      // Sentry already records requests and traces; keep only our own console output.
+      "invocation_logs": false,
       "persist": true,
     },
   },
