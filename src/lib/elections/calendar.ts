@@ -5,7 +5,7 @@ export type ElectionDef = {
   vrqr: string[];
 };
 
-export const ELECTIONS: ElectionDef[] = [
+const ELECTIONS: ElectionDef[] = [
   {
     id: "br-2026-general",
     proc: 1219,

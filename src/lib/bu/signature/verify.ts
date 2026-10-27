@@ -12,7 +12,7 @@ import type { BuQr, CertQr } from "../format/parse";
 import { verifyEd521 } from "./ed521";
 import type { TrustedRoot } from "./tse-roots";
 
-export type SignatureAlgorithm = "ed521" | "ecdsa-p521";
+type SignatureAlgorithm = "ed521" | "ecdsa-p521";
 
 export type SignatureVerification = {
   algorithm: SignatureAlgorithm;

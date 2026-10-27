@@ -60,7 +60,7 @@ export function assertPhaseAllowed(
   }
 }
 
-export type ConflictReport = {
+type ConflictReport = {
   uf: string;
   municipio: number;
   zona: number;

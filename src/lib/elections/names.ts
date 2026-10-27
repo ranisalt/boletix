@@ -82,14 +82,14 @@ export function nameFileKeys(bu: Bu): string[] {
   return ["BR", bu.header.uf];
 }
 
-export type CandidateRow = {
+type CandidateRow = {
   numero: string;
   nome?: string;
   partido?: string;
   votos: number;
 };
 
-export type CargoView = {
+type CargoView = {
   cargo: number;
   candidatos: CandidateRow[];
   legendas: { numero: string; partido?: string; votos: number }[];
