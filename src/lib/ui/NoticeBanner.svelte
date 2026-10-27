@@ -6,7 +6,8 @@
 
   const KEY = "boletix:aviso";
 
-  // Shown after hydration, so visitors who already acknowledged it never see it flash.
+  // Shown after hydration, so visitors who already acknowledged it never see it flash. It floats
+  // over the content, above the mobile nav, so appearing late doesn't shift the page.
   let visible = $state(false);
   onMount(() => {
     visible = !localStorage.getItem(KEY);
@@ -22,7 +23,7 @@
   <div
     role="region"
     aria-label={m.notice_label()}
-    class="border-b-2 border-warning bg-notice text-notice-foreground"
+    class="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 border-t-2 border-warning bg-notice text-notice-foreground shadow-lg md:bottom-0"
   >
     <div class="mx-auto flex max-w-5xl items-start gap-3 px-4 py-3">
       <p class="flex-1 text-sm leading-relaxed">
