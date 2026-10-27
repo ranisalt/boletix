@@ -113,6 +113,7 @@
       },
       () => {
         failure = "reader";
+        close();
       },
     );
 

@@ -82,8 +82,9 @@ describe("QrCamera", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
-  it("tells the user when the QR reader can't be loaded", async () => {
-    getUserMedia.mockResolvedValue(fakeStream().stream);
+  it("tells the user when the QR reader can't be loaded, and turns the camera off", async () => {
+    const { stream, stop } = fakeStream();
+    getUserMedia.mockResolvedValue(stream);
     reader.prepare.mockImplementation(() => {
       throw new TypeError("Failed to fetch");
     });
@@ -92,6 +93,7 @@ describe("QrCamera", () => {
     expect(await screen.findByRole("alert", { name: "Leitor indisponível" })).toHaveTextContent(
       "Não foi possível carregar o leitor de QR code. Verifique sua conexão e recarregue a página.",
     );
+    await vi.waitFor(() => expect(stop).toHaveBeenCalled());
   });
 
   it("keeps scanning after a frame fails to decode", async () => {

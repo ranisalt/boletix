@@ -344,7 +344,7 @@ function parseCargo(tokens: Token[], cursor: number): { cargo: BuCargo; next: nu
     }
   }
 
-  // Summary keys come in this fixed order; APTS/APTT, CSEC and LEGC are optional here.
+  // Summary keys come in this fixed order; CSEC and LEGC are optional (manual: LEGC only for proportional cargos).
   const aptaValue = requireNumber(tokens, next, "APTA");
   next = aptaValue.next;
   const aptsValue = optionalNumber(tokens, next, "APTS");

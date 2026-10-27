@@ -144,7 +144,10 @@
 
 <div class="space-y-6">
   <h1 class="text-3xl font-bold">{m.submit_title()}</h1>
-  <p role="status" class="sr-only">{lastScan ? scanFeedback(lastScan) : ""}</p>
+  <!-- Visible too: a rejected scan has no other on-screen cue on a phone. -->
+  <p role="status" class="text-sm text-muted-foreground">
+    {lastScan ? scanFeedback(lastScan) : ""}
+  </p>
 
   {#if submit.phase === "done"}
     {@const { outcome } = submit}

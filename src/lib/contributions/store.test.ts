@@ -53,4 +53,19 @@ describe("contributions", () => {
     expect(listContributions(memoryStorage({ "boletix:contribuicoes": "{not json" }))).toEqual([]);
     expect(listContributions(memoryStorage({ "boletix:contribuicoes": '{"a":1}' }))).toEqual([]);
   });
+
+  it("drops entries the list can't show, keeping the valid ones", () => {
+    const valid = {
+      id: "A",
+      uf: "DF",
+      municipio: 1,
+      zona: 1,
+      secao: 1,
+      urna: "1",
+      enviadoEm: "2026-10-04T12:00:00.000Z",
+      status: "aceito",
+    };
+    const stored = JSON.stringify([1, null, { ...valid, id: "B", status: "outro" }, valid]);
+    expect(listContributions(memoryStorage({ "boletix:contribuicoes": stored }))).toEqual([valid]);
+  });
 });

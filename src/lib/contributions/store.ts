@@ -13,10 +13,20 @@ export interface Contribution {
 
 const KEY = "boletix:contribuicoes";
 
+// Storage is user-editable and outlives app versions: only keep entries the list can render.
+function isContribution(value: unknown): value is Contribution {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as Contribution).id === "string" &&
+    ["aceito", "conflito"].includes((value as Contribution).status)
+  );
+}
+
 export function listContributions(storage: Storage = localStorage): Contribution[] {
   try {
     const list: unknown = JSON.parse(storage.getItem(KEY) ?? "[]");
-    return Array.isArray(list) ? (list as Contribution[]) : [];
+    return Array.isArray(list) ? list.filter(isContribution) : [];
   } catch {
     // Corrupt history is dropped; the next recorded contribution overwrites it.
     return [];
