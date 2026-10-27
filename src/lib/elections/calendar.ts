@@ -1,17 +1,19 @@
 export type ElectionDef = {
   id: string;
   proc: number;
-  pleitos: { plei: number; turno: 1 | 2 }[];
+  /** In order; `date` is the voting day (YYYY-MM-DD). */
+  pleitos: { plei: number; turno: 1 | 2; date: string }[];
   vrqr: string[];
 };
 
-const ELECTIONS: ElectionDef[] = [
+/** Newest first, so the latest election tops any list. */
+export const ELECTIONS: ElectionDef[] = [
   {
     id: "br-2026-general",
     proc: 1219,
     pleitos: [
-      { plei: 3220, turno: 1 },
-      { plei: 3221, turno: 2 },
+      { plei: 3220, turno: 1, date: "2026-10-04" },
+      { plei: 3221, turno: 2, date: "2026-10-25" },
     ],
     vrqr: ["6.0"],
   },
@@ -29,4 +31,14 @@ export function findElection(
       election.pleitos.some((pleito) => pleito.plei === plei && pleito.turno === turno) &&
       election.vrqr.includes(vrqr),
   );
+}
+
+/** The latest round voted by `now`, or the newest election's first round if none was yet. */
+export function latestPleito(now: Date): { election: string; turno: 1 | 2 } {
+  const today = now.toISOString().slice(0, 10);
+  for (const election of ELECTIONS) {
+    const held = election.pleitos.findLast((pleito) => pleito.date <= today);
+    if (held) return { election: election.id, turno: held.turno };
+  }
+  return { election: ELECTIONS[0]!.id, turno: 1 };
 }

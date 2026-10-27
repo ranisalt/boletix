@@ -148,7 +148,7 @@
   "field_election": "Eleição",
   "election_br_2026_general": "Eleições Gerais 2026",
   "field_turno": "Turno",
-  "turno_option": "{turno}º turno",
+  "turno_option": "{turno}º turno · {date}",
   "field_cargo": "Cargo",
   "uf_all": "Brasil",
   "uf_zz": "Exterior",

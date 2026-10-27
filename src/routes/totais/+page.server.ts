@@ -14,10 +14,8 @@ import type { PageServerLoad } from "./$types";
 // Reads live data on every request; the other pages are prerendered.
 export const prerender = false;
 
-const ELECTION = "br-2026-general";
-
 export const load: PageServerLoad = async ({ url, fetch }) => {
-  const query = parseTotalsQuery(url.searchParams);
+  const query = parseTotalsQuery(url.searchParams, new Date());
   // A state role summed across every state would add up rival candidates sharing a number.
   if (query.cargo !== 1 && !query.uf) return { query, totals: null };
 
@@ -28,7 +26,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
       .then((response) => (response.ok ? (response.json() as Promise<T>) : undefined))
       .catch(() => undefined);
   const [totals, names, sections] = await Promise.all([
-    loadTotals(env.DB, { election: ELECTION, ...query }),
+    loadTotals(env.DB, query),
     json<NameFile>(`/tse/2026/${area}.json`),
     json<SectionCounts>("/tse/2026/secoes.json"),
   ]);

@@ -4,6 +4,6 @@
  *
  * Framework-free.
  */
-export { findElection } from "./calendar";
+export { ELECTIONS, findElection, latestPleito, type ElectionDef } from "./calendar";
 export { candidateName, nameFileKeys, resultsView, type NameFile } from "./names";
 export { sectionTotal, type SectionCounts } from "./sections";

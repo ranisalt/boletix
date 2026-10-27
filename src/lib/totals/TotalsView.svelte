@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { ELECTIONS } from "#lib/elections/index.js";
   import { m } from "#lib/paraglide/messages.js";
   import { StatusBox } from "#lib/ui/index.js";
 
-  import { CARGOS, TURNOS, UFS, type TotalsQuery } from "./filter";
+  import { CARGOS, UFS, type TotalsQuery } from "./filter";
 
   type Props = {
     query: TotalsQuery;
@@ -24,7 +25,15 @@
     3: m.cargo_3,
     5: m.cargo_5,
   };
+  const ELECTION_NAMES: Record<string, () => string> = {
+    "br-2026-general": m.election_br_2026_general,
+  };
   const number = new Intl.NumberFormat("pt-BR");
+  // Voting days are calendar dates; UTC keeps them from shifting a day.
+  const day = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" });
+  const pleitos = $derived(
+    ELECTIONS.find((election) => election.id === query.election)?.pleitos ?? [],
+  );
   const percent = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 });
   const leader = $derived(totals?.candidatos[0]?.votos ?? 0);
 </script>
@@ -43,15 +52,19 @@
   >
     <label class="space-y-1 text-sm text-muted-foreground">
       <span>{m.field_election()}</span>
-      <select name="eleicao" class="select">
-        <option value="br-2026-general">{m.election_br_2026_general()}</option>
+      <select name="eleicao" class="select" value={query.election}>
+        {#each ELECTIONS as election (election.id)}
+          <option value={election.id}>{ELECTION_NAMES[election.id]?.() ?? election.id}</option>
+        {/each}
       </select>
     </label>
     <label class="space-y-1 text-sm text-muted-foreground">
       <span>{m.field_turno()}</span>
       <select name="turno" class="select" value={String(query.turno)}>
-        {#each TURNOS as turno (turno)}
-          <option value={String(turno)}>{m.turno_option({ turno })}</option>
+        {#each pleitos as { turno, date } (turno)}
+          <option value={String(turno)}>
+            {m.turno_option({ turno, date: day.format(new Date(date)) })}
+          </option>
         {/each}
       </select>
     </label>
