@@ -103,11 +103,14 @@ export async function handleSubmission(
   let outcome: StoreOutcome;
   try {
     const verified = verifySubmission(body, TSE_ROOTS);
-    const { proc, plei, fase } = verified.bu.header;
+    const { proc, plei, turno, fase } = verified.bu.header;
     assertPhaseAllowed(fase, env);
-    const election = findElection(proc, plei, "6.0");
+    const election = findElection(proc, plei, turno, "6.0");
     if (!election)
-      throw new BuError("UNSUPPORTED_ELECTION", `no election for PROC ${proc} PLEI ${plei}`);
+      throw new BuError(
+        "UNSUPPORTED_ELECTION",
+        `no election for PROC ${proc} PLEI ${plei} TURN ${turno}`,
+      );
 
     outcome = await store(env, body as BuSubmission, verified, election.id);
     if (outcome.status === "conflict") {

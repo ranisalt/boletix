@@ -17,11 +17,16 @@ export const ELECTIONS: ElectionDef[] = [
   },
 ];
 
-export function findElection(proc: number, plei: number, vrqr: string): ElectionDef | undefined {
+export function findElection(
+  proc: number,
+  plei: number,
+  turno: number,
+  vrqr: string,
+): ElectionDef | undefined {
   return ELECTIONS.find(
     (election) =>
       election.proc === proc &&
-      election.pleitos.some((pleito) => pleito.plei === plei) &&
+      election.pleitos.some((pleito) => pleito.plei === plei && pleito.turno === turno) &&
       election.vrqr.includes(vrqr),
   );
 }

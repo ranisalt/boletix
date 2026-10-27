@@ -2,8 +2,8 @@ import { expect, it } from "vitest";
 
 import { findElection } from "./calendar";
 
-it("finds the 2026 general election only for a registered pleito and QR version", () => {
-  expect(findElection(1219, 3220, "6.0")).toMatchObject({
+it("finds the 2026 general election only for a registered pleito, turno and QR version", () => {
+  expect(findElection(1219, 3220, 1, "6.0")).toMatchObject({
     id: "br-2026-general",
     proc: 1219,
     pleitos: [
@@ -12,7 +12,9 @@ it("finds the 2026 general election only for a registered pleito and QR version"
     ],
     vrqr: ["6.0"],
   });
-  expect(findElection(1219, 3221, "6.0")?.id).toBe("br-2026-general");
-  expect(findElection(1219, 9999, "6.0")).toBeUndefined();
-  expect(findElection(9999, 3220, "6.0")).toBeUndefined();
+  expect(findElection(1219, 3221, 2, "6.0")?.id).toBe("br-2026-general");
+  expect(findElection(1219, 3220, 2, "6.0")).toBeUndefined();
+  expect(findElection(1219, 3221, 1, "6.0")).toBeUndefined();
+  expect(findElection(1219, 9999, 1, "6.0")).toBeUndefined();
+  expect(findElection(9999, 3220, 1, "6.0")).toBeUndefined();
 });
