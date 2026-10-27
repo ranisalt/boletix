@@ -2,12 +2,12 @@
   import Circle from "@lucide/svelte/icons/circle";
   import type { Snippet } from "svelte";
 
-  import { TONE_CLASSES, TONE_ICONS, type Tone } from "./StatusBox.svelte";
+  import { TONE_CLASSES, TONE_ICONS, type Tone } from "./tone.js";
 
-  interface Props {
+  type Props = {
     tone: Tone;
     children: Snippet;
-  }
+  };
 
   const { tone, children }: Props = $props();
 

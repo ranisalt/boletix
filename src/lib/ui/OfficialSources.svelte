@@ -1,4 +1,4 @@
-<script lang="ts" module>
+<script lang="ts">
   import { m } from "../paraglide/messages.js";
 
   export const OFFICIAL_SOURCES = [
@@ -10,9 +10,7 @@
       href: "https://www.tse.jus.br/comunicacao/noticias/2022/Outubro/voce-ja-ouviu-falar-do-boletim-de-urna-mas-sabe-o-que-ele-e-tire-suas-duvidas",
     },
   ];
-</script>
 
-<script lang="ts">
   const { class: className = "" }: { class?: string } = $props();
 </script>
 
