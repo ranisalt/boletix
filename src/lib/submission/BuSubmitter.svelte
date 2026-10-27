@@ -109,23 +109,28 @@
       return;
     }
     const body = (await response.json().catch(() => ({}))) as { status?: string; error?: string };
-    const accepted = body.status ? ACCEPTED[body.status] : undefined;
+    const accepted =
+      body.status && Object.hasOwn(ACCEPTED, body.status) ? ACCEPTED[body.status] : undefined;
     if (!accepted) {
       submit = { phase: "done", outcome: failure(body.error ?? "") };
       return;
     }
     if (accepted.remember) {
       const { uf, municipio, zona, secao, urna } = bu.header;
-      recordContribution({
-        id: submission.hash,
-        uf,
-        municipio,
-        zona,
-        secao,
-        urna,
-        enviadoEm: new Date().toISOString(),
-        status: accepted.remember,
-      });
+      try {
+        recordContribution({
+          id: submission.hash,
+          uf,
+          municipio,
+          zona,
+          secao,
+          urna,
+          enviadoEm: new Date().toISOString(),
+          status: accepted.remember,
+        });
+      } catch {
+        // Full or disabled storage only loses the local history; the server already has the boletim.
+      }
     }
     submit = { phase: "done", outcome: { ...accepted, retry: false } };
   }

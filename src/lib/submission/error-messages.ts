@@ -31,5 +31,5 @@ export function isBuErrorCode(code: string): code is BuErrorCode {
 /** User-facing text for a verification error, whether raised locally or returned by the server. */
 export function buErrorMessage(code: string): string {
   if (code === "RATE_LIMITED") return m.submit_rate_limited();
-  return (BU_ERROR_MESSAGES[code as BuErrorCode] ?? m.submit_server_error)();
+  return isBuErrorCode(code) ? BU_ERROR_MESSAGES[code]() : m.submit_server_error();
 }

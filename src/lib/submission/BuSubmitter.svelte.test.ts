@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/sve
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { flushSync } from "svelte";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { chainHashes } from "../bu";
 import { loadBuFixture } from "../bu/testing/fixtures";
@@ -29,8 +29,9 @@ function multiPart(total: number): string[] {
 }
 
 const received: unknown[] = [];
-let reply: () => Response = () =>
+const acceptNew = () =>
   HttpResponse.json({ status: "new", hash: "A".repeat(128) }, { status: 201 });
+let reply: () => Response = acceptNew;
 const NAMES: Record<string, object> = {
   BR: {
     geradoEm: "25/10/2026 12:30:51",
@@ -60,6 +61,8 @@ afterEach(() => {
   server.resetHandlers();
   received.length = 0;
   localStorage.clear();
+  vi.restoreAllMocks();
+  reply = acceptNew;
 });
 afterAll(() => server.close());
 
@@ -259,6 +262,35 @@ describe("BuSubmitter", () => {
     await screen.findByRole("status", { name: "Este boletim já foi enviado" });
     expect(listContributions()).toEqual([]);
   });
+
+  it("confirms the boletim even when this device can't remember it", async () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("full", "QuotaExceededError");
+    });
+    const { scan } = setup();
+    scan(buQr, cert1, cert2);
+
+    await fireEvent.click(screen.getByRole("button", { name: "Enviar boletim" }));
+
+    expect(await screen.findByRole("status", { name: "Boletim enviado" })).toBeInTheDocument();
+  });
+
+  it.each([{ status: "constructor" }, { error: "constructor" }, { error: "toString" }])(
+    "treats an unknown server answer as a server error (%o)",
+    async (body) => {
+      reply = () => HttpResponse.json(body, { status: 200 });
+      const { scan } = setup();
+      scan(buQr, cert1, cert2);
+
+      await fireEvent.click(screen.getByRole("button", { name: "Enviar boletim" }));
+
+      expect(
+        await screen.findByRole("status", { name: "Erro de servidor ou rede" }),
+      ).toHaveTextContent(
+        "O servidor não conseguiu processar o envio. Tente novamente mais tarde.",
+      );
+    },
+  );
 
   it("lets the user retry after a network failure", async () => {
     reply = () => HttpResponse.error();
