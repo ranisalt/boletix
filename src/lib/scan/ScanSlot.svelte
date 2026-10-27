@@ -17,7 +17,7 @@
   class="flex min-h-12 items-center justify-between gap-2 rounded-md border-2 bg-card px-3"
   class:border-success={done}
 >
-  <span class="font-mono text-sm">{label}</span>
+  <span class="text-sm tabular-nums">{label}</span>
   {#if done}
     <span class="flex items-center gap-1 text-sm font-semibold text-success">
       <CircleCheck class="size-4" aria-hidden="true" />

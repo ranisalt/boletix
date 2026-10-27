@@ -1,10 +1,4 @@
 @import "tailwindcss";
-@import "@fontsource/ibm-plex-sans/400.css";
-@import "@fontsource/ibm-plex-sans/500.css";
-@import "@fontsource/ibm-plex-sans/600.css";
-@import "@fontsource/ibm-plex-sans/700.css";
-@import "@fontsource/ibm-plex-mono/500.css";
-@import "@fontsource/ibm-plex-mono/600.css";
 
 :root {
   color-scheme: light dark;
@@ -55,8 +49,9 @@
 }
 
 @theme inline {
-  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  /* System fonts only: nothing to download, and they match the device. */
+  --font-sans: system-ui, sans-serif;
+  --font-serif: ui-serif, Georgia, serif;
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --color-background: var(--background);

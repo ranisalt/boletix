@@ -143,7 +143,7 @@
     [m.field_secao(), header.secao],
     [m.field_urna(), header.urna],
   ]}
-  <dl class="grid grid-cols-2 gap-3 font-mono text-sm">
+  <dl class="grid grid-cols-2 gap-3 text-sm tabular-nums">
     {#each fields as [term, value] (term)}
       <div>
         <dt class="font-sans text-xs text-muted-foreground">{term}</dt>

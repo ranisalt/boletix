@@ -39,7 +39,7 @@
             <th scope="col" class="text-right font-normal">{m.results_votes()}</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-border font-mono">
+        <tbody class="divide-y divide-border tabular-nums">
           {#each cargo.candidatos as row (row.numero)}
             <tr>
               <td class="py-1">{row.numero}</td>
@@ -66,7 +66,7 @@
           {#each [[m.results_brancos(), cargo.brancos], [m.results_nulos(), cargo.nulos], [m.results_total(), cargo.total]] as [label, votos] (label)}
             <tr>
               <th scope="row" colspan="2" class="py-1 text-left font-normal">{label}</th>
-              <td class="py-1 text-right font-mono font-semibold">{votos}</td>
+              <td class="py-1 text-right font-semibold tabular-nums">{votos}</td>
             </tr>
           {/each}
         </tfoot>

@@ -20,7 +20,7 @@
 
 <div class="space-y-12">
   <section class="space-y-5">
-    <p class="font-mono text-sm font-semibold tracking-wider text-primary uppercase">
+    <p class="text-sm font-semibold tracking-wider text-primary uppercase">
       {m.home_eyebrow()}
     </p>
     <h1 class="max-w-2xl text-4xl leading-tight font-bold md:text-5xl">{m.home_title()}</h1>
@@ -47,7 +47,7 @@
         <li class="rounded-lg border bg-card p-5">
           <div class="mb-3 flex items-center gap-3">
             <span
-              class="grid size-9 place-items-center rounded-md bg-accent font-mono font-semibold text-accent-foreground"
+              class="grid size-9 place-items-center rounded-md bg-accent font-semibold text-accent-foreground tabular-nums"
               >{i + 1}</span
             >
             <step.icon class="size-5 text-primary" aria-hidden="true" />

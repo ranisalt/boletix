@@ -32,7 +32,7 @@
     <li class="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4">
       <div>
         <p class="font-semibold">{m.contribution_place(contribution)}</p>
-        <p class="font-mono text-sm text-muted-foreground">
+        <p class="text-sm text-muted-foreground tabular-nums">
           {m.contribution_section(contribution)}
         </p>
         <p class="text-xs text-muted-foreground">

@@ -99,7 +99,7 @@
     >
       <h2 id="cobertura" class="font-semibold">{m.totals_coverage()}</h2>
       {#if totals.secoesTotal}
-        <p class="font-mono text-sm">
+        <p class="text-sm tabular-nums">
           {m.totals_sections_of({
             count: number.format(totals.secoes),
             total: number.format(totals.secoesTotal),
@@ -120,7 +120,7 @@
           ></div>
         </div>
       {:else}
-        <p class="font-mono text-sm">
+        <p class="text-sm tabular-nums">
           {m.totals_sections({ count: number.format(totals.secoes) })}
         </p>
       {/if}
@@ -134,9 +134,9 @@
               {#if row.nome}{row.nome}
                 <span class="text-xs font-normal text-muted-foreground">{row.partido}</span>
               {/if}
-              <span class="font-mono text-sm text-muted-foreground">{row.numero}</span>
+              <span class="text-sm text-muted-foreground tabular-nums">{row.numero}</span>
             </p>
-            <p class="font-mono font-semibold">{number.format(row.votos)}</p>
+            <p class="font-semibold tabular-nums">{number.format(row.votos)}</p>
           </div>
           <div
             role="meter"
@@ -156,7 +156,7 @@
       {#each [[m.results_brancos(), totals.brancos], [m.results_nulos(), totals.nulos]] as const as [label, votos] (label)}
         <li class="flex justify-between gap-3 p-4 text-sm text-muted-foreground">
           <span>{label}</span>
-          <span class="font-mono">{number.format(votos)}</span>
+          <span class="tabular-nums">{number.format(votos)}</span>
         </li>
       {/each}
     </ul>
