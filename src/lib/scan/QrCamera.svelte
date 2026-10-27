@@ -24,8 +24,10 @@
 
   let video: HTMLVideoElement | undefined = $state();
   let stream: MediaStream | undefined = $state.raw();
-  let denied = $state(false);
+  // Refused permission needs the browser settings; anything else (no camera, in use) may clear up.
+  let failure: "denied" | "unavailable" | "reader" | undefined = $state();
   let opening = false;
+  let destroyed = false;
 
   const SCAN_INTERVAL_MS = 250;
 
@@ -47,12 +49,16 @@
   async function open() {
     opening = true;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
+      const opened = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
         audio: false,
       });
-    } catch {
-      denied = true;
+      // Unmounted while the permission prompt was open: nothing else will ever stop it.
+      if (destroyed) opened.getTracks().forEach((track) => track.stop());
+      else stream = opened;
+    } catch (error) {
+      const refused = error instanceof DOMException && error.name === "NotAllowedError";
+      failure = refused ? "denied" : "unavailable";
     } finally {
       opening = false;
     }
@@ -65,7 +71,7 @@
 
   $effect(() => {
     if (!active) close();
-    else if (supported && !stream && !denied && !opening) void open();
+    else if (supported && !stream && !failure && !opening) void open();
   });
 
   $effect(() => {
@@ -77,28 +83,38 @@
     let stopped = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
-    void loadReader().then((readBarcodes) => {
-      const tick = async () => {
-        if (stopped) return;
-        if (context && element.videoWidth > 0) {
-          canvas.width = element.videoWidth;
-          canvas.height = element.videoHeight;
-          context.drawImage(element, 0, 0);
-          // A BU sheet prints several QRs side by side; read them all from one frame.
-          const results = await readBarcodes(
-            context.getImageData(0, 0, canvas.width, canvas.height),
-            {
-              formats: ["QRCode"],
-              tryHarder: true,
-              maxNumberOfSymbols: 8,
-            },
-          );
-          for (const result of results) if (result.isValid) onscan(result.text);
-        }
-        if (!stopped) timer = setTimeout(tick, SCAN_INTERVAL_MS);
-      };
-      void tick();
-    });
+    loadReader().then(
+      (readBarcodes) => {
+        const tick = async () => {
+          if (stopped) return;
+          // One undecodable frame must not end the loop; the next one is a quarter second away.
+          if (context && element.videoWidth > 0) {
+            try {
+              canvas.width = element.videoWidth;
+              canvas.height = element.videoHeight;
+              context.drawImage(element, 0, 0);
+              // A BU sheet prints several QRs side by side; read them all from one frame.
+              const results = await readBarcodes(
+                context.getImageData(0, 0, canvas.width, canvas.height),
+                {
+                  formats: ["QRCode"],
+                  tryHarder: true,
+                  maxNumberOfSymbols: 8,
+                },
+              );
+              for (const result of results) if (result.isValid) onscan(result.text);
+            } catch {
+              // Skip this frame.
+            }
+          }
+          if (!stopped) timer = setTimeout(tick, SCAN_INTERVAL_MS);
+        };
+        void tick();
+      },
+      () => {
+        failure = "reader";
+      },
+    );
 
     return () => {
       stopped = true;
@@ -107,16 +123,32 @@
     };
   });
 
-  $effect(() => close);
+  $effect(() => () => {
+    destroyed = true;
+    close();
+  });
 </script>
 
 {#if supported === false}
   <StatusBox tone="warning" role="alert" title={m.camera_unsupported_title()}
     >{m.camera_unsupported()}</StatusBox
   >
-{:else if denied}
+{:else if failure === "denied"}
   <StatusBox tone="warning" role="alert" title={m.camera_denied_title()}
     >{m.camera_denied()}</StatusBox
+  >
+{:else if failure === "unavailable"}
+  <StatusBox tone="warning" role="alert" title={m.camera_unavailable_title()}>
+    {m.camera_unavailable()}
+    <button
+      type="button"
+      class="mt-2 block font-semibold underline"
+      onclick={() => (failure = undefined)}>{m.camera_retry()}</button
+    >
+  </StatusBox>
+{:else if failure === "reader"}
+  <StatusBox tone="warning" role="alert" title={m.camera_reader_failed_title()}
+    >{m.camera_reader_failed()}</StatusBox
   >
 {/if}
 <div class="relative aspect-square overflow-hidden rounded-lg bg-viewfinder">
