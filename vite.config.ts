@@ -2,6 +2,7 @@ import path from "node:path";
 
 import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-pool-workers";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
+import { sentrySvelteKit } from "@sentry/sveltekit/vite";
 import adapter from "@sveltejs/adapter-cloudflare";
 import { sveltekit } from "@sveltejs/kit/vite";
 import tailwindcss from "@tailwindcss/vite";
@@ -18,12 +19,21 @@ export default defineConfig({
         experimental: { async: true },
       },
       adapter: adapter(),
+      tracing: { server: true },
     }),
     paraglideVitePlugin({
       project: "./project.inlang",
       outdir: "./src/lib/paraglide",
       emitTsDeclarations: true,
     }),
+    // Uploads source maps to Sentry (needs SENTRY_ORG and SENTRY_PROJECT too). Without a token the
+    // maps would be left in the public assets, so the plugin stays off.
+    process.env.SENTRY_AUTH_TOKEN && !process.env.VITEST
+      ? sentrySvelteKit({
+          telemetry: false,
+          sourcemaps: { filesToDeleteAfterUpload: [".svelte-kit/cloudflare/**/*.map"] },
+        })
+      : null,
   ],
 
   // Where a spec runs is decided by its name or folder:
