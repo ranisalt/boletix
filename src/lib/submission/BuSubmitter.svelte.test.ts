@@ -176,9 +176,11 @@ describe("BuSubmitter", () => {
 
     await fireEvent.click(screen.getByRole("button", { name: "Enviar boletim" }));
 
-    expect(await screen.findByRole("status", { name: "Boletim enviado" })).toHaveTextContent(
-      "Obrigado! Ele foi verificado e guardado.",
-    );
+    const outcome = await screen.findByRole("status", { name: "Boletim enviado" });
+    expect(outcome).toHaveTextContent("Obrigado! Ele foi verificado e guardado.");
+    // The send button is gone, so focus moves to the outcome instead of falling back to the page.
+    expect(document.activeElement).not.toBe(document.body);
+    expect(document.activeElement).toContainElement(outcome);
     expect(received).toEqual([verification.ok && verification.submission]);
     expect(screen.queryByRole("button", { name: "Enviar boletim" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Minhas contribuições" })).toHaveAttribute(

@@ -46,6 +46,7 @@
   "verify_failed": "Não foi possível verificar o boletim",
   "field_uf": "UF",
   "field_municipio": "Município",
+  "municipio_named": "{code} – {name}",
   "field_zona": "Zona",
   "field_secao": "Seção",
   "field_urna": "Urna",

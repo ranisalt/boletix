@@ -36,7 +36,7 @@
   <link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="flex min-h-screen flex-col pb-20 md:pb-0">
+<div class="flex min-h-screen flex-col pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
   <NoticeBanner />
   <header class="border-b bg-card">
     <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-2">
@@ -72,7 +72,7 @@
 
   <nav
     aria-label={m.nav_label()}
-    class="fixed inset-x-0 bottom-0 z-10 grid grid-cols-4 border-t bg-card md:hidden"
+    class="fixed inset-x-0 bottom-0 z-10 grid grid-cols-4 border-t bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
   >
     {#each NAV as item (item.href)}
       <a

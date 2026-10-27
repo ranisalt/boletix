@@ -151,7 +151,8 @@
 
   {#if submit.phase === "done"}
     {@const { outcome } = submit}
-    <div class="space-y-4">
+    <!-- Sending removes the focused button; move focus here so it doesn't drop to the page. -->
+    <div class="space-y-4 outline-none" tabindex="-1" {@attach (el) => el.focus()}>
       <StatusBox tone={outcome.tone} title={outcome.title}>{outcome.message}</StatusBox>
       <div class="flex flex-wrap gap-3">
         <button type="button" class="btn bg-primary text-primary-foreground" onclick={reset}>
@@ -214,7 +215,9 @@
             [m.field_uf(), header.uf],
             [
               m.field_municipio(),
-              municipio ? `${header.municipio} – ${municipio}` : header.municipio,
+              municipio
+                ? m.municipio_named({ code: header.municipio, name: municipio })
+                : header.municipio,
             ],
             [m.field_zona(), header.zona],
             [m.field_secao(), header.secao],

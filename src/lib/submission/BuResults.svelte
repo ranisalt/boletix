@@ -28,46 +28,50 @@
 <section class="space-y-3">
   <h2 class="font-semibold">{m.results_title()}</h2>
   {#each view.cargos as cargo, i (i)}
-    <table class="w-full text-sm">
-      <caption class="pb-1 text-left font-semibold">{cargoName(cargo.cargo)}</caption>
-      <thead class="text-xs text-muted-foreground">
-        <tr>
-          <th scope="col" class="w-16 text-left font-normal">{m.results_number()}</th>
-          <th scope="col" class="text-left font-normal">{m.results_candidate()}</th>
-          <th scope="col" class="text-right font-normal">{m.results_votes()}</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-border font-mono">
-        {#each cargo.candidatos as row (row.numero)}
+    <!-- Long candidate names must scroll sideways on narrow phones, not overflow the page. -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <caption class="pb-1 text-left font-semibold">{cargoName(cargo.cargo)}</caption>
+        <thead class="text-xs text-muted-foreground">
           <tr>
-            <td class="py-1">{row.numero}</td>
-            <td class="py-1 font-sans">
-              {#if row.nome}{row.nome}
-                <span class="text-xs text-muted-foreground">{row.partido}</span>{/if}
-            </td>
-            <td class="py-1 text-right font-semibold">{row.votos}</td>
+            <th scope="col" class="w-16 text-left font-normal">{m.results_number()}</th>
+            <th scope="col" class="text-left font-normal">{m.results_candidate()}</th>
+            <th scope="col" class="text-right font-normal">{m.results_votes()}</th>
           </tr>
-        {/each}
-        {#each cargo.legendas as row (row.numero)}
-          <tr>
-            <td class="py-1">{row.numero}</td>
-            <td class="py-1 font-sans">
-              {m.results_legenda()}
-              {#if row.partido}<span class="text-xs text-muted-foreground">{row.partido}</span>{/if}
-            </td>
-            <td class="py-1 text-right font-semibold">{row.votos}</td>
-          </tr>
-        {/each}
-      </tbody>
-      <tfoot class="border-t-2 border-border">
-        {#each [[m.results_brancos(), cargo.brancos], [m.results_nulos(), cargo.nulos], [m.results_total(), cargo.total]] as [label, votos] (label)}
-          <tr>
-            <th scope="row" colspan="2" class="py-1 text-left font-normal">{label}</th>
-            <td class="py-1 text-right font-mono font-semibold">{votos}</td>
-          </tr>
-        {/each}
-      </tfoot>
-    </table>
+        </thead>
+        <tbody class="divide-y divide-border font-mono">
+          {#each cargo.candidatos as row (row.numero)}
+            <tr>
+              <td class="py-1">{row.numero}</td>
+              <td class="py-1 font-sans">
+                {#if row.nome}{row.nome}
+                  <span class="text-xs text-muted-foreground">{row.partido}</span>{/if}
+              </td>
+              <td class="py-1 text-right font-semibold">{row.votos}</td>
+            </tr>
+          {/each}
+          {#each cargo.legendas as row (row.numero)}
+            <tr>
+              <td class="py-1">{row.numero}</td>
+              <td class="py-1 font-sans">
+                {m.results_legenda()}
+                {#if row.partido}<span class="text-xs text-muted-foreground">{row.partido}</span
+                  >{/if}
+              </td>
+              <td class="py-1 text-right font-semibold">{row.votos}</td>
+            </tr>
+          {/each}
+        </tbody>
+        <tfoot class="border-t-2 border-border">
+          {#each [[m.results_brancos(), cargo.brancos], [m.results_nulos(), cargo.nulos], [m.results_total(), cargo.total]] as [label, votos] (label)}
+            <tr>
+              <th scope="row" colspan="2" class="py-1 text-left font-normal">{label}</th>
+              <td class="py-1 text-right font-mono font-semibold">{votos}</td>
+            </tr>
+          {/each}
+        </tfoot>
+      </table>
+    </div>
   {/each}
   {#if geradoEm}
     <p class="text-xs text-muted-foreground">{m.results_names_source({ date: geradoEm })}</p>
