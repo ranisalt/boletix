@@ -19,7 +19,6 @@ export default defineConfig({
         experimental: { async: true },
       },
       adapter: adapter(),
-      tracing: { server: true },
     }),
     paraglideVitePlugin({
       project: "./project.inlang",
