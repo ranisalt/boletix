@@ -45,6 +45,7 @@
   "field_uf": "UF",
   "field_municipio": "Município",
   "municipio_named": "{code} – {name}",
+  "names_loading": "Carregando nomes",
   "field_zona": "Zona",
   "field_secao": "Seção",
   "field_urna": "Urna",

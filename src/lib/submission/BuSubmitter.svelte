@@ -4,6 +4,7 @@
   import Send from "@lucide/svelte/icons/send";
   import ShieldCheck from "@lucide/svelte/icons/shield-check";
 
+  import type { Bu } from "../bu";
   import { recordContribution } from "../contributions";
   import { nameFileKeys, resultsView, type NameFile } from "../elections";
   import { m } from "../paraglide/messages.js";
@@ -33,19 +34,6 @@
   let submit: SubmitState = $state.raw({ phase: "idle" });
 
   const verification = $derived(session.complete ? session.verify() : undefined);
-
-  let names: NameFile[] = $state.raw([]);
-  $effect(() => {
-    if (!verification?.ok) return;
-    let current = true;
-    loadNameFiles(nameFileKeys(verification.bu)).then((files) => {
-      if (current) names = files;
-    });
-    return () => {
-      current = false;
-      names = [];
-    };
-  });
 
   function onscan(text: string) {
     const result = session.add(text);
@@ -142,6 +130,30 @@
   }
 </script>
 
+{#snippet details(bu: Bu, names: NameFile[])}
+  {@const { header } = bu}
+  {@const municipio = resultsView(bu, names).municipio}
+  {@const fields = [
+    [m.field_uf(), header.uf],
+    [
+      m.field_municipio(),
+      municipio ? m.municipio_named({ code: header.municipio, name: municipio }) : header.municipio,
+    ],
+    [m.field_zona(), header.zona],
+    [m.field_secao(), header.secao],
+    [m.field_urna(), header.urna],
+  ]}
+  <dl class="grid grid-cols-2 gap-3 font-mono text-sm">
+    {#each fields as [term, value] (term)}
+      <div>
+        <dt class="font-sans text-xs text-muted-foreground">{term}</dt>
+        <dd class="font-semibold">{value}</dd>
+      </div>
+    {/each}
+  </dl>
+  <BuResults {bu} {names} />
+{/snippet}
+
 <div class="space-y-6">
   <h1 class="text-3xl font-bold">{m.submit_title()}</h1>
   <!-- Visible too: a rejected scan has no other on-screen cue on a phone. -->
@@ -209,20 +221,7 @@
         </section>
 
         {#if verification?.ok}
-          {@const { header } = verification.bu}
-          {@const municipio = resultsView(verification.bu, names).municipio}
-          {@const fields = [
-            [m.field_uf(), header.uf],
-            [
-              m.field_municipio(),
-              municipio
-                ? m.municipio_named({ code: header.municipio, name: municipio })
-                : header.municipio,
-            ],
-            [m.field_zona(), header.zona],
-            [m.field_secao(), header.secao],
-            [m.field_urna(), header.urna],
-          ]}
+          {@const bu = verification.bu}
           <section class="space-y-4 rounded-lg border-2 border-success bg-card p-4">
             <span
               class="inline-flex items-center gap-1.5 rounded-full border-2 border-success px-2.5 py-1 text-sm font-semibold text-success"
@@ -230,15 +229,23 @@
               <ShieldCheck class="size-4" aria-hidden="true" />
               {m.verify_ok()}
             </span>
-            <dl class="grid grid-cols-2 gap-3 font-mono text-sm">
-              {#each fields as [term, value] (term)}
-                <div>
-                  <dt class="font-sans text-xs text-muted-foreground">{term}</dt>
-                  <dd class="font-semibold">{value}</dd>
-                </div>
-              {/each}
-            </dl>
-            <BuResults bu={verification.bu} {names} />
+            <!-- Names are a convenience from TSE open data: sending must not wait for or depend on them. -->
+            <svelte:boundary>
+              {@render details(bu, await loadNameFiles(nameFileKeys(bu)))}
+              {#snippet pending()}
+                <p
+                  role="status"
+                  aria-label={m.names_loading()}
+                  class="text-sm text-muted-foreground"
+                >
+                  {m.names_loading()}
+                </p>
+              {/snippet}
+              {#snippet failed()}
+                {@render details(bu, [])}
+              {/snippet}
+            </svelte:boundary>
+
             <button
               type="button"
               class="btn w-full bg-primary text-primary-foreground"

@@ -105,16 +105,16 @@ describe("BuSubmitter", () => {
     expect(screen.queryByRole("button", { name: "Enviar boletim" })).not.toBeInTheDocument();
   });
 
-  it("verifies the signature once complete and shows which section it is", () => {
+  it("verifies the signature once complete and shows which section it is", async () => {
     const { scan } = setup();
     scan(cert2, buQr, cert1);
 
     expect(screen.getByText("Assinatura verificada")).toBeInTheDocument();
-    const terms = screen.getAllByRole("term").map((term) => term.textContent);
+    const terms = (await screen.findAllByRole("term")).map((term) => term.textContent);
     const values = screen.getAllByRole("definition").map((value) => value.textContent);
     expect(Object.fromEntries(terms.map((term, i) => [term, values[i]]))).toEqual({
       UF: "DF",
-      Município: "97012",
+      Município: "97012 – BRASÍLIA",
       Zona: "11",
       Seção: "178",
       Urna: "2028869",
@@ -139,17 +139,52 @@ describe("BuSubmitter", () => {
     ).toBeInTheDocument();
   });
 
+  it("says the names are loading, and lets the boletim be sent meanwhile", async () => {
+    let release = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    server.use(
+      http.get("*/tse/2026/:area.json", async ({ params }) => {
+        await held;
+        return HttpResponse.json(NAMES[params.area as string]);
+      }),
+    );
+    const { scan } = setup();
+    scan(cert2, buQr, cert1);
+
+    expect(await screen.findByRole("status", { name: "Carregando nomes" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Enviar boletim" })).toBeEnabled();
+    release();
+    expect(await screen.findByText("97012 – BRASÍLIA")).toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "Carregando nomes" })).not.toBeInTheDocument();
+  });
+
+  it("falls back to numbers when a name file breaks the results", async () => {
+    server.use(http.get("*/tse/2026/:area.json", () => HttpResponse.json({})));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { scan } = setup();
+    scan(cert2, buQr, cert1);
+
+    expect(
+      within(await screen.findByRole("table", { name: "Presidente" })).getByRole("row", {
+        name: "13 121",
+      }),
+    ).toBeInTheDocument();
+    await new Promise((settle) => setTimeout(settle, 50));
+    expect(screen.getByText("97012")).toBeInTheDocument();
+    await fireEvent.click(screen.getByRole("button", { name: "Enviar boletim" }));
+    expect(await screen.findByRole("status", { name: "Boletim enviado" })).toBeInTheDocument();
+  });
+
   it("still shows the votes by number when the names cannot be loaded", async () => {
     server.use(http.get("*/tse/2026/:area.json", () => HttpResponse.error()));
     const { scan } = setup();
     scan(cert2, buQr, cert1);
 
     expect(
-      within(screen.getByRole("table", { name: "Presidente" })).getByRole("row", {
+      within(await screen.findByRole("table", { name: "Presidente" })).getByRole("row", {
         name: "13 121",
       }),
     ).toBeInTheDocument();
-    await new Promise((settle) => setTimeout(settle, 20));
     expect(screen.getByText("97012")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Enviar boletim" })).toBeEnabled();
   });
