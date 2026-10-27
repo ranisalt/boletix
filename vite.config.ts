@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-pool-workers";
+import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-plugin";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import { sentrySvelteKit } from "@sentry/sveltekit/vite";
 import adapter from "@sveltejs/adapter-cloudflare";
