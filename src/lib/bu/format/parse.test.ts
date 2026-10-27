@@ -2,7 +2,7 @@ import { expect, it } from "vitest";
 
 import { BuError } from "../errors";
 import { loadBuFixture } from "../testing/fixtures";
-import { parseQr } from "./parse";
+import { MAX_QR_CODES, parseQr } from "./parse";
 
 const HASH = "A".repeat(128);
 const REAL_2026 = loadBuFixture("zz-29688-1-929").qrbu[0]!;
@@ -54,9 +54,12 @@ it("rejects an unknown first field", () => {
   expectErrorCode(() => parseQr(`ORIG:VOTA HASH:${HASH}`), "MISSING_FIELD");
 });
 
-it("rejects QR indexes outside 1..total<=32", () => {
+it("rejects QR indexes outside 1..total<=MAX_QR_CODES", () => {
   expectErrorCode(() => parseQr(`QRBU:0:2 VRQR:6.0 HASH:${HASH}`), "QR_INDEX_INVALID");
-  expectErrorCode(() => parseQr(`QRBU:1:33 VRQR:6.0 HASH:${HASH}`), "QR_INDEX_INVALID");
+  expectErrorCode(
+    () => parseQr(`QRBU:1:${MAX_QR_CODES + 1} VRQR:6.0 HASH:${HASH}`),
+    "QR_INDEX_INVALID",
+  );
 });
 
 it("rejects unsupported VRQR versions", () => {

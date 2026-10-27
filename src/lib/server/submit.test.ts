@@ -125,6 +125,28 @@ describe("handleSubmission", () => {
     });
   });
 
+  it("stops reading a body that grows past the limit without announcing its size", async () => {
+    // Finite, so code that buffers everything fails the read assertion instead of exhausting memory.
+    const chunk = new Uint8Array(16 * 1024);
+    const offered = MAX_BODY_BYTES * 8;
+    let read = 0;
+    const oversized = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (read >= offered) return controller.close();
+        read += chunk.byteLength;
+        controller.enqueue(chunk);
+      },
+    });
+    const response = await handleSubmission(
+      post(undefined, { body: oversized, duplex: "half" } as RequestInit),
+      { ...env, SUBMIT_LIMITER: allowAll },
+      options(),
+    );
+
+    expect(response.status).toBe(413);
+    expect(read).toBeLessThan(MAX_BODY_BYTES * 2);
+  });
+
   it("rate-limits by client address", async () => {
     const limit = vi.fn(async () => ({ success: false }));
     const response = await handleSubmission(

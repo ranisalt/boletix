@@ -36,6 +36,15 @@ function requiredValue(tokens: [string, string][], key: string): string {
   return entry[1];
 }
 
+/**
+ * Our own sanity bound, not the manual's (it sets none): the longest real BU seen spans 9 QRs, so
+ * this only rejects garbage before it costs any work.
+ */
+export const MAX_QR_CODES = 32;
+
+/** Each printed QR holds at most 1100 characters (manual, section 1.4). */
+export const MAX_QR_CHARS = 1100;
+
 function parseIndexTotal(value: string): { index: number; total: number } {
   const match = /^(\d+):(\d+)$/.exec(value);
   if (!match) throw new BuError("QR_INDEX_INVALID", `invalid QRBU/QRCE sequence: ${value}`);
@@ -47,10 +56,12 @@ function parseIndexTotal(value: string): { index: number; total: number } {
     !Number.isSafeInteger(total) ||
     index < 1 ||
     index > total ||
-    // The manual caps a BU or certificate at 32 QR codes.
-    total > 32
+    total > MAX_QR_CODES
   ) {
-    throw new BuError("QR_INDEX_INVALID", `QR index ${index} of ${total} is outside 1..total<=32`);
+    throw new BuError(
+      "QR_INDEX_INVALID",
+      `QR index ${index} of ${total} is outside 1..total<=${MAX_QR_CODES}`,
+    );
   }
 
   return { index, total };

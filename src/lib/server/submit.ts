@@ -1,9 +1,41 @@
-import { BuError, verifySubmission, type BuSubmission, TSE_ROOTS } from "../bu";
+import {
+  BuError,
+  MAX_QR_CHARS,
+  MAX_QR_CODES,
+  verifySubmission,
+  type BuSubmission,
+  TSE_ROOTS,
+} from "../bu";
 import { findElection } from "../elections";
 import { storeBu, type BuStoreEnv, type StoreOutcome } from "./bu-store";
 
-/** 64 QRs of at most 1100 characters plus the certificate, with room to spare. */
-export const MAX_BODY_BYTES = 128 * 1024;
+/** Every QR at full length plus the certificate (hex DER, at most 8192 chars), JSON overhead included. */
+export const MAX_BODY_BYTES = MAX_QR_CODES * (MAX_QR_CHARS + 16) + 16 * 1024;
+
+/** The whole body, or undefined as soon as it outgrows the limit, without buffering the rest. */
+async function readLimited(request: Request, limit: number): Promise<Uint8Array | undefined> {
+  if (!request.body) return new Uint8Array();
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > limit) {
+      await reader.cancel();
+      return undefined;
+    }
+    chunks.push(value);
+  }
+  const body = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return body;
+}
 
 const BAD_REQUEST_CODES = new Set<BuError["code"]>([
   "INVALID_FIELD",
@@ -42,12 +74,12 @@ export async function handleSubmission(
   if (!(await env.SUBMIT_LIMITER.limit({ key: clientAddress })).success) {
     return json(429, { error: "RATE_LIMITED" });
   }
-  // Content-Length can be absent or wrong, so the real size is checked again after reading.
+  // Content-Length can be absent or wrong, so the stream is also cut off at the limit.
   if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY_BYTES) {
     return json(413, { error: "PAYLOAD_TOO_LARGE" });
   }
-  const raw = await request.arrayBuffer();
-  if (raw.byteLength > MAX_BODY_BYTES) return json(413, { error: "PAYLOAD_TOO_LARGE" });
+  const raw = await readLimited(request, MAX_BODY_BYTES);
+  if (!raw) return json(413, { error: "PAYLOAD_TOO_LARGE" });
 
   let body: unknown;
   try {

@@ -6,7 +6,7 @@ import * as v from "valibot";
 
 import { BuError } from "./errors";
 import { assembleBu, type Bu } from "./format/assemble";
-import { parseQr, type BuQr, type CertQr } from "./format/parse";
+import { MAX_QR_CHARS, MAX_QR_CODES, parseQr, type BuQr, type CertQr } from "./format/parse";
 import type { TrustedRoot } from "./signature/tse-roots";
 import {
   assembleCertificate,
@@ -21,9 +21,9 @@ const hex = (maxLength: number) => v.pipe(v.string(), v.maxLength(maxLength), v.
 const SubmissionSchema = v.object({
   // Boundaries matter: the chained HASH is inserted between consecutive QR contents.
   contents: v.pipe(
-    v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(1100))),
+    v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(MAX_QR_CHARS))),
     v.minLength(1),
-    v.maxLength(64),
+    v.maxLength(MAX_QR_CODES),
   ),
   assi: hex(512),
   hash: v.pipe(v.string(), v.regex(/^[0-9A-Fa-f]{128}$/)),

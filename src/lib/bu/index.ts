@@ -8,6 +8,8 @@
 export { BuError, type BuErrorCode } from "./errors";
 export { assembleBu, type Bu, type BuCargo } from "./format/assemble";
 export {
+  MAX_QR_CHARS,
+  MAX_QR_CODES,
   parseQr,
   SUPPORTED_VRQR_VERSIONS,
   type BuQr,

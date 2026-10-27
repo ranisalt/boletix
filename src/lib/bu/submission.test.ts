@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { BuError } from "./errors";
-import { parseQr, type BuQr, type CertQr } from "./format/parse";
+import { MAX_QR_CODES, parseQr, type BuQr, type CertQr } from "./format/parse";
 import { TSE_ROOTS } from "./signature/tse-roots";
 import { chainHashes } from "./signature/verify";
 import { toSubmission, verifySubmission, type BuSubmission } from "./submission";
@@ -105,6 +105,7 @@ describe("verifySubmission", () => {
       "x",
       { ...valid, contents: [] },
       { ...valid, contents: "ORIG:VOTA" },
+      { ...valid, contents: Array.from({ length: MAX_QR_CODES + 1 }, () => "ORIG:VOTA") },
       { ...valid, assi: "not hex" },
       { ...valid, hash: "ABC" },
       { ...valid, certDer: "" },
