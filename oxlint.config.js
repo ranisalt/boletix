@@ -14,7 +14,14 @@ export default defineConfig({
     "vitest/valid-expect": ["error", { maxArgs: 2 }],
     "vitest/expect-expect": [
       "error",
-      { assertFunctionNames: ["expect", "expectBuError", "expectBuErrorAsync"] },
+      {
+        assertFunctionNames: [
+          "expect",
+          "expectBuError",
+          "expectBuErrorAsync",
+          "expectVerificationError",
+        ],
+      },
     ],
   },
 });
