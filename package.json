@@ -15,6 +15,10 @@
     "format:check": "oxfmt --check",
     "lint": "eslint --cache --cache-location node_modules/.cache/eslint --concurrency auto --fix .",
     "lint:check": "eslint --cache --cache-location node_modules/.cache/eslint --concurrency auto .",
+    "packages:build": "pnpm -r --filter './packages/*' build",
+    "packages:check": "pnpm -r --filter './packages/*' check",
+    "packages:lint": "pnpm -r --filter './packages/*' lint",
+    "packages:test": "pnpm -r --filter './packages/*' test",
     "prepare": "svelte-kit sync || echo ''",
     "preview": "vite preview",
     "test": "vitest run",
@@ -32,6 +36,8 @@
     "zxing-wasm": "^3.1.6"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@changesets/cli": "^3.0.3",
     "@cloudflare/vitest-plugin": "^1.4.7",
     "@eslint/js": "^10.0.1",
     "@inlang/paraglide-js": "^2.29.1",
@@ -50,6 +56,8 @@
     "mdsvex": "^0.12.8",
     "msw": "^3.0.3",
     "oxfmt": "^0.74.0",
+    "oxlint": "^1.90.0",
+    "publint": "^0.3.25",
     "svelte": "^5.57.2",
     "svelte-check": "^4.7.7",
     "tailwindcss": "^4.3.3",

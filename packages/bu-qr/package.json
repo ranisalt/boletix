@@ -1,0 +1,56 @@
+{
+  "name": "@boletix/bu-qr",
+  "version": "0.0.0",
+  "description": "Parse and assemble the QR codes printed on Brazilian boletins de urna (TSE, VRQR 6.0).",
+  "keywords": [
+    "boletim-de-urna",
+    "eleicoes",
+    "qr",
+    "tse"
+  ],
+  "homepage": "https://github.com/ranisalt/boletix/tree/main/packages/bu-qr#readme",
+  "bugs": "https://github.com/ranisalt/boletix/issues",
+  "license": "MIT",
+  "author": "Ranieri Althoff",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ranisalt/boletix.git",
+    "directory": "packages/bu-qr"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "lint": "oxlint -c ../.oxlintrc.json --deny-warnings src test",
+    "pack:check": "publint --strict && attw --pack --profile esm-only",
+    "prepack": "pnpm run build",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.5",
+    "@tsconfig/strictest": "^2.0.8",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.12"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

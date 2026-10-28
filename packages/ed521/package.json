@@ -1,0 +1,61 @@
+{
+  "name": "@boletix/ed521",
+  "version": "0.0.0",
+  "description": "Ed521 (E-521 EdDSA) signatures built on @noble/curves, as used by Brazilian TSE voting machines.",
+  "keywords": [
+    "e-521",
+    "ed521",
+    "eddsa",
+    "noble",
+    "signature"
+  ],
+  "homepage": "https://github.com/ranisalt/boletix/tree/main/packages/ed521#readme",
+  "bugs": "https://github.com/ranisalt/boletix/issues",
+  "license": "MIT",
+  "author": "Ranieri Althoff",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ranisalt/boletix.git",
+    "directory": "packages/ed521"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "lint": "oxlint -c ../.oxlintrc.json --deny-warnings src test",
+    "pack:check": "publint --strict && attw --pack --profile esm-only",
+    "prepack": "pnpm run build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.5",
+    "@tsconfig/strictest": "^2.0.8",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.12"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

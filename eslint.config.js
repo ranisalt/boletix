@@ -19,7 +19,8 @@ const MODULE_BOUNDARY = {
 
 export default defineConfig(
   includeIgnoreFile(gitignorePath),
-  { ignores: [".hermes/", "worker-configuration.d.ts"] },
+  // packages/* are linted with oxlint.
+  { ignores: [".hermes/", "worker-configuration.d.ts", "packages/"] },
   js.configs.recommended,
   ts.configs.recommended,
   svelte.configs.recommended,
