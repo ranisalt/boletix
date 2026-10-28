@@ -5,28 +5,20 @@
   import ShieldCheck from "@lucide/svelte/icons/shield-check";
 
   import type { Bu } from "../bu";
-  import { recordContribution } from "../contributions";
   import { nameFileKeys, resultsView, type NameFile } from "../elections";
   import { m } from "../paraglide/messages.js";
   import { ScanSession, type ScanResult, QrCamera, ScanSlot } from "../scan";
-  import { StatusBox, type Tone } from "../ui";
+  import { StatusBox } from "../ui";
   import BuResults from "./BuResults.svelte";
-  import { buErrorMessage, isBuErrorCode } from "./error-messages";
+  import { buErrorMessage } from "./error-messages";
   import { loadNameFiles } from "./name-files";
+  import { sendBoletim, type Outcome } from "./send";
 
   type Props = {
     session?: ScanSession;
   };
 
   const { session = new ScanSession() }: Props = $props();
-
-  type Outcome = {
-    tone: Tone;
-    title: string;
-    message: string;
-    /** Only transient failures can succeed by sending the same boletim again. */
-    retry: boolean;
-  };
 
   type SubmitState = { phase: "idle" } | { phase: "sending" } | { phase: "done"; outcome: Outcome };
 
@@ -46,81 +38,11 @@
     return result.kind === "bu" ? m.scan_added_bu(result) : m.scan_added_cert(result);
   }
 
-  const ACCEPTED: Record<string, Omit<Outcome, "retry"> & { remember?: "aceito" | "conflito" }> = {
-    new: {
-      tone: "success",
-      title: m.submit_new_title(),
-      message: m.submit_new(),
-      remember: "aceito",
-    },
-    duplicate: { tone: "info", title: m.submit_duplicate_title(), message: m.submit_duplicate() },
-    conflict: {
-      tone: "warning",
-      title: m.submit_conflict_title(),
-      message: m.submit_conflict(),
-      remember: "conflito",
-    },
-  };
-
-  function failure(error: string): Outcome {
-    const message = buErrorMessage(error);
-    if (error === "RATE_LIMITED")
-      return { tone: "warning", title: m.submit_rate_limited_title(), message, retry: true };
-    if (!isBuErrorCode(error))
-      return { tone: "destructive", title: m.submit_failed_title(), message, retry: true };
-    const title =
-      error === "SIGNATURE_INVALID" ? m.submit_signature_title() : m.submit_rejected_title();
-    return { tone: "destructive", title, message, retry: false };
-  }
-
   async function send() {
     if (!verification?.ok) return;
-    const { bu, submission } = verification;
     submit = { phase: "sending" };
-    let response: Response;
-    try {
-      response = await fetch(new URL("/api/submissions", location.href), {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(submission),
-      });
-    } catch {
-      submit = {
-        phase: "done",
-        outcome: {
-          tone: "destructive",
-          title: m.submit_failed_title(),
-          message: m.submit_network_error(),
-          retry: true,
-        },
-      };
-      return;
-    }
-    const body = (await response.json().catch(() => ({}))) as { status?: string; error?: string };
-    const accepted =
-      body.status && Object.hasOwn(ACCEPTED, body.status) ? ACCEPTED[body.status] : undefined;
-    if (!accepted) {
-      submit = { phase: "done", outcome: failure(body.error ?? "") };
-      return;
-    }
-    if (accepted.remember) {
-      const { uf, municipio, zona, secao, urna } = bu.header;
-      try {
-        recordContribution({
-          id: submission.hash,
-          uf,
-          municipio,
-          zona,
-          secao,
-          urna,
-          enviadoEm: new Date().toISOString(),
-          status: accepted.remember,
-        });
-      } catch {
-        // Full or disabled storage only loses the local history; the server already has the boletim.
-      }
-    }
-    submit = { phase: "done", outcome: { ...accepted, retry: false } };
+    const outcome = await sendBoletim(verification, { page: location.href, storage: localStorage });
+    submit = { phase: "done", outcome };
   }
 
   function reset() {
