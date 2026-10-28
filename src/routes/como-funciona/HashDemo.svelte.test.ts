@@ -10,35 +10,37 @@ async function hex(text: string) {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+const LABEL = "Digite qualquer texto e veja o hash mudar";
+
 describe("HashDemo", () => {
-  it("hashes the sample vote, with nothing changed yet", async () => {
+  it("starts empty, hashing the empty text with nothing marked", async () => {
     render(HashDemo);
 
-    expect(screen.getByRole("textbox", { name: "Experimente: mude o texto" })).toHaveValue(
-      "13:142",
+    expect(screen.getByRole("textbox", { name: LABEL })).toHaveValue("");
+    expect(screen.getByRole("textbox", { name: LABEL })).toHaveAccessibleDescription(
+      /^Efeito avalanche:/,
     );
-    const expected = await hex("13:142");
-    await waitFor(() =>
-      expect(screen.getByRole("status", { name: "SHA-512" })).toHaveTextContent(expected),
-    );
-    expect(screen.getByText("0 de 128 caracteres mudaram")).toBeInTheDocument();
+    const output = screen.getByRole("status", { name: "SHA-512" });
+    const expected = await hex("");
+    await waitFor(() => expect(output).toHaveTextContent(expected));
+    expect(output.querySelectorAll("[data-changed]")).toHaveLength(0);
   });
 
-  it("rehashes on every keystroke and marks each character that changed", async () => {
+  it("marks the characters that changed since the previous text", async () => {
     render(HashDemo);
-
-    const input = screen.getByRole("textbox", { name: "Experimente: mude o texto" });
-    await fireEvent.input(input, { target: { value: "13:143" } });
+    const input = screen.getByRole("textbox", { name: LABEL });
+    const output = screen.getByRole("status", { name: "SHA-512" });
 
     const before = await hex("13:142");
+    await fireEvent.input(input, { target: { value: "13:142" } });
+    await waitFor(() => expect(output).toHaveTextContent(before));
+
     const after = await hex("13:143");
+    await fireEvent.input(input, { target: { value: "13:143" } });
+    await waitFor(() => expect(output).toHaveTextContent(after));
+
     const changed = [...after].filter((char, i) => char !== before[i]).length;
-    await waitFor(() =>
-      expect(screen.getByRole("status", { name: "SHA-512" })).toHaveTextContent(after),
-    );
-    expect(
-      screen.getByRole("status", { name: "SHA-512" }).querySelectorAll("[data-changed]"),
-    ).toHaveLength(changed);
+    expect(output.querySelectorAll("[data-changed]")).toHaveLength(changed);
     expect(screen.getByText(`${changed} de 128 caracteres mudaram`)).toBeInTheDocument();
   });
 });
