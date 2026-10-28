@@ -19,25 +19,23 @@ export async function loadTotals(
   { election, turno, cargo, uf }: TotalsFilter,
 ): Promise<Totals> {
   // `?4 IS NULL` lets one statement serve both a UF and the whole country.
-  const scope =
-    "b.election_id = ?1 AND b.turno = ?2 AND c.cargo = ?3 AND (?4 IS NULL OR b.uf = ?4)";
+  const scope = "election_id = ?1 AND turno = ?2 AND cargo = ?3 AND (?4 IS NULL OR uf = ?4)";
   const params = [election, turno, cargo, uf ?? null];
   const [sums, votes] = await db.batch<Record<string, number | string>>([
     db
       .prepare(
-        `SELECT COUNT(DISTINCT b.id) AS secoes, COALESCE(SUM(c.brancos), 0) AS brancos,
-                COALESCE(SUM(c.nulos), 0) AS nulos
-           FROM bu b JOIN bu_cargo c ON c.bu_id = b.id
+        `SELECT COALESCE(SUM(secoes), 0) AS secoes, COALESCE(SUM(brancos), 0) AS brancos,
+                COALESCE(SUM(nulos), 0) AS nulos
+           FROM totals_cargo
           WHERE ${scope}`,
       )
       .bind(...params),
     db
       .prepare(
-        `SELECT c.idel, v.code AS numero, SUM(v.votes) AS votos
-           FROM bu b JOIN bu_cargo c ON c.bu_id = b.id
-           JOIN bu_vote v ON v.bu_id = c.bu_id AND v.idel = c.idel AND v.cargo = c.cargo
-          WHERE ${scope} AND v.kind = 'nominal'
-          GROUP BY c.idel, v.code
+        `SELECT idel, numero, SUM(votos) AS votos
+           FROM totals_vote
+          WHERE ${scope}
+          GROUP BY idel, numero
           ORDER BY votos DESC, numero`,
       )
       .bind(...params),

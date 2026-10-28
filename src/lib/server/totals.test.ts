@@ -1,5 +1,6 @@
 /// <reference types="@cloudflare/vitest-plugin/types" />
 
+import type { D1Migration } from "@cloudflare/vitest-plugin";
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 
@@ -12,10 +13,14 @@ const ELECTION = "br-2026-general";
 const PRESIDENTE = 1;
 // The fixtures are second-round BUs.
 
-async function store(name: string): Promise<Bu> {
+function submissionFor(name: string) {
   const { parts, certs } = loadBuScan(name);
   const submission = sealSubmission(parts, certs, TSE_ROOTS).submission;
-  const verified = openSubmission(submission, TSE_ROOTS);
+  return { submission, verified: openSubmission(submission, TSE_ROOTS) };
+}
+
+async function store(name: string): Promise<Bu> {
+  const { submission, verified } = submissionFor(name);
   await storeBu(env, submission, verified, ELECTION);
   return verified.bu;
 }
@@ -41,7 +46,14 @@ function expected(bus: Bu[], cargo: number) {
   return { candidatos, brancos, nulos };
 }
 
+const clearTotals = () =>
+  env.DB.batch([
+    env.DB.prepare("DELETE FROM totals_vote"),
+    env.DB.prepare("DELETE FROM totals_cargo"),
+  ]);
+
 beforeEach(async () => {
+  await clearTotals();
   await env.DB.batch([
     env.DB.prepare("DELETE FROM bu_vote"),
     env.DB.prepare("DELETE FROM bu_cargo"),
@@ -73,5 +85,44 @@ describe("loadTotals", () => {
     await expect(
       loadTotals(env.DB, { election: ELECTION, turno: 1, cargo: PRESIDENTE }),
     ).resolves.toEqual({ secoes: 0, candidatos: [], brancos: 0, nulos: 0 });
+  });
+
+  it("reads the stored totals rather than summing every BU", async () => {
+    await store("df-97012-11-178");
+    await clearTotals();
+
+    await expect(
+      loadTotals(env.DB, { election: ELECTION, turno: 2, cargo: PRESIDENTE }),
+    ).resolves.toEqual({ secoes: 0, candidatos: [], brancos: 0, nulos: 0 });
+  });
+
+  it("counts a section once however often or racily its BU arrives", async () => {
+    const { submission, verified } = submissionFor("df-97012-11-178");
+    await Promise.all([
+      storeBu(env, submission, verified, ELECTION),
+      storeBu(env, submission, verified, ELECTION),
+    ]);
+    await storeBu(env, submission, verified, ELECTION);
+    const forged = { ...verified, hash: "F".repeat(128) };
+    await storeBu(env, { ...submission, hash: forged.hash }, forged, ELECTION);
+
+    await expect(
+      loadTotals(env.DB, { election: ELECTION, turno: 2, cargo: PRESIDENTE }),
+    ).resolves.toEqual({ secoes: 1, ...expected([verified.bu], PRESIDENTE) });
+  });
+
+  it("rebuilds the stored totals from BUs stored before they existed", async () => {
+    const bus = [await store("df-97012-11-178"), await store("sp-69310-102-17")];
+    await clearTotals();
+
+    const { TEST_MIGRATIONS } = env as typeof env & { TEST_MIGRATIONS: D1Migration[] };
+    const backfill = TEST_MIGRATIONS.find((m) => m.name.startsWith("0002"))!.queries.filter((q) =>
+      q.includes("INSERT INTO"),
+    );
+    await env.DB.batch(backfill.map((q) => env.DB.prepare(q)));
+
+    await expect(
+      loadTotals(env.DB, { election: ELECTION, turno: 2, cargo: PRESIDENTE }),
+    ).resolves.toEqual({ secoes: 2, ...expected(bus, PRESIDENTE) });
   });
 });

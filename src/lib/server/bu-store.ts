@@ -118,6 +118,25 @@ export async function storeBu(
                 v.value ->> 'votes'
            FROM json_each(?2) AS v`,
       ).bind(hash, JSON.stringify(voteRows(bu.cargos))),
+      // Adds this BU to the running totals (migrations/0002_totals.sql).
+      env.DB.prepare(
+        `INSERT INTO totals_cargo (election_id, turno, cargo, uf, secoes, brancos, nulos)
+         SELECT b.election_id, b.turno, c.cargo, b.uf, COUNT(DISTINCT b.id), SUM(c.brancos), SUM(c.nulos)
+           FROM bu b JOIN bu_cargo c ON c.bu_id = b.id
+          WHERE b.hash = ?1
+          GROUP BY c.cargo
+         ON CONFLICT DO UPDATE SET secoes = secoes + excluded.secoes,
+                                   brancos = brancos + excluded.brancos,
+                                   nulos = nulos + excluded.nulos`,
+      ).bind(hash),
+      env.DB.prepare(
+        `INSERT INTO totals_vote (election_id, turno, cargo, uf, idel, numero, votos)
+         SELECT b.election_id, b.turno, v.cargo, b.uf, v.idel, v.code, SUM(v.votes)
+           FROM bu b JOIN bu_vote v ON v.bu_id = b.id
+          WHERE b.hash = ?1 AND v.kind = 'nominal'
+          GROUP BY v.cargo, v.idel, v.code
+         ON CONFLICT DO UPDATE SET votos = votos + excluded.votos`,
+      ).bind(hash),
     ]);
   } catch (error) {
     // Another request stored this section between our lookup and insert.
