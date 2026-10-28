@@ -6,6 +6,7 @@ import { sentrySvelteKit } from "@sentry/sveltekit/vite";
 import adapter from "@sveltejs/adapter-cloudflare";
 import { sveltekit } from "@sveltejs/kit/vite";
 import tailwindcss from "@tailwindcss/vite";
+import { mdsvex } from "mdsvex";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -18,6 +19,9 @@ export default defineConfig({
           filename.split(/[/\\]/).includes("node_modules") ? undefined : true,
         experimental: { async: true },
       },
+      // Long-form pages are written in markdown (.svx).
+      extensions: [".svelte", ".svx"],
+      preprocess: [mdsvex({ extensions: [".svx"] })],
       adapter: adapter(),
       // The whole stylesheet (~23 KB, ~7 KB compressed) fits in the first round trip, so inlining
       // it saves a render-blocking request.
