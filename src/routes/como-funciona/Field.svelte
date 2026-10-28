@@ -17,4 +17,7 @@
   const { tone, children }: Props = $props();
 </script>
 
-<span class="rounded px-1.5 py-0.5 font-mono break-all {TONES[tone]}">{@render children()}</span>
+<!-- Keeps each QR block on one line; the text breaks only between blocks. -->
+<span class="rounded px-1.5 py-0.5 font-mono whitespace-nowrap {TONES[tone]}"
+  >{@render children()}</span
+>

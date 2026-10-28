@@ -18,6 +18,7 @@
 
   import CheckStep from "./CheckStep.svelte";
   import Field from "./Field.svelte";
+  import HashDemo from "./HashDemo.svelte";
   import ReadMore from "./ReadMore.svelte";
   import Step from "./Step.svelte";
 </script>
@@ -78,6 +79,7 @@
 <div class="flex flex-wrap items-center gap-2 text-sm">
 <span class="rounded border-2 px-2 py-1">Parte 1 → 9f2c…</span>→<span class="rounded border-2 px-2 py-1">Parte 2 + 9f2c → 41ab…</span>→<span class="rounded border-2 px-2 py-1">Parte 3 + 41ab → d07e…</span>
 </div>
+<HashDemo />
 <div class="grid gap-3 sm:grid-cols-2">
 <div class="rounded-lg border-2 border-success p-3"><p class="font-semibold">Original: <Field tone="a">13:142</Field></p><p class="text-sm">hash final d07e…</p></div>
 <div class="rounded-lg border-2 border-destructive p-3"><p class="font-semibold">Alterado: <Field tone="a">13:143</Field></p><p class="text-sm">hash final 7b19… (não confere)</p></div>

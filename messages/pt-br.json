@@ -104,6 +104,8 @@
   "status_conflict": "Conflito",
   "about_description": "Metodologia, perguntas frequentes e fontes oficiais.",
   "how_it_works_title": "Como funciona",
+  "hash_demo_label": "Experimente: mude o texto",
+  "hash_demo_changed": "{count} de 128 caracteres mudaram",
   "how_it_works_description": "Como o boletim de urna vira QR codes assinados, e como o Boletix confere cada um.",
   "error_invalid_qr": "Este QR code não é de um boletim de urna válido.",
   "error_payload_too_large": "Este QR code tem mais dados do que um boletim de urna.",
