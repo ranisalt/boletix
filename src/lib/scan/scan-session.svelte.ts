@@ -1,16 +1,14 @@
 import {
   type Bu,
-  assembleBu,
   BuError,
   type BuErrorCode,
   parseQr,
   type BuQr,
   type CertQr,
   type ParsedQr,
-  toSubmission,
+  sealSubmission,
   type BuSubmission,
   TSE_ROOTS,
-  verifyBuSignature,
 } from "../bu";
 
 export type ScanResult =
@@ -90,8 +88,8 @@ export class ScanSession {
     const certs = this.certs.filter((cert): cert is CertQr => cert !== undefined);
     try {
       if (!this.complete) throw new BuError("QR_SET_INCOMPLETE", "scan every QR first");
-      verifyBuSignature(parts, certs, TSE_ROOTS);
-      return { ok: true, bu: assembleBu(parts), submission: toSubmission(parts, certs) };
+      const { bu, submission } = sealSubmission(parts, certs, TSE_ROOTS);
+      return { ok: true, bu, submission };
     } catch (error) {
       if (error instanceof BuError) return { ok: false, error: error.code };
       throw error;

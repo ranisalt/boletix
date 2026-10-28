@@ -1,6 +1,9 @@
 // What the client sends once every BU and certificate QR is scanned: only the signed data and its final
 // HASH. The server rebuilds each QR (header, chained HASH, ASSI) from it, so intermediate hashes never
 // cross the wire and no verification result or total is accepted from the client.
+//
+// The client seals by building the payload and opening it itself, so whatever it sends has already
+// passed the server's checks. Only a scan too incomplete to build a payload fails earlier, on the phone.
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import * as v from "valibot";
 
@@ -40,19 +43,6 @@ export type VerifiedSubmission = {
   signature: SignatureVerification;
 };
 
-/** Client side: build the payload once every QR is scanned (and verifyBuSignature has passed). */
-export function toSubmission(parts: BuQr[], certs: CertQr[]): BuSubmission {
-  const sorted = [...parts].sort((a, b) => a.index - b.index);
-  const last = sorted.at(-1);
-  if (!last?.assi) throw new BuError("SIGNATURE_MISSING", "BU has no ASSI");
-  return {
-    contents: sorted.map((part) => part.content.trimEnd()),
-    assi: last.assi,
-    hash: last.hash.toUpperCase(),
-    certDer: bytesToHex(assembleCertificate(certs).der),
-  };
-}
-
 /** Rebuilds the QRs exactly as the urna printed them, so the regular parser validates every part. */
 function rebuildParts({ contents, assi }: BuSubmission): BuQr[] {
   const hashes = chainHashes(contents);
@@ -68,7 +58,7 @@ function rebuildParts({ contents, assi }: BuSubmission): BuQr[] {
 }
 
 /** Server side: validate shape, rebuild, verify the signature chain, then assemble the BU. */
-export function verifySubmission(input: unknown, roots: TrustedRoot[]): VerifiedSubmission {
+export function openSubmission(input: unknown, roots: TrustedRoot[]): VerifiedSubmission {
   if (typeof input === "object" && input !== null) {
     const extra = Object.keys(input).find((key) => !SUBMISSION_KEYS.has(key));
     if (extra) throw new BuError("UNEXPECTED_FIELD", `unexpected field ${extra}`);
@@ -83,4 +73,25 @@ export function verifySubmission(input: unknown, roots: TrustedRoot[]): Verified
   }
   const signature = verifyBuWithCertificate(parts, hexToBytes(parsed.output.certDer), roots);
   return { bu: assembleBu(parts), hash, signature };
+}
+
+/** Client side: build the payload from the scanned QRs and open it as the server will. */
+export function sealSubmission(
+  parts: BuQr[],
+  certs: CertQr[],
+  roots: TrustedRoot[],
+): VerifiedSubmission & { submission: BuSubmission } {
+  const sorted = [...parts].sort((a, b) => a.index - b.index);
+  const last = sorted.at(-1);
+  if (!last) throw new BuError("QR_SET_INCOMPLETE", "no BU QR codes");
+  const der = assembleCertificate(certs);
+  if (!last.assi) throw new BuError("SIGNATURE_MISSING", "BU has no ASSI");
+
+  const submission = {
+    contents: sorted.map((part) => part.content.trimEnd()),
+    assi: last.assi,
+    hash: last.hash.toUpperCase(),
+    certDer: bytesToHex(der),
+  };
+  return { submission, ...openSubmission(submission, roots) };
 }

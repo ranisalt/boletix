@@ -3,7 +3,7 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { type BuCargo, toSubmission, verifySubmission, type BuSubmission, TSE_ROOTS } from "../bu";
+import { type BuCargo, sealSubmission, openSubmission, type BuSubmission, TSE_ROOTS } from "../bu";
 import { loadBuScan } from "../bu/testing/fixtures";
 import { storeBu } from "./bu-store";
 
@@ -11,11 +11,11 @@ const ELECTION = "br-2026-general";
 
 function submissionFor(name: string): BuSubmission {
   const { parts, certs } = loadBuScan(name);
-  return toSubmission(parts, certs);
+  return sealSubmission(parts, certs, TSE_ROOTS).submission;
 }
 
 async function store(submission: BuSubmission) {
-  return storeBu(env, submission, verifySubmission(submission, TSE_ROOTS), ELECTION);
+  return storeBu(env, submission, openSubmission(submission, TSE_ROOTS), ELECTION);
 }
 
 async function originalKeys(): Promise<string[]> {
@@ -35,7 +35,7 @@ beforeEach(async () => {
 describe("storeBu", () => {
   it("stores the section, its per-cargo totals and every vote", async () => {
     const submission = submissionFor("df-97012-11-178");
-    const { bu, hash } = verifySubmission(submission, TSE_ROOTS);
+    const { bu, hash } = openSubmission(submission, TSE_ROOTS);
 
     await expect(store(submission)).resolves.toEqual({ status: "new", hash });
 
@@ -99,7 +99,7 @@ describe("storeBu", () => {
   it("stores the nominal and party votes of a proportional cargo", async () => {
     // No real fixture has a proportional cargo yet, so inject one past verification.
     const submission = submissionFor("zz-29386-1-1709");
-    const verified = verifySubmission(submission, TSE_ROOTS);
+    const verified = openSubmission(submission, TSE_ROOTS);
     const proportional: BuCargo = {
       ...verified.bu.cargos[0]!,
       cargo: 6,
@@ -139,7 +139,7 @@ describe("storeBu", () => {
 
   it("keeps the first BU when the same section arrives with different content", async () => {
     const submission = submissionFor("zz-29386-1-1709");
-    const verified = verifySubmission(submission, TSE_ROOTS);
+    const verified = openSubmission(submission, TSE_ROOTS);
     await storeBu(env, submission, verified, ELECTION);
 
     // Impossible with genuine urna output, so simulate it past verification.

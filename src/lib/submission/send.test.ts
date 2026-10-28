@@ -2,7 +2,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
-import { assembleBu, parseQr, toSubmission, type BuQr, type CertQr } from "../bu";
+import { assembleBu, parseQr, sealSubmission, type BuQr, type CertQr, TSE_ROOTS } from "../bu";
 import { loadBuFixture } from "../bu/testing/fixtures";
 import { listContributions } from "../contributions";
 import { sendBoletim } from "./send";
@@ -10,7 +10,10 @@ import { sendBoletim } from "./send";
 const fixture = loadBuFixture("df-97012-11-178");
 const parts = fixture.qrbu.map((raw) => parseQr(raw)) as BuQr[];
 const certs = fixture.qrce.map((raw) => parseQr(raw)) as CertQr[];
-const verified = { bu: assembleBu(parts), submission: toSubmission(parts, certs) };
+const verified = {
+  bu: assembleBu(parts),
+  submission: sealSubmission(parts, certs, TSE_ROOTS).submission,
+};
 
 function memoryStorage(): Storage {
   const items = new Map<string, string>();

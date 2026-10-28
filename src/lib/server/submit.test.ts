@@ -3,13 +3,13 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { toSubmission, type BuSubmission } from "../bu";
+import { sealSubmission, type BuSubmission, TSE_ROOTS } from "../bu";
 import { loadBuScan } from "../bu/testing/fixtures";
 import { assertPhaseAllowed, handleSubmission, MAX_BODY_BYTES, type SubmitOptions } from "./submit";
 
 function submissionFor(name: string): BuSubmission {
   const { parts, certs } = loadBuScan(name);
-  return toSubmission(parts, certs);
+  return sealSubmission(parts, certs, TSE_ROOTS).submission;
 }
 
 function post(body: unknown, init: RequestInit = {}): Request {

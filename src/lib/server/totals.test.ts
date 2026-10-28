@@ -3,7 +3,7 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { type Bu, toSubmission, verifySubmission, TSE_ROOTS } from "../bu";
+import { type Bu, sealSubmission, openSubmission, TSE_ROOTS } from "../bu";
 import { loadBuScan } from "../bu/testing/fixtures";
 import { storeBu } from "./bu-store";
 import { loadTotals } from "./totals";
@@ -14,8 +14,8 @@ const PRESIDENTE = 1;
 
 async function store(name: string): Promise<Bu> {
   const { parts, certs } = loadBuScan(name);
-  const submission = toSubmission(parts, certs);
-  const verified = verifySubmission(submission, TSE_ROOTS);
+  const submission = sealSubmission(parts, certs, TSE_ROOTS).submission;
+  const verified = openSubmission(submission, TSE_ROOTS);
   await storeBu(env, submission, verified, ELECTION);
   return verified.bu;
 }

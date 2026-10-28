@@ -9,11 +9,11 @@ export { BuError, type BuErrorCode } from "./errors";
 export { assembleBu, type Bu, type BuCargo } from "./format/assemble";
 export { MAX_QR_CHARS } from "./format/tokenize";
 export { MAX_QR_CODES, parseQr, type BuQr, type CertQr, type ParsedQr } from "./format/parse";
-export { chainHashes, verifyBuSignature } from "./signature/verify";
+export { chainHashes } from "./signature/verify";
 export { TSE_ROOTS } from "./signature/tse-roots";
 export {
-  toSubmission,
-  verifySubmission,
+  openSubmission,
+  sealSubmission,
   type BuSubmission,
   type VerifiedSubmission,
 } from "./submission";

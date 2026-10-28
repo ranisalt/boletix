@@ -2,7 +2,7 @@ import {
   BuError,
   MAX_QR_CHARS,
   MAX_QR_CODES,
-  verifySubmission,
+  openSubmission,
   type Bu,
   type BuSubmission,
   TSE_ROOTS,
@@ -102,7 +102,7 @@ export async function handleSubmission(
 
   let outcome: StoreOutcome;
   try {
-    const verified = verifySubmission(body, TSE_ROOTS);
+    const verified = openSubmission(body, TSE_ROOTS);
     const { proc, plei, turno, fase } = verified.bu.header;
     assertPhaseAllowed(fase, env);
     const election = findElection(proc, plei, turno, "6.0");

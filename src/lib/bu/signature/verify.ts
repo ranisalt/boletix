@@ -103,7 +103,7 @@ function findIssuingRoot(leaf: ParsedCert, roots: TrustedRoot[]): string | undef
 }
 
 /** Joins the QRCE parts into the urna certificate as DER, whether it was printed as DER or PEM. */
-export function assembleCertificate(certs: CertQr[]): { der: Uint8Array; idue: string } {
+export function assembleCertificate(certs: CertQr[]): Uint8Array {
   if (certs.length === 0)
     throw new BuError("CERT_MISSING", "urna certificate QR codes are required");
   const total = certs[0]!.total;
@@ -115,7 +115,7 @@ export function assembleCertificate(certs: CertQr[]): { der: Uint8Array; idue: s
   if (sorted.some((c) => c.idue !== idue)) {
     throw new BuError("QR_SET_MIXED", "certificate QR codes from different urnas");
   }
-  return { der: decodeCertBytes(hexToBytes(sorted.map((c) => c.cert).join(""))), idue };
+  return decodeCertBytes(hexToBytes(sorted.map((c) => c.cert).join("")));
 }
 
 function buIdue(parts: BuQr[]): string | undefined {
@@ -142,19 +142,6 @@ export function chainHashes(contents: string[]): string[] {
     hash = sha512Hex(text);
     return hash;
   });
-}
-
-/** Full check from scanned QRs: assembles the certificate, then {@link verifyBuWithCertificate}. */
-export function verifyBuSignature(
-  parts: BuQr[],
-  certs: CertQr[],
-  roots: TrustedRoot[],
-): SignatureVerification {
-  if (parts.length === 0) throw new BuError("QR_SET_INCOMPLETE", "no BU QR codes");
-  const { der, idue } = assembleCertificate(certs);
-  if (idue !== buIdue(parts))
-    throw new BuError("CERT_URNA_MISMATCH", "certificate belongs to another urna");
-  return verifyBuWithCertificate(parts, der, roots);
 }
 
 /** Verifies HASH, the urna certificate (issuer and CN `UEAO0<IDUE>`) and ASSI, given the certificate DER. */
