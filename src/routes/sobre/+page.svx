@@ -1,0 +1,68 @@
+<script lang="ts">
+  import { m } from "#lib/paraglide/messages.js";
+  import { FaqItem, OfficialSources, PageHead, Thanks } from "#lib/ui/index.js";
+
+  import { CONTRIBUTORS } from "./contributors.js";
+</script>
+
+<PageHead title={m.nav_about()} description={m.about_description()} />
+
+<div
+  class="max-w-3xl space-y-10 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:text-xl [&_h2]:font-semibold [&_strong]:text-foreground [&_ul:not([class])]:list-disc [&_ul:not([class])]:space-y-2 [&_ul:not([class])]:pl-5 [&_ul:not([class])]:text-muted-foreground"
+>
+<section class="space-y-4">
+
+# Sobre o Boletix
+
+## Metodologia
+
+- **Verificação criptográfica:** a assinatura digital de cada BU é conferida contra o certificado da urna, no aparelho e no servidor.
+- **Sem dados pessoais:** não há cadastro, login ou rastreamento.
+- **Transparência:** os totais mostram sempre a cobertura (seções coletadas versus total).
+
+</section>
+
+<section>
+
+## Perguntas frequentes
+
+<div class="divide-y rounded-lg border bg-card">
+<FaqItem question="O Boletix é oficial?">
+
+Não. É um projeto independente, sem vínculo com o TSE ou a Justiça Eleitoral. Resultados oficiais só no site do TSE.
+
+</FaqItem>
+<FaqItem question="Como sei que um boletim é verdadeiro?">
+
+Cada BU é assinado digitalmente pela urna. O Boletix confere essa assinatura no seu aparelho antes do envio, e de novo no servidor.
+
+</FaqItem>
+<FaqItem question="Que dados meus são coletados?">
+
+Nenhum dado pessoal. Enviamos apenas o conteúdo do boletim. Seu histórico fica só no seu aparelho.
+
+</FaqItem>
+<FaqItem question="Por que algumas seções aparecem como “não coletado”?">
+
+Porque ninguém enviou o boletim daquela seção ainda. Nunca tratamos uma seção não coletada como zero voto.
+
+</FaqItem>
+<FaqItem question="O que é um conflito?">
+
+Quando chegam dois boletins diferentes para a mesma seção. Ambos ficam registrados para análise.
+
+</FaqItem>
+</div>
+
+</section>
+
+<Thanks names={CONTRIBUTORS} />
+
+<section>
+
+## Fontes oficiais
+
+<OfficialSources class="space-y-2" />
+
+</section>
+</div>
