@@ -50,7 +50,7 @@ it("rejects a PEM body that is not terminated", () => {
 });
 
 it("decodes every real 2026 certificate into a DER SEQUENCE, not PEM text", () => {
-  for (const fixture of loadBuFixtures()) {
+  for (const fixture of loadBuFixtures().filter((f) => f.qrce.length > 0)) {
     const der = assembleCertificate(loadBuScan(fixture.name).certs);
     expect(der[0], fixture.name).toBe(0x30);
     expect(new TextDecoder().decode(der).startsWith("-----"), fixture.name).toBe(false);
@@ -64,12 +64,12 @@ it("decodes a PEM certificate split across QR codes into the same DER", () => {
   const wrapped = base64.match(/.{1,64}/g)!.join("\n");
   const pem = `-----BEGIN CERTIFICATE-----\n${wrapped}\n-----END CERTIFICATE-----\n`;
   const hex = bytesToHex(new TextEncoder().encode(pem));
-  const split = Math.floor(hex.length / 4) * 2; // split on a byte boundary
+  // Each QR payload must stay within MAX_QR_CHARS (1100); 1000 hex chars is an even, byte-aligned split.
+  const chunks = hex.match(/.{1,1000}/g)!;
   const { idue, mdue } = certs[0]!;
-  const pemCerts = [
-    cert(`QRCE:1:2 IDUE:${idue} MDUE:${mdue} CERT:${hex.slice(0, split)}`),
-    cert(`QRCE:2:2 IDUE:${idue} MDUE:${mdue} CERT:${hex.slice(split)}`),
-  ];
+  const pemCerts = chunks.map((chunk, i) =>
+    cert(`QRCE:${i + 1}:${chunks.length} IDUE:${idue} MDUE:${mdue} CERT:${chunk}`),
+  );
 
   expect(assembleCertificate(pemCerts)).toEqual(der);
 });
