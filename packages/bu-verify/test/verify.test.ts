@@ -1,3 +1,4 @@
+import { BuError } from "@boletix/bu-qr";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { Certificate } from "@peculiar/asn1-x509";
 import { describe, expect, it } from "vitest";
@@ -55,6 +56,23 @@ describe("verifyBu", () => {
       async () => verifyBu({ ...bu, hash }, certificate, TSE_ROOTS),
       "SIGNATURE_INVALID",
     );
+  });
+
+  it.each([ED521, ECDSA])("accepts a lowercased HASH in %s", async (name) => {
+    const { bu, certificate } = await loadSigned(name);
+    await expect(
+      verifyBu({ ...bu, hash: bu.hash.toLowerCase() }, certificate, TSE_ROOTS),
+    ).resolves.toMatchObject({ root: expect.any(String) });
+  });
+
+  it.each([ED521, ECDSA])("rejects a HASH that is not whole hex bytes in %s", async (name) => {
+    const { bu, certificate } = await loadSigned(name);
+    const thrown = await verifyBu({ ...bu, hash: `${bu.hash}0` }, certificate, TSE_ROOTS).then(
+      () => undefined,
+      (error: unknown) => error,
+    );
+    expect(thrown).toBeInstanceOf(BuError);
+    expect((thrown as BuError).code).toBe("INVALID_FIELD");
   });
 
   it.each([ED521, ECDSA])(

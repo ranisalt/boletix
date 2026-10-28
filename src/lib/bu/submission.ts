@@ -7,7 +7,9 @@
 import {
   assembleBu,
   assembleCertificate,
+  bytesToHex,
   chainHashes,
+  hexToBytes,
   MAX_QR_CHARS,
   MAX_QR_CODES,
   parseQr,
@@ -23,10 +25,6 @@ import { BuError } from "./errors";
 const HEX = /^(?:[0-9A-Fa-f]{2})+$/;
 const hex = (maxLength: number) => v.pipe(v.string(), v.maxLength(maxLength), v.regex(HEX));
 
-const toHex = (bytes: Uint8Array) =>
-  Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
-const fromHex = (hex: string) =>
-  Uint8Array.from(hex.match(/../g) ?? [], (pair) => Number.parseInt(pair, 16));
 const SubmissionSchema = v.object({
   // Boundaries matter: the chained HASH is inserted between consecutive QR contents.
   contents: v.pipe(
@@ -81,7 +79,7 @@ export async function openSubmission(
   if (assembled.hash !== parsed.output.hash.toUpperCase()) {
     throw new BuError("HASH_MISMATCH", "submitted HASH does not match the submitted contents");
   }
-  const signature = await verifyBu(assembled, fromHex(parsed.output.certDer), roots);
+  const signature = await verifyBu(assembled, hexToBytes(parsed.output.certDer), roots);
   return { bu: assembled.bu, hash: assembled.hash, signature };
 }
 
@@ -98,9 +96,9 @@ export async function sealSubmission(
   const submission = {
     contents: parts.toSorted((a, b) => a.index - b.index).map((part) => part.content.trimEnd()),
     // As printed: ASSI in uppercase hex. The certificate goes as lowercase hex DER.
-    assi: toHex(assi).toUpperCase(),
+    assi: bytesToHex(assi).toUpperCase(),
     hash,
-    certDer: toHex(der),
+    certDer: bytesToHex(der),
   };
   return { submission, ...(await openSubmission(submission, roots)) };
 }

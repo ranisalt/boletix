@@ -1,4 +1,4 @@
-import type { AssembledBu } from "@boletix/bu-qr";
+import { type AssembledBu, bytesToHex, hexToBytes } from "@boletix/bu-qr";
 
 import { verifySignature } from "./algorithms.ts";
 import { VerificationError } from "./errors.ts";
@@ -20,13 +20,6 @@ export type SignatureVerification = {
   root: string;
 };
 
-const toHex = (bytes: Uint8Array) =>
-  Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
-
-function hexToBytes(hex: string): Uint8Array<ArrayBuffer> {
-  return Uint8Array.from(hex.match(/../g) ?? [], (pair) => Number.parseInt(pair, 16));
-}
-
 async function sha(
   algorithm: "SHA-256" | "SHA-512",
   data: Uint8Array<ArrayBuffer>,
@@ -37,7 +30,7 @@ async function sha(
 async function loadRoot(root: TrustedRoot): Promise<ParsedCertificate> {
   const der = Uint8Array.from(atob(root.derBase64), (c) => c.charCodeAt(0));
   // A configuration error, not a property of the BU: fail loudly instead of reporting CERT_INVALID.
-  if (toHex(await sha("SHA-256", der)) !== root.sha256) {
+  if (bytesToHex(await sha("SHA-256", der)) !== root.sha256) {
     throw new Error(`pinned root ${root.name} does not match its sha256`);
   }
   return parseCertificate(der);
@@ -62,7 +55,8 @@ async function findIssuingRoot(
  * Verifies a BU the way TSE's "Boletim na Mão" app does: the urna certificate must name the BU's
  * urna (CN `UEAO0<IDUE>`) and be issued by one of `roots` (trusted directly; expiry is not
  * checked), and ASSI must sign the BU's HASH under it. Pass `bu` straight from `assembleBu`, which
- * has already checked the HASH chain. Throws `VerificationError`.
+ * has already checked the HASH chain. Throws `VerificationError`, or bu-qr's `BuError`
+ * (`INVALID_FIELD`) when `bu.hash` is not hex.
  */
 export async function verifyBu(
   bu: Pick<AssembledBu, "bu" | "hash" | "assi">,

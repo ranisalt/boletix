@@ -4,7 +4,7 @@ Parsing accepts some inputs the manual rules out. A BU is only accepted after it
 chain and certificate are verified, and a properly signed BU comes from a real urna, so these can't
 be exploited today. They are written down so they aren't forgotten if that assumption changes.
 
-## BU format (`src/lib/bu/format`)
+## BU format (`packages/bu-qr`)
 
 - `LEGC` is accepted on majoritarian cargos (manual: only included for proportional ones), where
   absence is read as 0 legenda votes.

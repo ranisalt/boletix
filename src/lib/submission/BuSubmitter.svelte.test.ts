@@ -198,7 +198,7 @@ describe("BuSubmitter", () => {
     scan(buQr, cert1, cert2);
     session.reset();
 
-    await session.verify().catch(() => undefined);
+    await session.verify();
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(screen.queryByText("Assinatura verificada")).not.toBeInTheDocument();
     expect(screen.getByText(WAITING)).toBeInTheDocument();

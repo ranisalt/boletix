@@ -10,6 +10,8 @@ it("exposes exactly the documented public API", () => {
       "MAX_QR_CODES",
       "assembleBu",
       "assembleCertificate",
+      "bytesToHex",
+      "hexToBytes",
       "chainHashes",
       "parseQr",
     ].toSorted(),
