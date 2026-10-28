@@ -17,6 +17,7 @@
   import { PageHead } from "#lib/ui/index.js";
 
   import CheckStep from "./CheckStep.svelte";
+  import Fact from "./Fact.svelte";
   import Field from "./Field.svelte";
   import HashDemo from "./HashDemo.svelte";
   import ReadMore from "./ReadMore.svelte";
@@ -89,7 +90,8 @@
 <ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
 
 <Step n={5} icon={KeyRound} title="Assinatura digital da urna">
-<p>Cada urna tem uma <strong>chave privada</strong> guardada no seu hardware, que nunca sai dela. Com essa chave, a urna assina o hash final. Qualquer pessoa pode conferir a assinatura usando a <strong>chave pública</strong> correspondente, mas ninguém consegue criar uma assinatura válida sem a chave privada.</p>
+<p>Cada urna tem um <strong>par de chaves</strong>, criadas juntas e ligadas matematicamente. A <strong>chave privada</strong> fica guardada no hardware da urna e nunca sai dela; é com ela que a urna assina o hash final. A <strong>chave pública</strong> pode ser divulgada para todo mundo e serve só para conferir: ela diz se uma assinatura foi feita pela chave privada correspondente, mas não permite criar uma.</p>
+<p>A matemática por trás é a de <strong>curvas elípticas</strong>: as urnas de 2020 em diante usam Ed521, e as mais antigas, ECDSA com a curva P-521.</p>
 <div class="grid items-center gap-3 text-center sm:grid-cols-[1fr_auto_1fr_auto_1fr]">
 <div class="rounded-lg bg-accent p-3 text-sm text-accent-foreground">hash d07e…</div>
 <span aria-hidden="true">+</span>
@@ -97,6 +99,16 @@
 <span aria-hidden="true">=</span>
 <div class="rounded-lg bg-success p-3 font-semibold text-primary-foreground">ASSINATURA</div>
 </div>
+<Fact title="Por que não dá para falsificar">
+<p>Descobrir a chave privada a partir da pública exige resolver um problema matemático (o logaritmo discreto em curvas elípticas) para o qual não se conhece atalho. Com chaves de 521 bits, testar as possibilidades levaria muito mais tempo que a idade do universo, mesmo com todos os computadores do mundo.</p>
+<p>A assinatura também vale só para aquele hash. Mudar um voto muda o hash, e a assinatura deixa de conferir; copiar a assinatura de outro boletim também não funciona.</p>
+</Fact>
+<Fact title="Não repúdio">
+<p>Como só aquela urna tem a chave privada, uma assinatura válida prova que foi ela que gerou o boletim. Ninguém pode depois negar que aquele resultado saiu da urna, nem atribuir a ela um boletim que ela não assinou.</p>
+</Fact>
+<Fact title="Assinar não é esconder">
+<p>A assinatura não cifra nada: o boletim continua legível por qualquer pessoa, e é para ser. Ela garante <strong>integridade</strong> (nada mudou) e <strong>autoria</strong> (quem gerou), não sigilo. O sigilo do voto vem de outro lugar: o boletim só traz os totais da seção, nunca quem votou em quem.</p>
+</Fact>
 </Step>
 
 <ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
@@ -109,6 +121,15 @@
 <li class="ml-12 rounded-lg border-2 border-success p-3"><strong>Assinatura do boletim</strong> — feita pela chave privada daquela urna.</li>
 </ol>
 <p class="text-sm text-muted-foreground">Se a corrente inteira confere, sabemos que o boletim saiu de uma urna oficial e não foi alterado depois.</p>
+<Fact title="Por que a chave sozinha não basta">
+<p>Uma chave pública é só um número. Qualquer pessoa pode gerar um par de chaves, assinar um boletim falso e dizer que a chave é de uma urna. O certificado resolve isso: é a autoridade da Justiça Eleitoral, com a própria assinatura, afirmando que aquela chave pertence a uma urna oficial. É o mesmo esquema do cadeado do navegador, que confere o certificado de um site antes de confiar nele.</p>
+</Fact>
+<Fact title="De onde vem a raiz">
+<p>Alguém precisa ser o ponto de partida da confiança. O Boletix usa os mesmos certificados raiz que vêm dentro do aplicativo oficial do TSE, o Boletim na Mão. Eles ficam gravados no código, e não são baixados na hora de conferir.</p>
+</Fact>
+<Fact title="Certificado de outra urna não serve">
+<p>O certificado traz a identificação da urna, e o boletim também. O Boletix confere que são a mesma, então nem uma urna verdadeira, com certificado válido, consegue assinar um boletim se passando por outra.</p>
+</Fact>
 </Step>
 
 ## Parte 2 — No Boletix, o caminho de volta

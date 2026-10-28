@@ -27,6 +27,21 @@ describe("/como-funciona", () => {
     expect(screen.getAllByText(/QRCE/).length).toBeGreaterThan(0);
   });
 
+  it("explains why signatures can't be forged and what certificates add", () => {
+    render(Page);
+
+    expect(
+      screen.getAllByRole("heading", { level: 4 }).map((heading) => heading.textContent),
+    ).toEqual([
+      "Por que não dá para falsificar",
+      "Não repúdio",
+      "Assinar não é esconder",
+      "Por que a chave sozinha não basta",
+      "De onde vem a raiz",
+      "Certificado de outra urna não serve",
+    ]);
+  });
+
   it("sends the reader to submit a BU and opens references externally", () => {
     render(Page);
 
