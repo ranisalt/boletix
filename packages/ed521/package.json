@@ -40,7 +40,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "check": "tsc -p tsconfig.json --noEmit",
-    "lint": "oxlint -c ../.oxlintrc.json --deny-warnings src test",
+    "lint": "oxlint -c ../../oxlint.config.js --deny-warnings src test",
     "pack:check": "publint --strict && attw --pack --profile esm-only",
     "prepack": "pnpm run build",
     "test": "vitest run"
@@ -50,12 +50,12 @@
     "@noble/hashes": "^2.4.0"
   },
   "devDependencies": {
-    "@tsconfig/node24": "^24.0.5",
+    "@tsconfig/node26": "^26.0.1",
     "@tsconfig/strictest": "^2.0.8",
     "typescript": "^6.0.3",
     "vitest": "^4.1.12"
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "extends": ["@tsconfig/strictest/tsconfig.json", "@tsconfig/node24/tsconfig.json"],
+  "extends": ["@tsconfig/strictest/tsconfig.json", "@tsconfig/node26/tsconfig.json"],
   "compilerOptions": {
     // Runs in browsers and Workers too: WebCrypto types come from the DOM lib, never @types/node.
     "lib": ["es2024", "DOM"],
