@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "vite build",
+    "changeset": "changeset",
     "check": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide --emit-ts-declarations && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "dev": "vite dev",
@@ -21,8 +22,10 @@
     "packages:test": "pnpm -r --filter './packages/*' test",
     "prepare": "svelte-kit sync || echo ''",
     "preview": "vite preview",
+    "release": "pnpm packages:build && changeset publish",
     "test": "vitest run",
-    "test:unit": "vitest"
+    "test:unit": "vitest",
+    "version-packages": "changeset version && pnpm install --lockfile-only"
   },
   "dependencies": {
     "@lucide/svelte": "^1.61.0",
