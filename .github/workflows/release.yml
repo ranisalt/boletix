@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  # Required for npm Trusted Publishing (OIDC) and provenance.
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # With pending changesets: opens or updates the "Version Packages" PR.
+      # With none left: publishes the packages that are not yet on npm.
+      # Publishing uses OIDC; no NPM_TOKEN secret is needed once Trusted Publishing
+      # is configured for each package (ranisalt/boletix, release.yml).
+      #
+      # The very first publish of each package must be done by hand with 2FA
+      # (`pnpm changeset publish`), because Trusted Publishing can only be set up
+      # on a package that already exists on npm.
+      - uses: changesets/action@v1
+        with:
+          version: pnpm version-packages
+          publish: pnpm release
+          commit: "chore: version @boletix packages"
+          title: "chore: version @boletix packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

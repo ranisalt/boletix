@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "pnpm packages:build && vite build",
+    "changeset": "changeset",
     "check": "pnpm packages:build && paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide --emit-ts-declarations && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "dev": "pnpm packages:build && vite dev",
@@ -21,8 +22,10 @@
     "packages:test": "pnpm -r --filter './packages/*' test",
     "prepare": "pnpm packages:build && (svelte-kit sync || echo '')",
     "preview": "vite preview",
+    "release": "pnpm packages:build && changeset publish",
     "test": "pnpm packages:build && vitest run",
-    "test:unit": "vitest"
+    "test:unit": "vitest",
+    "version-packages": "changeset version && pnpm install --lockfile-only"
   },
   "dependencies": {
     "@boletix/bu-qr": "workspace:^",
