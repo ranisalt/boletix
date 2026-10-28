@@ -49,6 +49,10 @@ describe("/como-funciona", () => {
       "href",
       "/enviar",
     );
+    expect(screen.getByRole("link", { name: "o que acontece em um conflito" })).toHaveAttribute(
+      "href",
+      "/sobre#conflito",
+    );
     expect(screen.getByRole("link", { name: /SHA-2/ })).toHaveAttribute(
       "rel",
       "external noreferrer",

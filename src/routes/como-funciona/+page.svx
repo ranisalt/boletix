@@ -132,6 +132,8 @@
 </Fact>
 </Step>
 
+<section id="conferencia" class="scroll-mt-4 space-y-4">
+
 ## Parte 2 — No Boletix, o caminho de volta
 
 <ol class="grid gap-4 sm:grid-cols-2">
@@ -140,8 +142,10 @@
 <CheckStep n={3} icon={FingerprintPattern} title="Recalcular a corrente de hashes">O app calcula de novo o SHA-512 de cada parte e compara com o impresso.</CheckStep>
 <CheckStep n={4} icon={Landmark} title="Conferir o certificado">Verifica que o certificado foi assinado pela autoridade da Justiça Eleitoral e que pertence à urna do boletim.</CheckStep>
 <CheckStep n={5} icon={KeyRound} title="Conferir a assinatura">Usa a chave pública do certificado para checar a assinatura do hash final.</CheckStep>
-<CheckStep n={6} icon={BadgeCheck} title="Extrair e enviar os votos">Só então os números são lidos e enviados. O servidor repete toda a verificação.</CheckStep>
+<CheckStep n={6} icon={BadgeCheck} title="Extrair e enviar os votos">Só então os números são lidos e enviados. O servidor repete toda a verificação e confere se a seção já tinha um boletim; veja <a class="underline" href="{resolve('/sobre')}#conflito">o que acontece em um conflito</a>.</CheckStep>
 </ol>
+
+</section>
 
 <a class="btn bg-primary text-primary-foreground" href={resolve("/enviar")}>Enviar um boletim</a>
 

@@ -20,4 +20,31 @@ describe("/sobre", () => {
     ).toHaveAttribute("href", "/como-funciona");
     expect(screen.getByRole("link", { name: "TSE" })).toHaveAttribute("rel", "external noreferrer");
   });
+
+  it("links each crypto claim to the step that explains it", () => {
+    render(Page);
+
+    expect(screen.getByRole("link", { name: "assinatura digital" })).toHaveAttribute(
+      "href",
+      "/como-funciona#passo-5",
+    );
+    expect(screen.getByRole("link", { name: "certificado da urna" })).toHaveAttribute(
+      "href",
+      "/como-funciona#passo-6",
+    );
+    expect(screen.getByRole("link", { name: "Veja como a conferência funciona" })).toHaveAttribute(
+      "href",
+      "/como-funciona#conferencia",
+    );
+  });
+
+  it("explains that conflicts are not expected", () => {
+    render(Page);
+
+    expect(screen.getByText("O que é um conflito?").closest("details")).toHaveAttribute(
+      "id",
+      "conflito",
+    );
+    expect(screen.getByText(/não deveriam existir/)).toBeInTheDocument();
+  });
 });

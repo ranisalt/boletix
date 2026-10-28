@@ -19,7 +19,7 @@
 
 ## Metodologia
 
-- **Verificação criptográfica:** a assinatura digital de cada BU é conferida contra o certificado da urna, no aparelho e no servidor.
+- **Verificação criptográfica:** a <a class="underline" href="{resolve('/como-funciona')}#passo-5">assinatura digital</a> de cada BU é conferida contra o <a class="underline" href="{resolve('/como-funciona')}#passo-6">certificado da urna</a>, no aparelho e no servidor.
 - **Sem dados pessoais:** não há cadastro, login ou rastreamento.
 - **Transparência:** os totais mostram sempre a cobertura (seções coletadas versus total).
 
@@ -39,7 +39,7 @@ Não. É um projeto independente, sem vínculo com o TSE ou a Justiça Eleitoral
 </FaqItem>
 <FaqItem question="Como sei que um boletim é verdadeiro?">
 
-Cada BU é assinado digitalmente pela urna. O Boletix confere essa assinatura no seu aparelho antes do envio, e de novo no servidor.
+Cada BU é assinado digitalmente pela urna. O Boletix confere essa assinatura no seu aparelho antes do envio, e de novo no servidor. <a class="underline" href="{resolve('/como-funciona')}#conferencia">Veja como a conferência funciona</a>.
 
 </FaqItem>
 <FaqItem question="Que dados meus são coletados?">
@@ -47,14 +47,18 @@ Cada BU é assinado digitalmente pela urna. O Boletix confere essa assinatura no
 Nenhum dado pessoal. Enviamos apenas o conteúdo do boletim. Seu histórico fica só no seu aparelho.
 
 </FaqItem>
-<FaqItem question="Por que algumas seções aparecem como “não coletado”?">
+<FaqItem question="Os totais incluem todas as seções?">
 
-Porque ninguém enviou o boletim daquela seção ainda. Nunca tratamos uma seção não coletada como zero voto.
+Não. Somamos apenas os boletins que alguém já enviou. Uma seção sem boletim fica de fora da soma, em vez de entrar como se ninguém tivesse votado nela; por isso os totais sempre vêm com a cobertura, que mostra quantas seções já foram coletadas.
 
 </FaqItem>
-<FaqItem question="O que é um conflito?">
+<FaqItem id="conflito" question="O que é um conflito?">
 
-Quando chegam dois boletins diferentes para a mesma seção. Ambos ficam registrados para análise.
+Quando chegam dois boletins diferentes, ambos com assinatura válida, para a mesma seção.
+
+Isso não deveria acontecer. Cada seção tem um único boletim, e a assinatura da urna impede que alguém altere um voto sem invalidá-la. Se alguém enviar o mesmo boletim de novo, ele é reconhecido como repetido e descartado, sem conflito. Por isso, dois boletins diferentes e válidos para a mesma seção não deveriam existir.
+
+Se acontecer, mantemos o primeiro nos totais, guardamos o segundo como evidência e a equipe é avisada para investigar.
 
 </FaqItem>
 </div>

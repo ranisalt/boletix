@@ -67,7 +67,7 @@
           <a
             href={item.href}
             aria-current={current(item.href)}
-            class="btn min-h-11 px-3 font-medium text-muted-foreground hover:bg-muted aria-[current=page]:bg-accent"
+            class="btn relative min-h-11 px-3 font-medium text-muted-foreground after:absolute after:inset-x-3 after:bottom-1 after:h-1 after:rounded-full after:bg-primary after:opacity-0 hover:bg-muted aria-[current=page]:text-foreground aria-[current=page]:after:opacity-100"
             >{item.label()}</a
           >
         {/each}
