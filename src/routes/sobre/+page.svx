@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
+  import { ArrowRight } from "@lucide/svelte";
+
   import { m } from "#lib/paraglide/messages.js";
   import { FaqItem, OfficialSources, PageHead, Thanks } from "#lib/ui/index.js";
 
@@ -19,6 +22,8 @@
 - **Verificação criptográfica:** a assinatura digital de cada BU é conferida contra o certificado da urna, no aparelho e no servidor.
 - **Sem dados pessoais:** não há cadastro, login ou rastreamento.
 - **Transparência:** os totais mostram sempre a cobertura (seções coletadas versus total).
+
+<a class="btn border-2" href={resolve("/como-funciona")}>Ver o passo a passo da criptografia <ArrowRight class="size-4" aria-hidden="true" /></a>
 
 </section>
 

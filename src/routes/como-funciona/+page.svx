@@ -1,0 +1,140 @@
+<script lang="ts">
+  import { resolve } from "$app/paths";
+  import {
+    ArrowDown,
+    BadgeCheck,
+    Combine,
+    FileKey,
+    FingerprintPattern,
+    KeyRound,
+    Landmark,
+    QrCode,
+    ScanLine,
+    Split,
+  } from "@lucide/svelte";
+
+  import { m } from "#lib/paraglide/messages.js";
+  import { PageHead } from "#lib/ui/index.js";
+
+  import CheckStep from "./CheckStep.svelte";
+  import Field from "./Field.svelte";
+  import ReadMore from "./ReadMore.svelte";
+  import Step from "./Step.svelte";
+</script>
+
+<PageHead title={m.how_it_works_title()} description={m.how_it_works_description()} />
+
+<div class="max-w-4xl space-y-10 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:text-2xl [&_h2]:font-bold [&_strong]:text-foreground">
+<header class="space-y-3">
+
+# Como funciona
+
+<p class="text-lg text-muted-foreground">Do voto na urna até a tela do seu celular: como o boletim vira QR codes que ninguém consegue falsificar, e como o Boletix confere isso de volta. Os números abaixo são de exemplo.</p>
+</header>
+
+## Parte 1 — Na urna
+
+<Step n={1} icon={FileKey} title="Os votos da seção">
+<p>Ao fim da votação, a urna soma os votos da seção. Cada cor abaixo mostra onde cada informação vai parar no próximo passo.</p>
+<div class="overflow-x-auto rounded-lg border">
+<table class="w-full text-left text-sm sm:text-base">
+<thead class="bg-muted text-sm"><tr><th class="p-3">Informação</th><th class="p-3">Valor</th><th class="p-3">Vira o campo</th></tr></thead>
+<tbody class="divide-y tabular-nums">
+<tr class="bg-slate-500/20"><td class="p-3">Município / zona / seção</td><td class="p-3">71072 / 123 / 456</td><td class="p-3">MUNI:71072 ZONA:123 SECA:456</td></tr>
+<tr class="bg-sky-500/25"><td class="p-3">Candidato 13</td><td class="p-3 font-semibold">142</td><td class="p-3">13:142</td></tr>
+<tr class="bg-emerald-500/25"><td class="p-3">Candidato 22</td><td class="p-3 font-semibold">128</td><td class="p-3">22:128</td></tr>
+<tr class="bg-fuchsia-500/25"><td class="p-3">Candidato 15</td><td class="p-3 font-semibold">31</td><td class="p-3">15:31</td></tr>
+<tr class="bg-amber-500/25"><td class="p-3">Brancos / nulos</td><td class="p-3 font-semibold">7 / 12</td><td class="p-3">BRAN:7 NULO:12</td></tr>
+</tbody>
+</table>
+</div>
+</Step>
+
+<ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
+
+<Step n={2} icon={Combine} title="Serialização: tudo vira um texto padronizado">
+<p>As informações são escritas em uma ordem fixa, no formato CAMPO:valor. Assim qualquer programa lê o boletim do mesmo jeito.</p>
+<p class="rounded-lg border-2 bg-background p-4 text-sm leading-9">
+<Field tone="meta">QRBU:1:3 VRQR:6.0</Field> … <Field tone="meta">MUNI:71072 ZONA:123 SECA:456</Field> … <Field tone="meta">CARG:1</Field> <Field tone="a">13:142</Field> <Field tone="b">22:128</Field> <Field tone="c">15:31</Field> <Field tone="blank">BRAN:7 NULO:12</Field> <Field tone="meta">TOTC:320</Field>
+</p>
+<p class="text-sm text-muted-foreground">QRBU:1:3 quer dizer “parte 1 de 3”, e VRQR:6.0 é a versão do formato usada em 2026. As reticências marcam campos omitidos, como o código da eleição e o identificador da urna. O arquivo completo do boletim usa outro formato, binário; o QR code usa este, em texto, definido pelo TSE.</p>
+</Step>
+
+<ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
+
+<Step n={3} icon={Split} title="Divisão em vários QR codes">
+<p>Um QR code impresso na fita estreita da urna só cabe uma quantidade limitada de texto. Por isso o boletim é cortado em partes, cada uma em seu QR code.</p>
+<div class="grid grid-cols-3 gap-3">
+<div class="flex flex-col items-center gap-2 rounded-lg border-2 bg-background p-3 text-center"><QrCode class="size-14" aria-hidden="true" /><span class="text-sm font-bold">Parte 1/3</span><span class="text-xs text-muted-foreground">HASH:9f2c…</span></div>
+<div class="flex flex-col items-center gap-2 rounded-lg border-2 bg-background p-3 text-center"><QrCode class="size-14" aria-hidden="true" /><span class="text-sm font-bold">Parte 2/3</span><span class="text-xs text-muted-foreground">HASH:41ab…</span></div>
+<div class="flex flex-col items-center gap-2 rounded-lg border-2 bg-background p-3 text-center"><QrCode class="size-14" aria-hidden="true" /><span class="text-sm font-bold">Parte 3/3</span><span class="text-xs text-muted-foreground">HASH:d07e…</span><span class="rounded bg-success px-2 py-0.5 text-xs font-semibold text-primary-foreground">+ ASSINATURA</span></div>
+</div>
+</Step>
+
+<ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
+
+<Step n={4} icon={FingerprintPattern} title="Hash: uma impressão digital de cada parte">
+<p>Um <strong>hash</strong> (SHA-512) é um resumo de tamanho fixo calculado a partir do texto. Mudar um único voto muda o resumo por completo. O hash de cada parte é calculado sobre o texto dela somado ao hash da parte anterior, formando uma corrente:</p>
+<div class="flex flex-wrap items-center gap-2 text-sm">
+<span class="rounded border-2 px-2 py-1">Parte 1 → 9f2c…</span>→<span class="rounded border-2 px-2 py-1">Parte 2 + 9f2c → 41ab…</span>→<span class="rounded border-2 px-2 py-1">Parte 3 + 41ab → d07e…</span>
+</div>
+<div class="grid gap-3 sm:grid-cols-2">
+<div class="rounded-lg border-2 border-success p-3"><p class="font-semibold">Original: <Field tone="a">13:142</Field></p><p class="text-sm">hash final d07e…</p></div>
+<div class="rounded-lg border-2 border-destructive p-3"><p class="font-semibold">Alterado: <Field tone="a">13:143</Field></p><p class="text-sm">hash final 7b19… (não confere)</p></div>
+</div>
+</Step>
+
+<ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
+
+<Step n={5} icon={KeyRound} title="Assinatura digital da urna">
+<p>Cada urna tem uma <strong>chave privada</strong> guardada no seu hardware, que nunca sai dela. Com essa chave, a urna assina o hash final. Qualquer pessoa pode conferir a assinatura usando a <strong>chave pública</strong> correspondente, mas ninguém consegue criar uma assinatura válida sem a chave privada.</p>
+<div class="grid items-center gap-3 text-center sm:grid-cols-[1fr_auto_1fr_auto_1fr]">
+<div class="rounded-lg bg-accent p-3 text-sm text-accent-foreground">hash d07e…</div>
+<span aria-hidden="true">+</span>
+<div class="rounded-lg bg-accent p-3 text-sm text-accent-foreground">chave privada da urna</div>
+<span aria-hidden="true">=</span>
+<div class="rounded-lg bg-success p-3 font-semibold text-primary-foreground">ASSINATURA</div>
+</div>
+</Step>
+
+<ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
+
+<Step n={6} icon={Landmark} title="Certificado digital: prova de que é uma urna real">
+<p>A chave pública da urna vem dentro de um <strong>certificado digital</strong>, assinado pela autoridade certificadora da Justiça Eleitoral. Funciona como um documento de identidade: o TSE “carimba” que aquela chave pertence a uma urna oficial. O certificado é impresso no boletim em QR codes próprios, marcados QRCE, ao lado dos QR codes dos votos.</p>
+<ol class="space-y-2">
+<li class="rounded-lg border-2 p-3"><strong>Raiz de confiança</strong> — certificado da autoridade da Justiça Eleitoral, publicado pelo TSE.</li>
+<li class="ml-6 rounded-lg border-2 p-3"><strong>Certificado da urna</strong> — assinado por essa autoridade, contém a chave pública da urna.</li>
+<li class="ml-12 rounded-lg border-2 border-success p-3"><strong>Assinatura do boletim</strong> — feita pela chave privada daquela urna.</li>
+</ol>
+<p class="text-sm text-muted-foreground">Se a corrente inteira confere, sabemos que o boletim saiu de uma urna oficial e não foi alterado depois.</p>
+</Step>
+
+## Parte 2 — No Boletix, o caminho de volta
+
+<ol class="grid gap-4 sm:grid-cols-2">
+<CheckStep n={1} icon={ScanLine} title="Ler os QR codes em qualquer ordem">Os do boletim (QRBU:i:N) e os do certificado (QRCE:i:N). Cada um diz qual parte é e quantas existem, então o app avisa quais faltam.</CheckStep>
+<CheckStep n={2} icon={Combine} title="Juntar as partes">Com todas lidas, o texto é remontado na ordem certa.</CheckStep>
+<CheckStep n={3} icon={FingerprintPattern} title="Recalcular a corrente de hashes">O app calcula de novo o SHA-512 de cada parte e compara com o impresso.</CheckStep>
+<CheckStep n={4} icon={Landmark} title="Conferir o certificado">Verifica que o certificado foi assinado pela autoridade da Justiça Eleitoral e que pertence à urna do boletim.</CheckStep>
+<CheckStep n={5} icon={KeyRound} title="Conferir a assinatura">Usa a chave pública do certificado para checar a assinatura do hash final.</CheckStep>
+<CheckStep n={6} icon={BadgeCheck} title="Extrair e enviar os votos">Só então os números são lidos e enviados. O servidor repete toda a verificação.</CheckStep>
+</ol>
+
+<a class="btn bg-primary text-primary-foreground" href={resolve("/enviar")}>Enviar um boletim</a>
+
+<section class="space-y-3">
+
+## Para saber mais
+
+<ul class="grid gap-3 sm:grid-cols-2">
+<ReadMore href="https://www.tse.jus.br/comunicacao/noticias/2022/Outubro/voce-ja-ouviu-falar-do-boletim-de-urna-mas-sabe-o-que-ele-e-tire-suas-duvidas" title="Boletim de Urna (TSE)">O que é o boletim e como conferir, explicado pelo TSE.</ReadMore>
+<ReadMore href="https://www.tse.jus.br/eleicoes/urna-eletronica/seguranca-da-urna" title="Segurança da urna eletrônica (TSE)">Cerimônias, lacração e chaves de cada urna.</ReadMore>
+<ReadMore href="https://pt.wikipedia.org/wiki/Função_hash_criptográfica" title="Função hash criptográfica">O que é um resumo (hash) e por que não dá para falsificar.</ReadMore>
+<ReadMore href="https://pt.wikipedia.org/wiki/SHA-2" title="SHA-2 (SHA-512)">A família de hash usada para encadear os QR codes.</ReadMore>
+<ReadMore href="https://pt.wikipedia.org/wiki/Assinatura_digital" title="Assinatura digital">Como chave privada e chave pública garantem autoria.</ReadMore>
+<ReadMore href="https://pt.wikipedia.org/wiki/Certificado_digital" title="Certificado digital">Como uma autoridade garante a quem pertence uma chave pública.</ReadMore>
+<ReadMore href="https://pt.wikipedia.org/wiki/Código_QR" title="QR Code">Como os dados viram quadradinhos e a correção de erros.</ReadMore>
+</ul>
+
+</section>
+</div>

@@ -15,6 +15,9 @@ describe("/sobre", () => {
     ).toEqual(["Metodologia", "Perguntas frequentes", "Fontes oficiais"]);
     expect(screen.getByText("Verificação criptográfica:")).toBeInTheDocument();
     expect(screen.getByText("O que é um conflito?")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Ver o passo a passo da criptografia" }),
+    ).toHaveAttribute("href", "/como-funciona");
     expect(screen.getByRole("link", { name: "TSE" })).toHaveAttribute("rel", "external noreferrer");
   });
 });
