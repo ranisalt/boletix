@@ -23,6 +23,7 @@ export default defineConfig({
       extensions: [".svelte", ".svx"],
       preprocess: [mdsvex({ extensions: [".svx"] })],
       adapter: adapter(),
+      experimental: { remoteFunctions: true },
       // The whole stylesheet (~23 KB, ~7 KB compressed) fits in the first round trip, so inlining
       // it saves a render-blocking request.
       inlineStyleThreshold: 32_000,

@@ -5,14 +5,16 @@
   import { PageHead } from "#lib/ui/index.js";
 
   import type { PageProps } from "./$types";
+  import { getTotals } from "./totals.remote";
 
   const { data }: PageProps = $props();
+  const totals = $derived(data.summable ? getTotals(data.query) : null);
 </script>
 
 <PageHead title={m.totals_title()} description={m.totals_description()} />
 
 <div class="space-y-10">
-  <TotalsView query={data.query} totals={data.totals} />
+  <TotalsView query={data.query} totals={totals && (await totals)} />
 
   <section id="minhas-contribuicoes" class="scroll-mt-4 space-y-3">
     <h2 class="text-xl font-semibold">{m.contributions_title()}</h2>

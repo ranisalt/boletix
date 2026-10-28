@@ -1,3 +1,5 @@
+/** Live streams: a polled value, sent only when it changes. */
+export { changes } from "./changes";
 /** Server side of a submission: re-verify, then store the original in R2 and the votes in D1. */
 export { handleSubmission } from "./submit";
 /** Public totals: stored votes summed per candidate. */
