@@ -1,4 +1,4 @@
-import { type BuCargo, type BuSubmission, type VerifiedSubmission } from "../bu";
+import { type BuCargo, type BuSubmission, type SubmitStatus, type VerifiedSubmission } from "../bu";
 
 export type BuStoreEnv = {
   DB: D1Database;
@@ -6,7 +6,7 @@ export type BuStoreEnv = {
 };
 
 export type StoreOutcome =
-  | { status: "new" | "duplicate"; hash: string }
+  | { status: Exclude<SubmitStatus, "conflict">; hash: string }
   | { status: "conflict"; hash: string; existingHash: string };
 
 type VoteRow = {

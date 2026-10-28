@@ -15,5 +15,6 @@ export {
   openSubmission,
   sealSubmission,
   type BuSubmission,
+  type SubmitStatus,
   type VerifiedSubmission,
 } from "./submission";

@@ -1,4 +1,4 @@
-import type { Bu, BuSubmission } from "../bu";
+import type { Bu, BuSubmission, SubmitStatus } from "../bu";
 import { recordContribution, type Contribution } from "../contributions";
 import { m } from "../paraglide/messages.js";
 import type { Tone } from "../ui";
@@ -15,7 +15,7 @@ export type Outcome = {
 
 type Accepted = Omit<Outcome, "retry"> & { remember?: Contribution["status"] };
 
-const STATUS_OUTCOMES: Record<string, () => Accepted> = {
+const STATUS_OUTCOMES: Record<SubmitStatus, () => Accepted> = {
   new: () => ({
     tone: "success",
     title: m.submit_new_title(),
@@ -74,7 +74,7 @@ export async function sendBoletim(
   if (!body.status || !Object.hasOwn(STATUS_OUTCOMES, body.status))
     return failure(body.error ?? "");
 
-  const { remember, ...outcome } = STATUS_OUTCOMES[body.status]!();
+  const { remember, ...outcome } = STATUS_OUTCOMES[body.status as SubmitStatus]();
   if (remember) {
     const { uf, municipio, zona, secao, urna } = bu.header;
     try {

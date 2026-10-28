@@ -37,6 +37,9 @@ const SUBMISSION_KEYS = new Set(["contents", "assi", "hash", "certDer"]);
 
 export type BuSubmission = v.InferOutput<typeof SubmissionSchema>;
 
+/** How the server answered a submission it accepted: stored, already held, or clashing with another BU. */
+export type SubmitStatus = "new" | "duplicate" | "conflict";
+
 export type VerifiedSubmission = {
   bu: Bu;
   hash: string;
