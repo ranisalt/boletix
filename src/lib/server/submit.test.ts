@@ -7,9 +7,9 @@ import { sealSubmission, type BuSubmission, TSE_ROOTS } from "../bu";
 import { loadBuScan } from "../bu/testing/fixtures";
 import { assertPhaseAllowed, handleSubmission, MAX_BODY_BYTES, type SubmitOptions } from "./submit";
 
-function submissionFor(name: string): BuSubmission {
+async function submissionFor(name: string): Promise<BuSubmission> {
   const { parts, certs } = loadBuScan(name);
-  return sealSubmission(parts, certs, TSE_ROOTS).submission;
+  return (await sealSubmission(parts, certs, TSE_ROOTS)).submission;
 }
 
 function post(body: unknown, init: RequestInit = {}): Request {
@@ -46,7 +46,7 @@ beforeEach(async () => {
 
 describe("handleSubmission", () => {
   it("verifies and stores a new BU", async () => {
-    const submission = submissionFor("df-97012-11-178");
+    const submission = await submissionFor("df-97012-11-178");
 
     await expect(submit(submission)).resolves.toEqual({
       status: 201,
@@ -58,7 +58,7 @@ describe("handleSubmission", () => {
   });
 
   it("answers a resubmission as a duplicate", async () => {
-    const submission = submissionFor("df-97012-11-178");
+    const submission = await submissionFor("df-97012-11-178");
     await submit(submission);
 
     await expect(submit(submission)).resolves.toEqual({
@@ -75,7 +75,9 @@ describe("handleSubmission", () => {
       existingHash: "A".repeat(128),
     }));
 
-    await expect(submit(submissionFor("df-97012-11-178"), { report, store })).resolves.toEqual({
+    await expect(
+      submit(await submissionFor("df-97012-11-178"), { report, store }),
+    ).resolves.toEqual({
       status: 409,
       body: { status: "conflict", hash: "B".repeat(128) },
     });
@@ -91,7 +93,7 @@ describe("handleSubmission", () => {
   });
 
   it("rejects a BU that fails verification without storing it", async () => {
-    const submission = { ...submissionFor("df-97012-11-178"), hash: "A".repeat(128) };
+    const submission = { ...(await submissionFor("df-97012-11-178")), hash: "A".repeat(128) };
 
     await expect(submit(submission)).resolves.toEqual({
       status: 422,
@@ -109,7 +111,9 @@ describe("handleSubmission", () => {
       status: 400,
       body: { error: "INVALID_FIELD" },
     });
-    await expect(submit({ ...submissionFor("df-97012-11-178"), verified: true })).resolves.toEqual({
+    await expect(
+      submit({ ...(await submissionFor("df-97012-11-178")), verified: true }),
+    ).resolves.toEqual({
       status: 400,
       body: { error: "UNEXPECTED_FIELD" },
     });
@@ -147,7 +151,7 @@ describe("handleSubmission", () => {
   it("rate-limits by client address", async () => {
     const limit = vi.fn(async () => ({ success: false }));
     const response = await handleSubmission(
-      post(submissionFor("df-97012-11-178")),
+      post(await submissionFor("df-97012-11-178")),
       { ...env, SUBMIT_LIMITER: { limit } },
       options(),
     );

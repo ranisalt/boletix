@@ -8,7 +8,9 @@ import BuResults from "./BuResults.svelte";
 
 afterEach(cleanup);
 
-const bu: Bu = assembleBu(loadBuFixture("df-97012-11-178").qrbu.map((raw) => parseQr(raw) as BuQr));
+const { bu } = await assembleBu(
+  loadBuFixture("df-97012-11-178").qrbu.map((raw) => parseQr(raw) as BuQr),
+);
 
 const BR: NameFile = {
   geradoEm: "25/10/2026 12:30:51",

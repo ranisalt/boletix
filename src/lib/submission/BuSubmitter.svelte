@@ -7,7 +7,7 @@
   import type { Bu } from "../bu";
   import { resultsView, type NameFile } from "../elections";
   import { m } from "../paraglide/messages.js";
-  import { ScanSession, type ScanResult, QrCamera, ScanSlot } from "../scan";
+  import { ScanSession, type ScanResult, type Verification, QrCamera, ScanSlot } from "../scan";
   import { StatusBox } from "../ui";
   import BuResults from "./BuResults.svelte";
   import { buErrorMessage } from "./error-messages";
@@ -25,7 +25,20 @@
   let lastScan: ScanResult | undefined = $state.raw();
   let submit: SubmitState = $state.raw({ phase: "idle" });
 
-  const verification = $derived(session.complete ? session.verify() : undefined);
+  // Verification is async (WebCrypto). A result is only kept while the scan it was computed
+  // for is still current: re-running the effect (new QR, reset) discards the stale one.
+  let verification = $state.raw<Verification>();
+  $effect(() => {
+    verification = undefined;
+    if (!session.complete) return;
+    let current = true;
+    void session.verify().then((result) => {
+      if (current) verification = result;
+    });
+    return () => {
+      current = false;
+    };
+  });
 
   function onscan(text: string) {
     const result = session.add(text);

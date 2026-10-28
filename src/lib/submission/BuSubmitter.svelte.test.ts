@@ -14,19 +14,23 @@ const fixture = loadBuFixture("df-97012-11-178");
 const [buQr] = fixture.qrbu as [string];
 const [cert1, cert2] = fixture.qrce as [string, string];
 
-function multiPart(total: number): string[] {
+async function buildMultiPart(total: number): Promise<string[]> {
   const body = buQr.replace(/^QRBU:1:1 VRQR:6\.0 /, "").replace(/ HASH:.*$/, "");
   const tokens = body.split(" ");
   const size = Math.ceil(tokens.length / total);
   const contents = Array.from({ length: total }, (_, i) =>
     tokens.slice(i * size, (i + 1) * size).join(" "),
   );
-  const hashes = chainHashes(contents);
+  const hashes = await chainHashes(contents);
   return contents.map(
     (content, i) =>
       `QRBU:${i + 1}:${total} VRQR:6.0 ${content} HASH:${hashes[i]}${i === total - 1 ? " ASSI:00" : ""}`,
   );
 }
+const multiParts = new Map(
+  await Promise.all([3].map(async (total) => [total, await buildMultiPart(total)] as const)),
+);
+const multiPart = (total: number): string[] => multiParts.get(total)!;
 
 const received: unknown[] = [];
 const acceptNew = () =>
@@ -109,7 +113,7 @@ describe("BuSubmitter", () => {
     const { scan } = setup();
     scan(cert2, buQr, cert1);
 
-    expect(screen.getByText("Assinatura verificada")).toBeInTheDocument();
+    expect(await screen.findByText("Assinatura verificada")).toBeInTheDocument();
     const terms = (await screen.findAllByRole("term")).map((term) => term.textContent);
     const values = screen.getAllByRole("definition").map((value) => value.textContent);
     expect(Object.fromEntries(terms.map((term, i) => [term, values[i]]))).toEqual({
@@ -189,12 +193,23 @@ describe("BuSubmitter", () => {
     expect(screen.getByRole("button", { name: "Enviar boletim" })).toBeEnabled();
   });
 
+  it("drops a verification that finishes after the scan was reset", async () => {
+    const { session, scan } = setup();
+    scan(buQr, cert1, cert2);
+    session.reset();
+
+    await session.verify().catch(() => undefined);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(screen.queryByText("Assinatura verificada")).not.toBeInTheDocument();
+    expect(screen.getByText(WAITING)).toBeInTheDocument();
+  });
+
   it("explains a failed verification and offers to start over instead of sending", async () => {
     const { scan } = setup();
     scan(buQr, ...loadBuFixture("zz-29386-1-1709").qrce);
 
     expect(
-      screen.getByRole("alert", {
+      await screen.findByRole("alert", {
         name: "Não foi possível verificar o boletim",
       }),
     ).toHaveTextContent("O certificado digital é de outra urna.");
@@ -207,9 +222,9 @@ describe("BuSubmitter", () => {
   it("sends exactly the verified submission, confirms it and remembers it on this device", async () => {
     const { session, scan } = setup();
     scan(buQr, cert1, cert2);
-    const verification = session.verify();
+    const verification = await session.verify();
 
-    await fireEvent.click(screen.getByRole("button", { name: "Enviar boletim" }));
+    await fireEvent.click(await screen.findByRole("button", { name: "Enviar boletim" }));
 
     const outcome = await screen.findByRole("status", { name: "Boletim enviado" });
     expect(outcome).toHaveTextContent("Obrigado! Ele foi verificado e guardado.");
@@ -241,7 +256,7 @@ describe("BuSubmitter", () => {
     reply = () => HttpResponse.error();
     const { scan } = setup();
     scan(buQr, cert1, cert2);
-    await fireEvent.click(screen.getByRole("button", { name: "Enviar boletim" }));
+    await fireEvent.click(await screen.findByRole("button", { name: "Enviar boletim" }));
     await screen.findByRole("status", { name: "Erro de servidor ou rede" });
 
     reply = () => HttpResponse.json({ status: "new" }, { status: 201 });
@@ -255,7 +270,7 @@ describe("BuSubmitter", () => {
     reply = () => HttpResponse.json({ error: "SIGNATURE_INVALID" }, { status: 422 });
     const { scan } = setup();
     scan(buQr, cert1, cert2);
-    await fireEvent.click(screen.getByRole("button", { name: "Enviar boletim" }));
+    await fireEvent.click(await screen.findByRole("button", { name: "Enviar boletim" }));
     await screen.findByRole("status", { name: "Assinatura inválida" });
 
     expect(screen.queryByRole("button", { name: "Tentar novamente" })).not.toBeInTheDocument();

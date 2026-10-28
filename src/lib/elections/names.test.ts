@@ -88,9 +88,13 @@ describe("buildNameFiles", () => {
   });
 });
 
-function bu(name: string): Bu {
-  return assembleBu(loadBuFixture(name).qrbu.map((raw) => parseQr(raw) as BuQr));
+async function assemble(name: string): Promise<Bu> {
+  return (await assembleBu(loadBuFixture(name).qrbu.map((raw) => parseQr(raw) as BuQr))).bu;
 }
+const BUS = new Map(
+  await Promise.all(["df-97012-11-178"].map(async (name) => [name, await assemble(name)] as const)),
+);
+const bu = (name: string): Bu => BUS.get(name)!;
 
 describe("resultsView", () => {
   it("labels every candidate of the real DF boletim, in BU order", () => {

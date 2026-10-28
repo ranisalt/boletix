@@ -11,8 +11,8 @@ const fixture = loadBuFixture("df-97012-11-178");
 const parts = fixture.qrbu.map((raw) => parseQr(raw)) as BuQr[];
 const certs = fixture.qrce.map((raw) => parseQr(raw)) as CertQr[];
 const verified = {
-  bu: assembleBu(parts),
-  submission: sealSubmission(parts, certs, TSE_ROOTS).submission,
+  bu: (await assembleBu(parts)).bu,
+  submission: (await sealSubmission(parts, certs, TSE_ROOTS)).submission,
 };
 
 function memoryStorage(): Storage {

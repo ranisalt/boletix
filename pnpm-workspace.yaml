@@ -1,5 +1,9 @@
 packages:
   - packages/*
+# @boletix/* always come from packages/: dependents use the workspace: protocol (pnpm links the local
+# package and errors instead of downloading), and `pnpm add` writes workspace: specifiers by default.
+linkWorkspacePackages: true
+saveWorkspaceProtocol: rolling
 allowBuilds:
   esbuild: true
   workerd: true

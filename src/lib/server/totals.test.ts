@@ -13,14 +13,14 @@ const ELECTION = "br-2026-general";
 const PRESIDENTE = 1;
 // The fixtures are second-round BUs.
 
-function submissionFor(name: string) {
+async function submissionFor(name: string) {
   const { parts, certs } = loadBuScan(name);
-  const submission = sealSubmission(parts, certs, TSE_ROOTS).submission;
-  return { submission, verified: openSubmission(submission, TSE_ROOTS) };
+  const { submission } = await sealSubmission(parts, certs, TSE_ROOTS);
+  return { submission, verified: await openSubmission(submission, TSE_ROOTS) };
 }
 
 async function store(name: string): Promise<Bu> {
-  const { submission, verified } = submissionFor(name);
+  const { submission, verified } = await submissionFor(name);
   await storeBu(env, submission, verified, ELECTION);
   return verified.bu;
 }
@@ -97,7 +97,7 @@ describe("loadTotals", () => {
   });
 
   it("counts a section once however often or racily its BU arrives", async () => {
-    const { submission, verified } = submissionFor("df-97012-11-178");
+    const { submission, verified } = await submissionFor("df-97012-11-178");
     await Promise.all([
       storeBu(env, submission, verified, ELECTION),
       storeBu(env, submission, verified, ELECTION),

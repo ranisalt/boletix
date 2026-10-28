@@ -1,7 +1,7 @@
+import { parseQr, type BuQr, type CertQr } from "@boletix/bu-qr";
 import { expect } from "vitest";
 
-import { BuError } from "../errors";
-import { parseQr, type BuQr, type CertQr } from "../format/parse";
+import { buErrorCode, type BuErrorCode } from "../errors";
 
 // Test-only loader for the real 2026 BU fixtures under /fixtures/2026/<uf>-<mun>-<zona>-<secao>/.
 // Each directory holds qrbu-<i>.txt (BU QRs) and qrce-<i>.txt (urna certificate QRs).
@@ -51,13 +51,14 @@ export function loadBuScan(name: string): { parts: BuQr[]; certs: CertQr[] } {
   };
 }
 
-export function expectBuError(action: () => unknown, code: BuError["code"]): void {
+/** Expects `action` to reject a BU with `code`, whichever layer (app, QR, verification) raised it. */
+export async function expectBuError(action: () => unknown, code: BuErrorCode): Promise<void> {
   let thrown: unknown;
   try {
-    action();
+    await action();
   } catch (error) {
     thrown = error;
   }
-  expect(thrown).toBeInstanceOf(BuError);
-  expect((thrown as BuError).code).toBe(code);
+  expect(thrown).toBeInstanceOf(Error);
+  expect(buErrorCode(thrown)).toBe(code);
 }

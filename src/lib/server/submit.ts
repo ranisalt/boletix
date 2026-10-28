@@ -1,5 +1,7 @@
 import {
   BuError,
+  buErrorCode,
+  type BuErrorCode,
   MAX_QR_CHARS,
   MAX_QR_CODES,
   openSubmission,
@@ -38,7 +40,7 @@ async function readLimited(request: Request, limit: number): Promise<Uint8Array 
   return body;
 }
 
-const BAD_REQUEST_CODES = new Set<BuError["code"]>([
+const BAD_REQUEST_CODES = new Set<BuErrorCode>([
   "INVALID_FIELD",
   "UNEXPECTED_FIELD",
   "MISSING_FIELD",
@@ -102,7 +104,7 @@ export async function handleSubmission(
 
   let outcome: StoreOutcome;
   try {
-    const verified = openSubmission(body, TSE_ROOTS);
+    const verified = await openSubmission(body, TSE_ROOTS);
     const { proc, plei, turno, fase } = verified.bu.header;
     assertPhaseAllowed(fase, env);
     const election = findElection(proc, plei, turno);
@@ -125,8 +127,9 @@ export async function handleSubmission(
       });
     }
   } catch (error) {
-    if (!(error instanceof BuError)) throw error;
-    return json(BAD_REQUEST_CODES.has(error.code) ? 400 : 422, { error: error.code });
+    const code = buErrorCode(error);
+    if (!code) throw error;
+    return json(BAD_REQUEST_CODES.has(code) ? 400 : 422, { error: code });
   }
 
   const status = { new: 201, duplicate: 200, conflict: 409 }[outcome.status];

@@ -9,13 +9,13 @@ import { storeBu } from "./bu-store";
 
 const ELECTION = "br-2026-general";
 
-function submissionFor(name: string): BuSubmission {
+async function submissionFor(name: string): Promise<BuSubmission> {
   const { parts, certs } = loadBuScan(name);
-  return sealSubmission(parts, certs, TSE_ROOTS).submission;
+  return (await sealSubmission(parts, certs, TSE_ROOTS)).submission;
 }
 
 async function store(submission: BuSubmission) {
-  return storeBu(env, submission, openSubmission(submission, TSE_ROOTS), ELECTION);
+  return storeBu(env, submission, await openSubmission(submission, TSE_ROOTS), ELECTION);
 }
 
 async function originalKeys(): Promise<string[]> {
@@ -34,8 +34,8 @@ beforeEach(async () => {
 
 describe("storeBu", () => {
   it("stores the section, its per-cargo totals and every vote", async () => {
-    const submission = submissionFor("df-97012-11-178");
-    const { bu, hash } = openSubmission(submission, TSE_ROOTS);
+    const submission = await submissionFor("df-97012-11-178");
+    const { bu, hash } = await openSubmission(submission, TSE_ROOTS);
 
     await expect(store(submission)).resolves.toEqual({ status: "new", hash });
 
@@ -84,7 +84,7 @@ describe("storeBu", () => {
   });
 
   it("keeps the submitted original as a file", async () => {
-    const submission = submissionFor("df-97012-11-178");
+    const submission = await submissionFor("df-97012-11-178");
     await store(submission);
 
     const { original_key: key } = (await env.DB.prepare("SELECT original_key FROM bu").first<{
@@ -98,8 +98,8 @@ describe("storeBu", () => {
 
   it("stores the nominal and party votes of a proportional cargo", async () => {
     // No real fixture has a proportional cargo yet, so inject one past verification.
-    const submission = submissionFor("zz-29386-1-1709");
-    const verified = openSubmission(submission, TSE_ROOTS);
+    const submission = await submissionFor("zz-29386-1-1709");
+    const verified = await openSubmission(submission, TSE_ROOTS);
     const proportional: BuCargo = {
       ...verified.bu.cargos[0]!,
       cargo: 6,
@@ -129,7 +129,7 @@ describe("storeBu", () => {
   });
 
   it("discards a resubmission of the same BU", async () => {
-    const submission = submissionFor("zz-29386-1-1709");
+    const submission = await submissionFor("zz-29386-1-1709");
     const first = await store(submission);
 
     await expect(store(submission)).resolves.toEqual({ status: "duplicate", hash: first.hash });
@@ -138,8 +138,8 @@ describe("storeBu", () => {
   });
 
   it("keeps the first BU when the same section arrives with different content", async () => {
-    const submission = submissionFor("zz-29386-1-1709");
-    const verified = openSubmission(submission, TSE_ROOTS);
+    const submission = await submissionFor("zz-29386-1-1709");
+    const verified = await openSubmission(submission, TSE_ROOTS);
     await storeBu(env, submission, verified, ELECTION);
 
     // Impossible with genuine urna output, so simulate it past verification.
@@ -162,7 +162,7 @@ describe("storeBu", () => {
   });
 
   it("stores a BU once when two copies race", async () => {
-    const submission = submissionFor("zz-29386-1-1709");
+    const submission = await submissionFor("zz-29386-1-1709");
     const outcomes = await Promise.all([store(submission), store(submission)]);
 
     expect(outcomes.map((outcome) => outcome.status).sort()).toEqual(["duplicate", "new"]);

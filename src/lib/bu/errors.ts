@@ -1,24 +1,14 @@
-export type BuErrorCode =
-  | "PAYLOAD_TOO_LARGE"
-  | "MALFORMED_TOKEN"
-  | "MISSING_FIELD"
-  | "INVALID_FIELD"
-  | "UNEXPECTED_FIELD"
-  | "UNSUPPORTED_VERSION"
-  | "UNSUPPORTED_ELECTION"
-  | "TEST_PHASE_REJECTED"
-  | "QR_INDEX_INVALID"
-  | "QR_SET_INCOMPLETE"
-  | "QR_SET_MIXED"
-  | "CERT_MISSING"
-  | "CERT_INVALID"
-  | "CERT_URNA_MISMATCH"
-  | "UNSUPPORTED_ALGORITHM"
-  | "HASH_MISMATCH"
-  | "SIGNATURE_MISSING"
-  | "SIGNATURE_INVALID"
-  | "TOTALS_INCONSISTENT";
+import { BuError as QrError, type BuErrorCode as QrErrorCode } from "@boletix/bu-qr";
+import { VerificationError, type VerificationErrorCode } from "@boletix/bu-verify";
 
+/** Every reason a BU can be rejected: reading its QRs, verifying it, or the app's own rules. */
+export type BuErrorCode =
+  | QrErrorCode
+  | VerificationErrorCode
+  | "UNSUPPORTED_ELECTION"
+  | "TEST_PHASE_REJECTED";
+
+/** Raised by the app itself; the packages raise their own errors, read through `buErrorCode`. */
 export class BuError extends Error {
   constructor(
     readonly code: BuErrorCode,
@@ -26,4 +16,11 @@ export class BuError extends Error {
   ) {
     super(`${code}: ${detail}`);
   }
+}
+
+/** The code of a BU rejection from the app or either package, or undefined for any other error. */
+export function buErrorCode(error: unknown): BuErrorCode | undefined {
+  return error instanceof BuError || error instanceof QrError || error instanceof VerificationError
+    ? error.code
+    : undefined;
 }

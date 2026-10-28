@@ -9,19 +9,23 @@ const [buQr] = fixture.qrbu as [string];
 const [cert1, cert2] = fixture.qrce as [string, string];
 
 /** The fixture's content re-split over `total` QRs, with a valid hash chain (but no valid ASSI). */
-function multiPart(total: number): string[] {
+async function buildMultiPart(total: number): Promise<string[]> {
   const body = buQr.replace(/^QRBU:1:1 VRQR:6\.0 /, "").replace(/ HASH:.*$/, "");
   const tokens = body.split(" ");
   const size = Math.ceil(tokens.length / total);
   const contents = Array.from({ length: total }, (_, i) =>
     tokens.slice(i * size, (i + 1) * size).join(" "),
   );
-  const hashes = chainHashes(contents);
+  const hashes = await chainHashes(contents);
   return contents.map(
     (content, i) =>
       `QRBU:${i + 1}:${total} VRQR:6.0 ${content} HASH:${hashes[i]}${i === total - 1 ? " ASSI:00" : ""}`,
   );
 }
+const multiParts = new Map(
+  await Promise.all([2, 3, 4].map(async (total) => [total, await buildMultiPart(total)] as const)),
+);
+const multiPart = (total: number): string[] => multiParts.get(total)!;
 
 describe("ScanSession", () => {
   it("starts with unknown BU slots and two certificate slots", () => {
@@ -96,11 +100,11 @@ describe("ScanSession", () => {
     expect(new ScanSession().add("https://example.com")).toMatchObject({ status: "rejected" });
   });
 
-  it("verifies a complete scan and builds the submission", () => {
+  it("verifies a complete scan and builds the submission", async () => {
     const session = new ScanSession();
     for (const raw of [cert2, buQr, cert1]) session.add(raw);
 
-    const result = session.verify();
+    const result = await session.verify();
     expect(result).toMatchObject({
       ok: true,
       bu: { header: { uf: "DF", zona: 11, secao: 178 } },
@@ -108,12 +112,12 @@ describe("ScanSession", () => {
     });
   });
 
-  it("reports why a complete scan fails verification", () => {
+  it("reports why a complete scan fails verification", async () => {
     const session = new ScanSession();
     const other = loadBuFixture("zz-29386-1-1709").qrce;
     for (const raw of [buQr, ...other]) session.add(raw);
 
-    expect(session.verify()).toEqual({ ok: false, error: "CERT_URNA_MISMATCH" });
+    expect(await session.verify()).toEqual({ ok: false, error: "CERT_URNA_MISMATCH" });
   });
 
   it("starts over on reset", () => {

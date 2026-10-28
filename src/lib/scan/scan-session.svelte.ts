@@ -1,6 +1,7 @@
 import {
   type Bu,
   BuError,
+  buErrorCode,
   type BuErrorCode,
   parseQr,
   type BuQr,
@@ -44,7 +45,8 @@ export class ScanSession {
     try {
       qr = parseQr(raw);
     } catch (error) {
-      if (error instanceof BuError) return { status: "rejected", error: error.code };
+      const code = buErrorCode(error);
+      if (code) return { status: "rejected", error: code };
       throw error;
     }
     return qr.kind === "bu" ? this.#addBu(qr) : this.#addCert(qr);
@@ -83,15 +85,16 @@ export class ScanSession {
   }
 
   /** Checks HASH, certificate chain and ASSI locally, before anything is sent. */
-  verify(): Verification {
+  async verify(): Promise<Verification> {
     const parts = this.bu.filter((part): part is BuQr => part !== undefined);
     const certs = this.certs.filter((cert): cert is CertQr => cert !== undefined);
     try {
       if (!this.complete) throw new BuError("QR_SET_INCOMPLETE", "scan every QR first");
-      const { bu, submission } = sealSubmission(parts, certs, TSE_ROOTS);
+      const { bu, submission } = await sealSubmission(parts, certs, TSE_ROOTS);
       return { ok: true, bu, submission };
     } catch (error) {
-      if (error instanceof BuError) return { ok: false, error: error.code };
+      const code = buErrorCode(error);
+      if (code) return { ok: false, error: code };
       throw error;
     }
   }

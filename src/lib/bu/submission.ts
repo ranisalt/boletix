@@ -4,24 +4,29 @@
 //
 // The client seals by building the payload and opening it itself, so whatever it sends has already
 // passed the server's checks. Only a scan too incomplete to build a payload fails earlier, on the phone.
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
+import {
+  assembleBu,
+  assembleCertificate,
+  chainHashes,
+  MAX_QR_CHARS,
+  MAX_QR_CODES,
+  parseQr,
+  type Bu,
+  type BuQr,
+  type CertQr,
+} from "@boletix/bu-qr";
+import { verifyBu, type SignatureVerification, type TrustedRoot } from "@boletix/bu-verify";
 import * as v from "valibot";
 
 import { BuError } from "./errors";
-import { assembleBu, type Bu } from "./format/assemble";
-import { MAX_QR_CODES, parseQr, type BuQr, type CertQr } from "./format/parse";
-import { MAX_QR_CHARS } from "./format/tokenize";
-import type { TrustedRoot } from "./signature/tse-roots";
-import {
-  assembleCertificate,
-  chainHashes,
-  verifyBuWithCertificate,
-  type SignatureVerification,
-} from "./signature/verify";
 
 const HEX = /^(?:[0-9A-Fa-f]{2})+$/;
 const hex = (maxLength: number) => v.pipe(v.string(), v.maxLength(maxLength), v.regex(HEX));
 
+const toHex = (bytes: Uint8Array) =>
+  Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+const fromHex = (hex: string) =>
+  Uint8Array.from(hex.match(/../g) ?? [], (pair) => Number.parseInt(pair, 16));
 const SubmissionSchema = v.object({
   // Boundaries matter: the chained HASH is inserted between consecutive QR contents.
   contents: v.pipe(
@@ -47,8 +52,8 @@ export type VerifiedSubmission = {
 };
 
 /** Rebuilds the QRs exactly as the urna printed them, so the regular parser validates every part. */
-function rebuildParts({ contents, assi }: BuSubmission): BuQr[] {
-  const hashes = chainHashes(contents);
+async function rebuildParts({ contents, assi }: BuSubmission): Promise<BuQr[]> {
+  const hashes = await chainHashes(contents);
   const total = contents.length;
   return contents.map((content, i) => {
     const signature = i === total - 1 ? ` ASSI:${assi}` : "";
@@ -60,8 +65,11 @@ function rebuildParts({ contents, assi }: BuSubmission): BuQr[] {
   });
 }
 
-/** Server side: validate shape, rebuild, verify the signature chain, then assemble the BU. */
-export function openSubmission(input: unknown, roots: TrustedRoot[]): VerifiedSubmission {
+/** Server side: validate shape, rebuild and assemble the BU, then verify its signature. */
+export async function openSubmission(
+  input: unknown,
+  roots: readonly TrustedRoot[],
+): Promise<VerifiedSubmission> {
   if (typeof input === "object" && input !== null) {
     const extra = Object.keys(input).find((key) => !SUBMISSION_KEYS.has(key));
     if (extra) throw new BuError("UNEXPECTED_FIELD", `unexpected field ${extra}`);
@@ -69,32 +77,30 @@ export function openSubmission(input: unknown, roots: TrustedRoot[]): VerifiedSu
   const parsed = v.safeParse(SubmissionSchema, input);
   if (!parsed.success) throw new BuError("INVALID_FIELD", v.summarize(parsed.issues));
 
-  const parts = rebuildParts(parsed.output);
-  const hash = parts.at(-1)!.hash;
-  if (hash !== parsed.output.hash.toUpperCase()) {
+  const assembled = await assembleBu(await rebuildParts(parsed.output));
+  if (assembled.hash !== parsed.output.hash.toUpperCase()) {
     throw new BuError("HASH_MISMATCH", "submitted HASH does not match the submitted contents");
   }
-  const signature = verifyBuWithCertificate(parts, hexToBytes(parsed.output.certDer), roots);
-  return { bu: assembleBu(parts), hash, signature };
+  const signature = await verifyBu(assembled, fromHex(parsed.output.certDer), roots);
+  return { bu: assembled.bu, hash: assembled.hash, signature };
 }
 
 /** Client side: build the payload from the scanned QRs and open it as the server will. */
-export function sealSubmission(
+export async function sealSubmission(
   parts: BuQr[],
   certs: CertQr[],
-  roots: TrustedRoot[],
-): VerifiedSubmission & { submission: BuSubmission } {
-  const sorted = [...parts].sort((a, b) => a.index - b.index);
-  const last = sorted.at(-1);
-  if (!last) throw new BuError("QR_SET_INCOMPLETE", "no BU QR codes");
+  roots: readonly TrustedRoot[],
+): Promise<VerifiedSubmission & { submission: BuSubmission }> {
+  const { hash, assi } = await assembleBu(parts);
   const der = assembleCertificate(certs);
-  if (!last.assi) throw new BuError("SIGNATURE_MISSING", "BU has no ASSI");
+  if (!assi) throw new BuError("SIGNATURE_MISSING", "BU has no ASSI");
 
   const submission = {
-    contents: sorted.map((part) => part.content.trimEnd()),
-    assi: last.assi,
-    hash: last.hash.toUpperCase(),
-    certDer: bytesToHex(der),
+    contents: parts.toSorted((a, b) => a.index - b.index).map((part) => part.content.trimEnd()),
+    // As printed: ASSI in uppercase hex. The certificate goes as lowercase hex DER.
+    assi: toHex(assi).toUpperCase(),
+    hash,
+    certDer: toHex(der),
   };
-  return { submission, ...openSubmission(submission, roots) };
+  return { submission, ...(await openSubmission(submission, roots)) };
 }
