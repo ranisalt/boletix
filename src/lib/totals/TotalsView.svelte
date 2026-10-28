@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { ELECTIONS } from "#lib/elections/index.js";
+  import { ELECTIONS, getElection } from "#lib/elections/index.js";
   import { m } from "#lib/paraglide/messages.js";
   import { StatusBox } from "#lib/ui/index.js";
 
-  import { CARGOS, UFS, type TotalsQuery } from "./filter";
+  import { UFS, type TotalsQuery } from "./filter";
 
   type Props = {
     query: TotalsQuery;
-    /** Null when the choice can't be totalled: a state role with no UF. */
+    /** Null when the choice can't be totalled, e.g. a state role with no UF. */
     totals: {
       secoes: number;
       /** Sections TSE counts for this choice; unknown before its data is published. */
@@ -20,17 +20,16 @@
 
   const { query, totals }: Props = $props();
 
-  const CARGO_NAMES: Record<TotalsQuery["cargo"], () => string> = {
+  const CARGO_NAMES: Record<number, () => string> = {
     1: m.cargo_1,
     3: m.cargo_3,
     5: m.cargo_5,
   };
+  const cargoName = (cargo: number) => CARGO_NAMES[cargo]?.() ?? m.cargo_other({ cargo });
   const number = new Intl.NumberFormat("pt-BR");
   // Voting days are calendar dates; UTC keeps them from shifting a day.
   const day = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" });
-  const pleitos = $derived(
-    ELECTIONS.find((election) => election.id === query.election)?.pleitos ?? [],
-  );
+  const election = $derived(getElection(query.election)!);
   const percent = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 });
   const leader = $derived(totals?.candidatos[0]?.votos ?? 0);
 </script>
@@ -58,7 +57,7 @@
     <label class="space-y-1 text-sm text-muted-foreground">
       <span>{m.field_turno()}</span>
       <select name="turno" class="select" value={String(query.turno)}>
-        {#each pleitos as { turno, date } (turno)}
+        {#each election.pleitos as { turno, date } (turno)}
           <option value={String(turno)}>
             {m.turno_option({ turno, date: day.format(new Date(date)) })}
           </option>
@@ -68,8 +67,8 @@
     <label class="space-y-1 text-sm text-muted-foreground">
       <span>{m.field_cargo()}</span>
       <select name="cargo" class="select" value={String(query.cargo)}>
-        {#each CARGOS as cargo (cargo)}
-          <option value={String(cargo)}>{CARGO_NAMES[cargo]()}</option>
+        {#each election.cargos as { cargo } (cargo)}
+          <option value={String(cargo)}>{cargoName(cargo)}</option>
         {/each}
       </select>
     </label>
@@ -88,7 +87,7 @@
   </form>
 
   {#if !totals}
-    <p class="text-muted-foreground">{m.totals_pick_uf({ cargo: CARGO_NAMES[query.cargo]() })}</p>
+    <p class="text-muted-foreground">{m.totals_pick_uf({ cargo: cargoName(query.cargo) })}</p>
   {:else if totals.secoes === 0}
     <p class="text-muted-foreground">{m.totals_empty()}</p>
   {:else}

@@ -4,6 +4,15 @@
  *
  * Framework-free.
  */
-export { ELECTIONS, findElection, latestPleito, type ElectionDef } from "./calendar";
-export { candidateName, nameFileKeys, resultsView, type NameFile } from "./names";
+export {
+  cargoScope,
+  dataUrl,
+  ELECTIONS,
+  findElection,
+  getElection,
+  latestPleito,
+  type ElectionDef,
+  type Scope,
+} from "./calendar";
+export { candidateName, nameFileArea, nameFileKeys, resultsView, type NameFile } from "./names";
 export { sectionTotal, type SectionCounts } from "./sections";

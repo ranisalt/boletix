@@ -2,12 +2,15 @@ import { env } from "cloudflare:workers";
 
 import {
   candidateName,
+  cargoScope,
+  dataUrl,
+  getElection,
   sectionTotal,
   type NameFile,
   type SectionCounts,
 } from "#lib/elections/index.js";
 import { loadTotals } from "#lib/server/index.js";
-import { parseTotalsQuery } from "#lib/totals/index.js";
+import { parseTotalsQuery, totalsArea } from "#lib/totals/index.js";
 
 import type { PageServerLoad } from "./$types";
 
@@ -16,10 +19,11 @@ export const prerender = false;
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
   const query = parseTotalsQuery(url.searchParams, new Date());
-  // A state role summed across every state would add up rival candidates sharing a number.
-  if (query.cargo !== 1 && !query.uf) return { query, totals: null };
+  const election = getElection(query.election)!;
+  const scope = cargoScope(election, query.cargo);
+  const area = scope && totalsArea(scope, query.uf);
+  if (!area) return { query, totals: null };
 
-  const area = query.cargo === 1 ? "BR" : query.uf!;
   // Static TSE files; a missing one only loses names or the coverage total.
   const json = <T>(path: string) =>
     fetch(path)
@@ -27,8 +31,8 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
       .catch(() => undefined);
   const [totals, names, sections] = await Promise.all([
     loadTotals(env.DB, query),
-    json<NameFile>(`/tse/2026/${area}.json`),
-    json<SectionCounts>("/tse/2026/secoes.json"),
+    json<NameFile>(dataUrl(election, area)),
+    json<SectionCounts>(dataUrl(election, "secoes")),
   ]);
   const files = names ? [names] : [];
 

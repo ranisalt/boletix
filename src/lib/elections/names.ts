@@ -1,4 +1,5 @@
 import type { Bu } from "../bu";
+import type { ElectionDef, Scope } from "./calendar";
 
 /**
  * Display names for one area (a UF, `BR` for president, `ZZ` abroad), generated from TSE open data
@@ -77,9 +78,14 @@ export function buildNameFiles(
   return files;
 }
 
-/** The name files a BU needs: `BR` for the presidential race, plus its own UF (`ZZ` abroad). */
-export function nameFileKeys(bu: Bu): string[] {
-  return ["BR", bu.header.uf];
+/** The name file listing a cargo's candidates: `BR` for national ones, else the UF (`ZZ` abroad). */
+export function nameFileArea(scope: Scope, uf: string): string {
+  return scope === "pais" ? "BR" : uf;
+}
+
+/** Name files covering a BU's cargos. */
+export function nameFileKeys(election: ElectionDef, bu: Bu): string[] {
+  return [...new Set(election.cargos.map(({ scope }) => nameFileArea(scope, bu.header.uf)))];
 }
 
 /** Ballot name and party of a candidate number, from whichever name file lists it. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseTotalsQuery } from "./filter";
+import { parseTotalsQuery, totalsArea } from "./filter";
 
 // Between the 2026 rounds: the first is the latest one held.
 const NOW = new Date("2026-10-10T12:00:00Z");
@@ -35,5 +35,21 @@ describe("parseTotalsQuery", () => {
 
   it("treats an empty UF as the whole country", () => {
     expect(parse("cargo=5&uf=")).toEqual({ election: "br-2026-general", turno: 1, cargo: 5 });
+  });
+});
+
+describe("totalsArea", () => {
+  it("totals a national cargo over the country or one UF, named from the national file", () => {
+    expect(totalsArea("pais", undefined)).toBe("BR");
+    expect(totalsArea("pais", "SP")).toBe("BR");
+  });
+
+  it("totals a state cargo only within one UF, since rivals in other states share numbers", () => {
+    expect(totalsArea("uf", undefined)).toBeUndefined();
+    expect(totalsArea("uf", "SP")).toBe("SP");
+  });
+
+  it("cannot total a municipal cargo without a municipality filter", () => {
+    expect(totalsArea("municipio", "SP")).toBeUndefined();
   });
 });

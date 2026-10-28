@@ -5,7 +5,7 @@
   import ShieldCheck from "@lucide/svelte/icons/shield-check";
 
   import type { Bu } from "../bu";
-  import { nameFileKeys, resultsView, type NameFile } from "../elections";
+  import { resultsView, type NameFile } from "../elections";
   import { m } from "../paraglide/messages.js";
   import { ScanSession, type ScanResult, QrCamera, ScanSlot } from "../scan";
   import { StatusBox } from "../ui";
@@ -153,7 +153,7 @@
             </span>
             <!-- Names are a convenience from TSE open data: sending must not wait for or depend on them. -->
             <svelte:boundary>
-              {@render details(bu, await loadNameFiles(nameFileKeys(bu)))}
+              {@render details(bu, await loadNameFiles(bu))}
               {#snippet pending()}
                 <p
                   role="status"

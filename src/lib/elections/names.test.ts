@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { assembleBu, type Bu, parseQr, type BuQr } from "../bu";
 import { loadBuFixture } from "../bu/testing/fixtures";
+import { ELECTIONS, type ElectionDef } from "./calendar";
 import type { NameFile } from "./names";
-import { buildNameFiles, candidateName, parseTseCsv, resultsView } from "./names";
+import { buildNameFiles, candidateName, nameFileKeys, parseTseCsv, resultsView } from "./names";
 
 const HEADER =
   '"DT_GERACAO";"HH_GERACAO";"CD_ELEICAO";"SG_UE";"CD_CARGO";"NR_CANDIDATO";"NM_URNA_CANDIDATO";"NR_PARTIDO";"SG_PARTIDO";"DS_SIT_TOT_TURNO"';
@@ -186,5 +187,24 @@ describe("candidateName", () => {
 
   it("leaves an unknown number unnamed", () => {
     expect(candidateName([BR], 6258, 1, "99")).toBeUndefined();
+  });
+});
+
+describe("nameFileKeys", () => {
+  const header = { uf: "DF" } as Bu["header"];
+
+  it("needs the national file and the BU's state in a general election", () => {
+    expect(nameFileKeys(ELECTIONS[0]!, { header } as Bu)).toEqual(["BR", "DF"]);
+  });
+
+  it("needs only the BU's state when every cargo is municipal", () => {
+    const municipal: ElectionDef = {
+      ...ELECTIONS[0]!,
+      cargos: [
+        { cargo: 11, scope: "municipio" },
+        { cargo: 13, scope: "municipio" },
+      ],
+    };
+    expect(nameFileKeys(municipal, { header } as Bu)).toEqual(["DF"]);
   });
 });

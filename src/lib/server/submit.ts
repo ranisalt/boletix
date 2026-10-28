@@ -105,7 +105,7 @@ export async function handleSubmission(
     const verified = openSubmission(body, TSE_ROOTS);
     const { proc, plei, turno, fase } = verified.bu.header;
     assertPhaseAllowed(fase, env);
-    const election = findElection(proc, plei, turno, "6.0");
+    const election = findElection(proc, plei, turno);
     if (!election)
       throw new BuError(
         "UNSUPPORTED_ELECTION",
