@@ -33,22 +33,17 @@ import { concatBytes, createHasher } from "@noble/hashes/utils.js";
 // Finite field 2n**521n - 1n
 // Subgroup order
 // 2n**519n - 337554763258501705789107630418782636071904961214051226618635150085779108655765n
-const ed521_CURVE_p = /* @__PURE__ */ BigInt(
-  "0x1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-);
-const ed521_CURVE: EdwardsOpts = /* @__PURE__ */ (() => ({
+const ed521_CURVE_p =
+  0x1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffn;
+const ed521_CURVE: EdwardsOpts = {
   p: ed521_CURVE_p,
-  n: BigInt(
-    "0x7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd15b6c64746fc85f736b8af5e7ec53f04fbd8c4569a8f1f4540ea2435f5180d6b",
-  ),
-  h: BigInt(4),
-  a: BigInt(1),
-  d: ed521_CURVE_p - BigInt(376014),
-  Gx: BigInt(
-    "0x752cb45c48648b189df90cb2296b2878a3bfd9f42fc6c818ec8bf3c9c0c6203913f6ecc5ccc72434b1ae949d568fc99c6059d0fb13364838aa302a940a2f19ba6c",
-  ),
-  Gy: BigInt(12),
-}))();
+  n: 0x7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd15b6c64746fc85f736b8af5e7ec53f04fbd8c4569a8f1f4540ea2435f5180d6bn,
+  h: 4n,
+  a: 1n,
+  d: ed521_CURVE_p - 376014n,
+  Gx: 0x752cb45c48648b189df90cb2296b2878a3bfd9f42fc6c818ec8bf3c9c0c6203913f6ecc5ccc72434b1ae949d568fc99c6059d0fb13364838aa302a940a2f19ba6cn,
+  Gy: 12n,
+};
 
 const shake256_132 = /* @__PURE__ */ createHasher(() => shake256.create({ dkLen: 132 }));
 
