@@ -14,12 +14,22 @@ export type Contribution = {
 const KEY = "boletix:contribuicoes";
 
 // Storage is user-editable and outlives app versions: only keep entries the list can render.
+const FIELD_TYPES = {
+  id: "string",
+  uf: "string",
+  municipio: "number",
+  zona: "number",
+  secao: "number",
+  urna: "string",
+  enviadoEm: "string",
+} as const satisfies Record<Exclude<keyof Contribution, "status">, "string" | "number">;
+
 function isContribution(value: unknown): value is Contribution {
+  if (typeof value !== "object" || value === null) return false;
+  const entry = value as Record<string, unknown>;
   return (
-    typeof value === "object" &&
-    value !== null &&
-    typeof (value as Contribution).id === "string" &&
-    ["aceito", "conflito"].includes((value as Contribution).status)
+    Object.entries(FIELD_TYPES).every(([key, type]) => typeof entry[key] === type) &&
+    (entry.status === "aceito" || entry.status === "conflito")
   );
 }
 

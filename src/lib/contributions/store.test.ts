@@ -65,7 +65,14 @@ describe("contributions", () => {
       enviadoEm: "2026-10-04T12:00:00.000Z",
       status: "aceito",
     };
-    const stored = JSON.stringify([1, null, { ...valid, id: "B", status: "outro" }, valid]);
+    const stored = JSON.stringify([
+      1,
+      null,
+      { ...valid, id: "B", status: "outro" },
+      { ...valid, id: "C", secao: undefined },
+      { ...valid, id: "D", uf: 53 },
+      valid,
+    ]);
     expect(listContributions(memoryStorage({ "boletix:contribuicoes": stored }))).toEqual([valid]);
   });
 });
