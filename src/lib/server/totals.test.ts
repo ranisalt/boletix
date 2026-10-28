@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { type Bu, sealSubmission, openSubmission, TSE_ROOTS } from "../bu";
 import { loadBuScan } from "../bu/testing/fixtures";
 import { storeBu } from "./bu-store";
-import { loadTotals } from "./totals";
+import { cachedTotals, loadTotals } from "./totals";
 
 const ELECTION = "br-2026-general";
 const PRESIDENTE = 1;
@@ -109,6 +109,20 @@ describe("loadTotals", () => {
     await expect(
       loadTotals(env.DB, { election: ELECTION, turno: 2, cargo: PRESIDENTE }),
     ).resolves.toEqual({ secoes: 1, ...expected([verified.bu], PRESIDENTE) });
+  });
+
+  it("serves everyone the same totals within a 15-second window", async () => {
+    const filter = { election: ELECTION, turno: 2 as const, cargo: PRESIDENTE };
+    const start = Date.UTC(2026, 9, 25, 20, 0, 0);
+    const df = await store("df-97012-11-178");
+    const first = await cachedTotals(env.DB, filter, start);
+    const sp = await store("sp-69310-102-17");
+
+    await expect(cachedTotals(env.DB, filter, start + 14_999)).resolves.toEqual(first);
+    await expect(cachedTotals(env.DB, filter, start + 15_000)).resolves.toEqual({
+      secoes: 2,
+      ...expected([df, sp], PRESIDENTE),
+    });
   });
 
   it("rebuilds the stored totals from BUs stored before they existed", async () => {

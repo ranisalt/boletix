@@ -43,3 +43,27 @@ export async function loadTotals(
   const { secoes, brancos, nulos } = sums!.results[0] as Omit<Totals, "candidatos">;
   return { secoes, candidatos: votes!.results as Totals["candidatos"], brancos, nulos };
 }
+
+/** Each window's totals are read from D1 once per data center and shared by every viewer. */
+const WINDOW_MS = 15_000;
+
+export async function cachedTotals(
+  db: D1Database,
+  filter: TotalsFilter,
+  now = Date.now(),
+): Promise<Totals> {
+  const { election, turno, cargo, uf = "BR" } = filter;
+  // The Cache API keys on URLs; this one is never fetched. The window in the key makes the next
+  // window a miss, so no viewer sees totals older than the window.
+  const key = `https://totais.cache/${election}/${turno}/${cargo}/${uf}/${Math.floor(now / WINDOW_MS)}`;
+  const cache = await caches.open("totais");
+  const hit = await cache.match(key);
+  if (hit) return hit.json<Totals>();
+
+  const totals = await loadTotals(db, filter);
+  await cache.put(
+    key,
+    Response.json(totals, { headers: { "Cache-Control": `max-age=${WINDOW_MS / 1000}` } }),
+  );
+  return totals;
+}
