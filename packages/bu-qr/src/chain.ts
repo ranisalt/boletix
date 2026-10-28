@@ -18,6 +18,8 @@ export async function chainHashes(contents: readonly string[]): Promise<string[]
   for (const [i, untrimmed] of contents.entries()) {
     const content = untrimmed.trimEnd();
     text = i === 0 ? content : `${text} HASH:${hash} ${content}`;
+    // Sequential by construction: each text embeds the previous hash.
+    // oxlint-disable-next-line no-await-in-loop
     hash = await sha512Hex(text);
     hashes.push(hash);
   }

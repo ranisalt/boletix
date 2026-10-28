@@ -3,7 +3,7 @@ import { expect, it } from "vitest";
 import * as api from "../src/index.ts";
 
 it("exposes exactly the documented public API", () => {
-  expect(Object.keys(api).sort()).toEqual(
+  expect(Object.keys(api).toSorted()).toEqual(
     [
       "BuError",
       "MAX_QR_CHARS",
@@ -14,6 +14,6 @@ it("exposes exactly the documented public API", () => {
       "chainHashes",
       "hexToBytes",
       "parseQr",
-    ].sort(),
+    ].toSorted(),
   );
 });

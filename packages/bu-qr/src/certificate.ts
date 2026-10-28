@@ -25,7 +25,7 @@ export function assembleCertificate(certs: readonly CertQr[]): Uint8Array {
   if (certs.length === 0)
     throw new BuError("CERT_MISSING", "urna certificate QR codes are required");
   const total = certs[0]!.total;
-  const sorted = [...certs].sort((a, b) => a.index - b.index);
+  const sorted = certs.toSorted((a, b) => a.index - b.index);
   const complete =
     sorted.length === total && sorted.every((c, i) => c.index === i + 1 && c.total === total);
   if (!complete) throw new BuError("QR_SET_INCOMPLETE", `certificate needs ${total} QR codes`);

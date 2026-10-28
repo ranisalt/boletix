@@ -47,6 +47,7 @@
   "devDependencies": {
     "@tsconfig/node26": "^26.0.1",
     "@tsconfig/strictest": "^2.0.8",
+    "@types/node": "^26.6.5",
     "typescript": "^6.0.3",
     "vitest": "^4.1.12"
   },

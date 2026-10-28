@@ -3,7 +3,7 @@ import { tokenize } from "./tokenize.ts";
 
 // Decodes a single printed QR: either a part of the BU (QRBU) or a part of the urna certificate (QRCE).
 
-const SUPPORTED_VRQR_VERSIONS: readonly string[] = ["6.0"];
+const SUPPORTED_VRQR_VERSIONS: ReadonlySet<string> = new Set(["6.0"]);
 
 /** One QR of the BU. `content` is what the HASH chain covers: the text between the QRBU/VRQR prefix and HASH. */
 export type BuQr = {
@@ -97,7 +97,7 @@ function parseBu(raw: string, tokens: [string, string][]): BuQr {
   }
 
   const version = versionEntry[1];
-  if (!SUPPORTED_VRQR_VERSIONS.includes(version)) {
+  if (!SUPPORTED_VRQR_VERSIONS.has(version)) {
     throw new BuError("UNSUPPORTED_VERSION", `unsupported VRQR:${version}`);
   }
 

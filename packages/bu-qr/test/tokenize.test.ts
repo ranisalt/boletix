@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 
-import { expectBuError } from "./fixtures.ts";
 import { tokenize } from "../src/tokenize.ts";
+import { expectBuError } from "./fixtures.ts";
 
 it("splits records on spaces and values on the first colon only", () => {
   expect(tokenize("QRBU:1:9 VRQR:6.0 HICA:1:8027")).toEqual([

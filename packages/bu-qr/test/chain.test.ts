@@ -43,12 +43,16 @@ describe("chainHashes", () => {
   });
 
   it("reproduces the signed HASH of every real 2026 fixture", async () => {
-    // zz-29688-1-929 is excluded: its HASH does not reproduce under the single-QR rule and it ships
-    // no urna certificate QRs, so it is an open issue, not a passing case.
-    for (const fixture of loadBuFixtures().filter((f) => f.name !== "zz-29688-1-929")) {
-      const part = bu(fixture.qrbu[0]!);
-      const [last] = await chainHashes([part.content]);
-      expect(last, fixture.name).toBe(part.hash);
-    }
+    // zz-29688-1-929 is excluded: it is a hand-edited synthetic BU (UF ZZ, no QRCE),
+    // so its printed HASH no longer matches its content.
+    const fixtures = loadBuFixtures().filter((f) => f.name !== "zz-29688-1-929");
+    const results = await Promise.all(
+      fixtures.map(async (fixture) => {
+        const parts = fixture.qrbu.map(bu);
+        const hashes = await chainHashes(parts.map((part) => part.content));
+        return [fixture.name, hashes.at(-1), parts.at(-1)!.hash];
+      }),
+    );
+    for (const [name, actual, expected] of results) expect(actual, name).toBe(expected);
   });
 });

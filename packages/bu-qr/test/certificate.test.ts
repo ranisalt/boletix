@@ -45,8 +45,11 @@ it("rejects certificate QR codes from different urnas", () => {
 
 it("rejects a PEM body that is not terminated", () => {
   const pem = "-----BEGIN CERTIFICATE-----\nAAAA";
-  const hex = bytesToHex(new TextEncoder().encode(pem));
-  expectBuError(() => assembleCertificate([cert(`QRCE:1:1 IDUE:1 MDUE:2020 CERT:${hex}`)]), "CERT_INVALID");
+  const hex = bytesToHex(new TextEncoder().encode(pem)).toUpperCase();
+  expectBuError(
+    () => assembleCertificate([cert(`QRCE:1:1 IDUE:1 MDUE:2020 CERT:${hex}`)]),
+    "CERT_INVALID",
+  );
 });
 
 it("decodes every real 2026 certificate into a DER SEQUENCE, not PEM text", () => {
@@ -63,7 +66,7 @@ it("decodes a PEM certificate split across QR codes into the same DER", () => {
   const base64 = btoa(String.fromCharCode(...der));
   const wrapped = base64.match(/.{1,64}/g)!.join("\n");
   const pem = `-----BEGIN CERTIFICATE-----\n${wrapped}\n-----END CERTIFICATE-----\n`;
-  const hex = bytesToHex(new TextEncoder().encode(pem));
+  const hex = bytesToHex(new TextEncoder().encode(pem)).toUpperCase();
   // Each QR payload must stay within MAX_QR_CHARS (1100); 1000 hex chars is an even, byte-aligned split.
   const chunks = hex.match(/.{1,1000}/g)!;
   const { idue, mdue } = certs[0]!;

@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 
-import { expectBuError, loadBuFixture } from "./fixtures.ts";
 import { MAX_QR_CODES, parseQr } from "../src/parse.ts";
+import { expectBuError, loadBuFixture } from "./fixtures.ts";
 
 const HASH = "A".repeat(128);
 const REAL_2026 = loadBuFixture("zz-29688-1-929").qrbu[0]!;

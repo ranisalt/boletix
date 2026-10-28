@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync } from "node:fs";
+
 import { expect } from "vitest";
 
 import { BuError } from "../src/errors.ts";
@@ -5,11 +7,12 @@ import { parseQr, type BuQr, type CertQr } from "../src/parse.ts";
 
 // Test-only loader for the real 2026 BU fixtures at the repo root: fixtures/2026/<uf>-<mun>-<zona>-<secao>/.
 // Each directory holds qrbu-<i>.txt (BU QRs) and qrce-<i>.txt (urna certificate QRs).
-const files = import.meta.glob("../../../fixtures/2026/*/*.txt", {
-  query: "?raw",
-  import: "default",
-  eager: true,
-}) as Record<string, string>;
+const ROOT = new URL("../../../fixtures/2026/", import.meta.url);
+const files: Record<string, string> = Object.fromEntries(
+  readdirSync(ROOT, { recursive: true, encoding: "utf8" })
+    .filter((path) => path.endsWith(".txt"))
+    .map((path) => [`/fixtures/2026/${path}`, readFileSync(new URL(path, ROOT), "utf8")]),
+);
 
 export type BuFixture = {
   name: string;
@@ -23,7 +26,7 @@ function byIndex(a: string, b: string): number {
 
 export function loadBuFixtures(): BuFixture[] {
   const dirs = new Map<string, { qrbu: string[]; qrce: string[] }>();
-  for (const path of Object.keys(files).sort(byIndex)) {
+  for (const path of Object.keys(files).toSorted(byIndex)) {
     const match = /\/fixtures\/2026\/([^/]+)\/(qrbu|qrce)-\d+\.txt$/.exec(path);
     if (!match) continue;
     const [, name, kind] = match as unknown as [string, string, "qrbu" | "qrce"];
@@ -32,8 +35,8 @@ export function loadBuFixtures(): BuFixture[] {
     dirs.set(name, entry);
   }
   return [...dirs]
-    .map(([name, e]) => ({ name, ...e }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .map(([name, { qrbu, qrce }]) => ({ name, qrbu, qrce }))
+    .toSorted((a, b) => a.name.localeCompare(b.name));
 }
 
 export function loadBuFixture(name: string): BuFixture {

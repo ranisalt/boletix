@@ -455,7 +455,7 @@ export function assembleBu(parts: BuQr[]): Bu {
     throw new BuError("QR_SET_MIXED", "BU QR parts have different totals");
   }
 
-  const sorted = [...parts].sort((left, right) => left.index - right.index);
+  const sorted = parts.toSorted((left, right) => left.index - right.index);
   if (sorted.length !== total || sorted.some((part, index) => part.index !== index + 1)) {
     throw new BuError("QR_SET_INCOMPLETE", `expected QR indexes 1..${total}`);
   }

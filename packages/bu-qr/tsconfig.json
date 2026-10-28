@@ -1,9 +1,10 @@
 {
   "extends": ["@tsconfig/strictest/tsconfig.json", "@tsconfig/node26/tsconfig.json"],
   "compilerOptions": {
-    // Runs in browsers and Workers too: WebCrypto types come from the DOM lib, never @types/node.
+    // Runs in browsers and Workers too: WebCrypto types come from the DOM lib, never @types/node (tsconfig.build.json drops it
+    // again, so src can't use Node APIs; tests may).
     "lib": ["es2024", "DOM"],
-    "types": [],
+    "types": ["node"],
     "noEmit": true,
     "verbatimModuleSyntax": true,
     "declaration": true,
