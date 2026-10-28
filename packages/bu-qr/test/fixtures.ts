@@ -2,8 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 
 import { expect } from "vitest";
 
-import { BuError } from "../src/errors.ts";
-import { parseQr, type BuQr, type CertQr } from "../src/parse.ts";
+import { BuError, type BuQr, type CertQr, chainHashes, parseQr } from "../src/index.ts";
 
 // Test-only loader for the real 2026 BU fixtures at the repo root: fixtures/2026/<uf>-<mun>-<zona>-<secao>/.
 // Each directory holds qrbu-<i>.txt (BU QRs) and qrce-<i>.txt (urna certificate QRs).
@@ -63,4 +62,33 @@ export function expectBuError(action: () => unknown, code: BuError["code"]): voi
   }
   expect(thrown).toBeInstanceOf(BuError);
   expect((thrown as BuError).code).toBe(code);
+}
+
+export async function expectBuErrorAsync(
+  action: () => Promise<unknown>,
+  code: BuError["code"],
+): Promise<void> {
+  const thrown = await action().then(
+    () => undefined,
+    (error: unknown) => error,
+  );
+  expect(thrown).toBeInstanceOf(BuError);
+  expect((thrown as BuError).code).toBe(code);
+}
+
+/** Uppercase hex, as printed in QR codes. */
+export function toHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0"))
+    .join("")
+    .toUpperCase();
+}
+
+/** Builds a BU QR set from raw contents with a correct HASH chain, the way an urna prints it. */
+export async function sealParts(contents: readonly string[], assi = "ABCD"): Promise<BuQr[]> {
+  const hashes = await chainHashes(contents);
+  return contents.map((content, i) => {
+    const signature = i === contents.length - 1 ? ` ASSI:${assi}` : "";
+    const raw = `QRBU:${i + 1}:${contents.length} VRQR:6.0 ${content} HASH:${hashes[i]}${signature}`;
+    return parseQr(raw) as BuQr;
+  });
 }

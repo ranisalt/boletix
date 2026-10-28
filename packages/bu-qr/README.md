@@ -19,21 +19,18 @@ npm install @boletix/bu-qr
 ## Usage
 
 ```ts
-import { assembleBu, assembleCertificate, chainHashes, parseQr, type BuQr } from "@boletix/bu-qr";
+import { assembleBu, assembleCertificate, parseQr, type BuQr } from "@boletix/bu-qr";
 
 // One string per scanned QR code, in any order.
 const parsed = scanned.map(parseQr);
 const parts = parsed.filter((qr): qr is BuQr => qr.kind === "bu");
 const certs = parsed.filter((qr) => qr.kind === "cert");
 
-const bu = assembleBu(parts);
+// Checks every printed HASH against the content (HASH_MISMATCH otherwise), then decodes.
+const { bu, hash, assi } = await assembleBu(parts);
 bu.header.municipio; // 29688
 bu.cargos[0]?.candidates; // { "13": 120, "22": 98, ... }
-
-// The HASH chain: the last value is what the urna signed (ASSI).
-const sorted = parts.toSorted((a, b) => a.index - b.index);
-const hashes = await chainHashes(sorted.map((part) => part.content));
-hashes.at(-1) === sorted.at(-1)?.hash; // true for an untampered BU
+// `hash` covers the whole BU; `assi` (bytes) is the urna's signature over it.
 
 // The urna's X.509 certificate (DER), printed in the QRCE codes.
 const der = assembleCertificate(certs);
@@ -55,16 +52,15 @@ try {
 
 ## API
 
-| Export                                        | Description                                                                                                                         |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `parseQr(raw)`                                | Decodes one QR: a BU part (`kind: "bu"`) or a certificate part (`kind: "cert"`).                                                    |
-| `assembleBu(parts)`                           | Joins all parts of one BU (any order) and decodes header and cargos. Checks that the printed totals add up (`TOTALS_INCONSISTENT`). |
-| `chainHashes(contents)`                       | SHA-512 HASH chain over the parts' `content`, in index order. Async (WebCrypto). Returns uppercase hex.                             |
-| `assembleCertificate(certs)`                  | Joins the QRCE parts of one urna into the certificate DER (accepts DER or PEM inside `CERT`).                                       |
-| `bytesToHex(bytes)`, `hexToBytes(hex)`        | Strict hex helpers; `hexToBytes` rejects odd length and non-hex characters with `INVALID_FIELD`.                                    |
-| `BuError`, `BuErrorCode`                      | The error type shared with `@boletix/bu-verify`.                                                                                    |
-| `MAX_QR_CHARS`, `MAX_QR_CODES`                | Limits: 1100 characters per QR (manual), 32 QRs per BU (sanity bound; the longest real BU spans 9).                                 |
-| `Bu`, `BuCargo`, `BuQr`, `CertQr`, `ParsedQr` | Types. Field names follow the manual; doc comments note the QR key each field comes from.                                           |
+| Export                                        | Description                                                                                                                                                                                                                                |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `parseQr(raw)`                                | Decodes one QR: a BU part (`kind: "bu"`) or a certificate part (`kind: "cert"`).                                                                                                                                                           |
+| `assembleBu(parts)`                           | Async. Joins all parts of one BU (any order), checks every HASH against the recomputed chain (`HASH_MISMATCH`), decodes header and cargos and checks that the printed totals add up (`TOTALS_INCONSISTENT`). Returns `{ bu, hash, assi }`. |
+| `chainHashes(contents)`                       | Low-level: the SHA-512 HASH chain over parts' `content`, in index order. Async (WebCrypto), uppercase hex. Use it to print a BU; `assembleBu` already checks it when reading one.                                                          |
+| `assembleCertificate(certs)`                  | Joins the QRCE parts of one urna into the certificate DER (accepts DER or PEM inside `CERT`).                                                                                                                                              |
+| `BuError`, `BuErrorCode`                      | The error type shared with `@boletix/bu-verify`.                                                                                                                                                                                           |
+| `MAX_QR_CHARS`, `MAX_QR_CODES`                | Limits: 1100 characters per QR (manual), 32 QRs per BU (sanity bound; the longest real BU spans 9).                                                                                                                                        |
+| `Bu`, `BuCargo`, `BuQr`, `CertQr`, `ParsedQr` | Types. Field names follow the manual; doc comments note the QR key each field comes from.                                                                                                                                                  |
 
 ## Format rules
 

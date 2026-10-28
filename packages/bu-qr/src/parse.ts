@@ -1,4 +1,5 @@
 import { BuError } from "./errors.ts";
+import { hexToBytes } from "./hex.ts";
 import { tokenize } from "./tokenize.ts";
 
 // Decodes a single printed QR: either a part of the BU (QRBU) or a part of the urna certificate (QRCE).
@@ -15,7 +16,7 @@ export type BuQr = {
   tokens: [string, string][];
   hash: string;
   /** Signature over the final HASH; only on the last QR. */
-  assi?: string;
+  assi?: Uint8Array;
 };
 
 /** One QR of the urna certificate (hex-encoded, split over several QRs). */
@@ -117,19 +118,20 @@ function parseBu(raw: string, tokens: [string, string][]): BuQr {
   }
 
   const hash = hashEntries[0]![1];
-  if (!/^[0-9A-Fa-f]{128}$/.test(hash)) {
+  if (!/^[0-9A-F]{128}$/.test(hash)) {
     throw new BuError("INVALID_FIELD", "HASH must be exactly 128 hexadecimal characters");
   }
 
-  let assi: string | undefined;
+  let assi: Uint8Array | undefined;
   if (assiIndex !== -1) {
     if (index !== total) {
       throw new BuError("UNEXPECTED_FIELD", "ASSI is allowed only on the final QR");
     }
-    assi = tokens[assiIndex]![1];
-    if (!/^[0-9A-Fa-f]+$/.test(assi)) {
+    const assiHex = tokens[assiIndex]![1];
+    if (!/^[0-9A-F]+$/.test(assiHex)) {
       throw new BuError("INVALID_FIELD", "ASSI must contain hexadecimal data");
     }
+    assi = hexToBytes(assiHex);
   }
 
   const hashStart = raw.indexOf(" HASH:");

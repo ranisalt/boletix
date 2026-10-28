@@ -1,3 +1,4 @@
+import { chainHashes } from "./chain.ts";
 import { BuError } from "./errors.ts";
 import type { BuQr } from "./parse.ts";
 import { tokenize } from "./tokenize.ts";
@@ -446,8 +447,20 @@ function checkHeaderTotals(parsedHeader: ParsedHeader): void {
 
 // --- Entry point ----------------------------------------------------------------------------
 
-/** Joins the parsed QR parts of one BU and decodes it, rejecting anything outside the 2026 layout. */
-export function assembleBu(parts: BuQr[]): Bu {
+/** A decoded BU whose content matches its HASH chain. Only `hash` and `assi` are signed. */
+export type AssembledBu = {
+  bu: Bu;
+  /** HASH of the last QR: covers the whole BU and is what ASSI signs. */
+  hash: string;
+  /** Signature over `hash`, if the last QR carries one. */
+  assi?: Uint8Array;
+};
+
+/**
+ * Joins the parsed QR parts of one BU (in any order), checks every printed HASH against the
+ * chain recomputed from the content, and decodes it, rejecting anything outside the 2026 layout.
+ */
+export async function assembleBu(parts: readonly BuQr[]): Promise<AssembledBu> {
   if (parts.length === 0) throw new BuError("QR_SET_INCOMPLETE", "no BU QR parts were supplied");
 
   const total = parts[0]!.total;
@@ -458,6 +471,13 @@ export function assembleBu(parts: BuQr[]): Bu {
   const sorted = parts.toSorted((left, right) => left.index - right.index);
   if (sorted.length !== total || sorted.some((part, index) => part.index !== index + 1)) {
     throw new BuError("QR_SET_INCOMPLETE", `expected QR indexes 1..${total}`);
+  }
+
+  const hashes = await chainHashes(sorted.map((part) => part.content));
+  for (const [i, part] of sorted.entries()) {
+    if (part.hash !== hashes[i]) {
+      throw new BuError("HASH_MISMATCH", `QR ${part.index} HASH does not match its content`);
+    }
   }
 
   // Each part already passed the single-QR size limit when parsed; the joined BU may be larger.
@@ -496,5 +516,6 @@ export function assembleBu(parts: BuQr[]): Bu {
     if (cargos.length === cargoCountBeforeElection) failMissing("CARG");
   }
 
-  return { header, cargos };
+  const last = sorted.at(-1)!;
+  return { bu: { header, cargos }, hash: last.hash, ...(last.assi && { assi: last.assi }) };
 }

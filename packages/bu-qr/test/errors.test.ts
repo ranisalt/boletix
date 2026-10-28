@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 
-import { BuError } from "../src/errors.ts";
+import { BuError } from "../src/index.ts";
 
 it("preserves the closed code, detail, and formatted message", () => {
   const error = new BuError("MALFORMED_TOKEN", "unexpected character");

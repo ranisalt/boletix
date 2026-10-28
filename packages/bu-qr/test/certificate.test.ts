@@ -1,9 +1,7 @@
 import { expect, it } from "vitest";
 
-import { assembleCertificate } from "../src/certificate.ts";
-import { bytesToHex } from "../src/hex.ts";
-import { parseQr, type CertQr } from "../src/parse.ts";
-import { expectBuError, loadBuFixtures, loadBuScan } from "./fixtures.ts";
+import { assembleCertificate, type CertQr, parseQr } from "../src/index.ts";
+import { expectBuError, loadBuFixtures, loadBuScan, toHex } from "./fixtures.ts";
 
 function cert(raw: string): CertQr {
   const parsed = parseQr(raw);
@@ -45,7 +43,7 @@ it("rejects certificate QR codes from different urnas", () => {
 
 it("rejects a PEM body that is not terminated", () => {
   const pem = "-----BEGIN CERTIFICATE-----\nAAAA";
-  const hex = bytesToHex(new TextEncoder().encode(pem)).toUpperCase();
+  const hex = toHex(new TextEncoder().encode(pem));
   expectBuError(
     () => assembleCertificate([cert(`QRCE:1:1 IDUE:1 MDUE:2020 CERT:${hex}`)]),
     "CERT_INVALID",
@@ -66,7 +64,7 @@ it("decodes a PEM certificate split across QR codes into the same DER", () => {
   const base64 = btoa(String.fromCharCode(...der));
   const wrapped = base64.match(/.{1,64}/g)!.join("\n");
   const pem = `-----BEGIN CERTIFICATE-----\n${wrapped}\n-----END CERTIFICATE-----\n`;
-  const hex = bytesToHex(new TextEncoder().encode(pem)).toUpperCase();
+  const hex = toHex(new TextEncoder().encode(pem));
   // Each QR payload must stay within MAX_QR_CHARS (1100); 1000 hex chars is an even, byte-aligned split.
   const chunks = hex.match(/.{1,1000}/g)!;
   const { idue, mdue } = certs[0]!;
@@ -75,4 +73,11 @@ it("decodes a PEM certificate split across QR codes into the same DER", () => {
   );
 
   expect(assembleCertificate(pemCerts)).toEqual(der);
+});
+
+it("rejects certificate hex that does not split into whole bytes", () => {
+  expectBuError(
+    () => assembleCertificate([cert("QRCE:1:1 IDUE:1 MDUE:2020 CERT:ABC")]),
+    "INVALID_FIELD",
+  );
 });

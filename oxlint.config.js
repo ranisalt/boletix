@@ -12,6 +12,9 @@ export default defineConfig({
     "no-console": "error",
     // Vitest accepts a failure message as the second argument.
     "vitest/valid-expect": ["error", { maxArgs: 2 }],
-    "vitest/expect-expect": ["error", { assertFunctionNames: ["expect", "expectBuError"] }],
+    "vitest/expect-expect": [
+      "error",
+      { assertFunctionNames: ["expect", "expectBuError", "expectBuErrorAsync"] },
+    ],
   },
 });
