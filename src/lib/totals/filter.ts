@@ -1,4 +1,5 @@
 import {
+  cargoScope,
   ELECTIONS,
   getElection,
   latestPleito,
@@ -80,4 +81,12 @@ export function totalsArea(scope: Scope, uf: string | undefined): string | undef
   // Municipal cargos need a municipality filter, which the totals page doesn't have yet.
   if (scope === "uf" && uf) return nameFileArea(scope, uf);
   return undefined;
+}
+
+/** The election and name file behind a totals choice, or undefined when it can't be summed. */
+export function totalsTarget(query: { election: string; cargo: number; uf?: string }) {
+  const election = getElection(query.election);
+  const scope = election && cargoScope(election, query.cargo);
+  const area = scope && totalsArea(scope, query.uf);
+  return area ? { election: election!, area } : undefined;
 }

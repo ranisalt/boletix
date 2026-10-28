@@ -5,17 +5,15 @@ import * as v from "valibot";
 
 import {
   candidateName,
-  cargoScope,
   dataUrl,
-  getElection,
   sectionTotal,
   type NameFile,
   type SectionCounts,
 } from "#lib/elections/index.js";
 import { cachedTotals, changes } from "#lib/server/index.js";
-import { TURNOS, UFS, totalsArea } from "#lib/totals/index.js";
+import { TURNOS, UFS, totalsTarget } from "#lib/totals/index.js";
 
-/** Matches the window `cachedTotals` shares, so each poll can bring new totals. */
+/** The window `cachedTotals` shares; polls land just after each one opens. */
 const POLL_MS = 15_000;
 
 const Filter = v.object({
@@ -27,10 +25,10 @@ const Filter = v.object({
 
 /** The page's totals, streamed again whenever new BUs change them. */
 export const getTotals = query.live(Filter, async function* (filter) {
-  const election = getElection(filter.election);
-  const scope = election && cargoScope(election, filter.cargo);
-  const area = scope && totalsArea(scope, filter.uf);
-  if (!area) error(400, "These totals can't be summed");
+  const target = totalsTarget(filter);
+  // The page never asks for these; only a hand-made request does.
+  if (!target) error(400, "These totals can't be summed");
+  const { election, area } = target;
 
   // Static TSE files, read once per stream; a missing one only loses names or the coverage total.
   const { fetch } = getRequestEvent();
@@ -57,6 +55,6 @@ export const getTotals = query.live(Filter, async function* (filter) {
         }),
       };
     },
-    () => new Promise((resolve) => setTimeout(resolve, POLL_MS)),
+    () => new Promise((resolve) => setTimeout(resolve, POLL_MS - (Date.now() % POLL_MS))),
   );
 });

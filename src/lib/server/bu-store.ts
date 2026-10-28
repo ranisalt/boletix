@@ -124,7 +124,7 @@ export async function storeBu(
          SELECT b.election_id, b.turno, c.cargo, b.uf, COUNT(DISTINCT b.id), SUM(c.brancos), SUM(c.nulos)
            FROM bu b JOIN bu_cargo c ON c.bu_id = b.id
           WHERE b.hash = ?1
-          GROUP BY c.cargo
+          GROUP BY b.election_id, b.turno, c.cargo, b.uf
          ON CONFLICT DO UPDATE SET secoes = secoes + excluded.secoes,
                                    brancos = brancos + excluded.brancos,
                                    nulos = nulos + excluded.nulos`,
@@ -134,7 +134,7 @@ export async function storeBu(
          SELECT b.election_id, b.turno, v.cargo, b.uf, v.idel, v.code, SUM(v.votes)
            FROM bu b JOIN bu_vote v ON v.bu_id = b.id
           WHERE b.hash = ?1 AND v.kind = 'nominal'
-          GROUP BY v.cargo, v.idel, v.code
+          GROUP BY b.election_id, b.turno, v.cargo, b.uf, v.idel, v.code
          ON CONFLICT DO UPDATE SET votos = votos + excluded.votos`,
       ).bind(hash),
     ]);

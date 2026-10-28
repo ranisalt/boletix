@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseTotalsQuery, totalsArea } from "./filter";
+import { parseTotalsQuery, totalsArea, totalsTarget } from "./filter";
 
 // Between the 2026 rounds: the first is the latest one held.
 const NOW = new Date("2026-10-10T12:00:00Z");
@@ -51,5 +51,22 @@ describe("totalsArea", () => {
 
   it("cannot total a municipal cargo without a municipality filter", () => {
     expect(totalsArea("municipio", "SP")).toBeUndefined();
+  });
+});
+
+describe("totalsTarget", () => {
+  const base = { election: "br-2026-general", turno: 1 as const };
+
+  it("finds the election and name file of a choice that can be summed", () => {
+    expect(totalsTarget({ ...base, cargo: 3, uf: "SP" })).toMatchObject({
+      election: { id: "br-2026-general" },
+      area: "SP",
+    });
+  });
+
+  it("rejects an unknown election, a cargo outside it, or a state cargo with no UF", () => {
+    expect(totalsTarget({ ...base, election: "br-1998-general", cargo: 1 })).toBeUndefined();
+    expect(totalsTarget({ ...base, cargo: 99 })).toBeUndefined();
+    expect(totalsTarget({ ...base, cargo: 3 })).toBeUndefined();
   });
 });

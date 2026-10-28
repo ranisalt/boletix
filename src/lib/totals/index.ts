@@ -1,3 +1,10 @@
 /** Public totals page: its filters and the view of the summed votes. */
 export { default as TotalsView } from "./TotalsView.svelte";
-export { parseTotalsQuery, totalsArea, TURNOS, UFS, type TotalsQuery } from "./filter";
+export {
+  parseTotalsQuery,
+  totalsArea,
+  totalsTarget,
+  TURNOS,
+  UFS,
+  type TotalsQuery,
+} from "./filter";
