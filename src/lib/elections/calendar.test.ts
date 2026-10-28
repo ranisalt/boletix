@@ -28,6 +28,11 @@ it("lists elections newest first", () => {
 describe("latestPleito", () => {
   const at = (iso: string) => latestPleito(new Date(iso));
 
+  it("counts days in Brasília time, where elections are scheduled", () => {
+    expect(at("2026-10-25T01:00:00Z")).toEqual({ election: "br-2026-general", turno: 1 });
+    expect(at("2026-10-25T03:00:00Z")).toEqual({ election: "br-2026-general", turno: 2 });
+  });
+
   it("picks the most recent round already held", () => {
     expect(at("2026-10-04T12:00:00Z")).toEqual({ election: "br-2026-general", turno: 1 });
     expect(at("2026-10-24T12:00:00Z")).toEqual({ election: "br-2026-general", turno: 1 });

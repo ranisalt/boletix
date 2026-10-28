@@ -36,9 +36,12 @@ export function findElection(
   );
 }
 
+// Election days follow Brasília time; in UTC the next day starts at 21:00 there.
+const BRASILIA_DATE = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" });
+
 /** The latest round voted by `now`, or the newest election's first round if none was yet. */
 export function latestPleito(now: Date): { election: string; turno: 1 | 2 } {
-  const today = now.toISOString().slice(0, 10);
+  const today = BRASILIA_DATE.format(now);
   for (const election of ELECTIONS) {
     const held = election.pleitos.findLast((pleito) => pleito.date <= today);
     if (held) return { election: election.id, turno: held.turno };
