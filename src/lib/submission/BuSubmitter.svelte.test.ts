@@ -220,7 +220,7 @@ describe("BuSubmitter", () => {
     expect(screen.queryByRole("button", { name: "Enviar boletim" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Minhas contribuições" })).toHaveAttribute(
       "href",
-      "/contribuicoes",
+      "/totais#minhas-contribuicoes",
     );
     expect(listContributions()).toEqual([
       expect.objectContaining({

@@ -40,11 +40,11 @@
 <table class="w-full text-left text-sm sm:text-base">
 <thead class="bg-muted text-sm"><tr><th class="p-3">Informação</th><th class="p-3">Valor</th><th class="p-3">Vira o campo</th></tr></thead>
 <tbody class="divide-y tabular-nums">
-<tr class="bg-slate-500/20"><td class="p-3">Município / zona / seção</td><td class="p-3">71072 / 123 / 456</td><td class="p-3">MUNI:71072 ZONA:123 SECA:456</td></tr>
-<tr class="bg-sky-500/25"><td class="p-3">Candidato 13</td><td class="p-3 font-semibold">142</td><td class="p-3">13:142</td></tr>
-<tr class="bg-emerald-500/25"><td class="p-3">Candidato 22</td><td class="p-3 font-semibold">128</td><td class="p-3">22:128</td></tr>
-<tr class="bg-fuchsia-500/25"><td class="p-3">Candidato 15</td><td class="p-3 font-semibold">31</td><td class="p-3">15:31</td></tr>
-<tr class="bg-amber-500/25"><td class="p-3">Brancos / nulos</td><td class="p-3 font-semibold">7 / 12</td><td class="p-3">BRAN:7 NULO:12</td></tr>
+<tr class="bg-rose-500/25"><td class="p-3">Município / zona / seção</td><td class="p-3">71072 / 123 / 456</td><td class="p-3 font-mono break-all">MUNI:71072 ZONA:123 SECA:456</td></tr>
+<tr class="bg-sky-500/25"><td class="p-3">Candidato 13</td><td class="p-3 font-semibold">142</td><td class="p-3 font-mono break-all">13:142</td></tr>
+<tr class="bg-emerald-500/25"><td class="p-3">Candidato 22</td><td class="p-3 font-semibold">128</td><td class="p-3 font-mono break-all">22:128</td></tr>
+<tr class="bg-fuchsia-500/25"><td class="p-3">Candidato 15</td><td class="p-3 font-semibold">31</td><td class="p-3 font-mono break-all">15:31</td></tr>
+<tr class="bg-amber-500/25"><td class="p-3">Brancos / nulos</td><td class="p-3 font-semibold">7 / 12</td><td class="p-3 font-mono break-all">BRAN:7 NULO:12</td></tr>
 </tbody>
 </table>
 </div>
@@ -53,11 +53,11 @@
 <ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
 
 <Step n={2} icon={Combine} title="Serialização: tudo vira um texto padronizado">
-<p>As informações são escritas em uma ordem fixa, no formato CAMPO:valor. Assim qualquer programa lê o boletim do mesmo jeito.</p>
-<p class="rounded-lg border-2 bg-background p-4 text-sm leading-9">
-<Field tone="meta">QRBU:1:3 VRQR:6.0</Field> … <Field tone="meta">MUNI:71072 ZONA:123 SECA:456</Field> … <Field tone="meta">CARG:1</Field> <Field tone="a">13:142</Field> <Field tone="b">22:128</Field> <Field tone="c">15:31</Field> <Field tone="blank">BRAN:7 NULO:12</Field> <Field tone="meta">TOTC:320</Field>
+<p>As informações são escritas em uma ordem fixa, no formato <code>CAMPO:valor</code>. Assim qualquer programa lê o boletim do mesmo jeito.</p>
+<p class="rounded-lg border-2 bg-background p-4 font-mono text-sm leading-9">
+<Field tone="plain">QRBU:1:3 VRQR:6.0</Field> … <Field tone="meta">MUNI:71072 ZONA:123 SECA:456</Field> … <Field tone="plain">CARG:1</Field> <Field tone="a">13:142</Field> <Field tone="b">22:128</Field> <Field tone="c">15:31</Field> <Field tone="blank">BRAN:7 NULO:12</Field> <Field tone="plain">TOTC:320</Field>
 </p>
-<p class="text-sm text-muted-foreground">QRBU:1:3 quer dizer “parte 1 de 3”, e VRQR:6.0 é a versão do formato usada em 2026. As reticências marcam campos omitidos, como o código da eleição e o identificador da urna. O arquivo completo do boletim usa outro formato, binário; o QR code usa este, em texto, definido pelo TSE.</p>
+<p class="text-sm text-muted-foreground"><code>QRBU:1:3</code> quer dizer “parte 1 de 3”, e <code>VRQR:6.0</code> é a versão do formato usada em 2026. As reticências marcam campos omitidos, como o código da eleição e o identificador da urna. O arquivo completo do boletim usa outro formato, binário; o QR code usa este, em texto, definido pelo TSE.</p>
 </Step>
 
 <ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
@@ -65,9 +65,9 @@
 <Step n={3} icon={Split} title="Divisão em vários QR codes">
 <p>Um QR code impresso na fita estreita da urna só cabe uma quantidade limitada de texto. Por isso o boletim é cortado em partes, cada uma em seu QR code.</p>
 <div class="grid grid-cols-3 gap-3">
-<div class="flex flex-col items-center gap-2 rounded-lg border-2 bg-background p-3 text-center"><QrCode class="size-14" aria-hidden="true" /><span class="text-sm font-bold">Parte 1/3</span><span class="text-xs text-muted-foreground">HASH:9f2c…</span></div>
-<div class="flex flex-col items-center gap-2 rounded-lg border-2 bg-background p-3 text-center"><QrCode class="size-14" aria-hidden="true" /><span class="text-sm font-bold">Parte 2/3</span><span class="text-xs text-muted-foreground">HASH:41ab…</span></div>
-<div class="flex flex-col items-center gap-2 rounded-lg border-2 bg-background p-3 text-center"><QrCode class="size-14" aria-hidden="true" /><span class="text-sm font-bold">Parte 3/3</span><span class="text-xs text-muted-foreground">HASH:d07e…</span><span class="rounded bg-success px-2 py-0.5 text-xs font-semibold text-primary-foreground">+ ASSINATURA</span></div>
+<div class="flex flex-col items-center gap-2 rounded-lg border-2 bg-background p-3 text-center"><QrCode class="size-14" aria-hidden="true" /><span class="text-sm font-bold">Parte 1/3</span><span class="font-mono text-xs text-muted-foreground">HASH:9f2c…</span></div>
+<div class="flex flex-col items-center gap-2 rounded-lg border-2 bg-background p-3 text-center"><QrCode class="size-14" aria-hidden="true" /><span class="text-sm font-bold">Parte 2/3</span><span class="font-mono text-xs text-muted-foreground">HASH:41ab…</span></div>
+<div class="flex flex-col items-center gap-2 rounded-lg border-2 bg-background p-3 text-center"><QrCode class="size-14" aria-hidden="true" /><span class="text-sm font-bold">Parte 3/3</span><span class="font-mono text-xs text-muted-foreground">HASH:d07e…</span><span class="rounded bg-success px-2 py-0.5 text-xs font-semibold text-primary-foreground">+ ASSINATURA</span></div>
 </div>
 </Step>
 
@@ -100,7 +100,7 @@
 <ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
 
 <Step n={6} icon={Landmark} title="Certificado digital: prova de que é uma urna real">
-<p>A chave pública da urna vem dentro de um <strong>certificado digital</strong>, assinado pela autoridade certificadora da Justiça Eleitoral. Funciona como um documento de identidade: o TSE “carimba” que aquela chave pertence a uma urna oficial. O certificado é impresso no boletim em QR codes próprios, marcados QRCE, ao lado dos QR codes dos votos.</p>
+<p>A chave pública da urna vem dentro de um <strong>certificado digital</strong>, assinado pela autoridade certificadora da Justiça Eleitoral. Funciona como um documento de identidade: o TSE “carimba” que aquela chave pertence a uma urna oficial. O certificado é impresso no boletim em QR codes próprios, marcados <code>QRCE</code>, ao lado dos QR codes dos votos.</p>
 <ol class="space-y-2">
 <li class="rounded-lg border-2 p-3"><strong>Raiz de confiança</strong> — certificado da autoridade da Justiça Eleitoral, publicado pelo TSE.</li>
 <li class="ml-6 rounded-lg border-2 p-3"><strong>Certificado da urna</strong> — assinado por essa autoridade, contém a chave pública da urna.</li>
@@ -112,7 +112,7 @@
 ## Parte 2 — No Boletix, o caminho de volta
 
 <ol class="grid gap-4 sm:grid-cols-2">
-<CheckStep n={1} icon={ScanLine} title="Ler os QR codes em qualquer ordem">Os do boletim (QRBU:i:N) e os do certificado (QRCE:i:N). Cada um diz qual parte é e quantas existem, então o app avisa quais faltam.</CheckStep>
+<CheckStep n={1} icon={ScanLine} title="Ler os QR codes em qualquer ordem">Os do boletim (<code>QRBU:i:N</code>) e os do certificado (<code>QRCE:i:N</code>). Cada um diz qual parte é e quantas existem, então o app avisa quais faltam.</CheckStep>
 <CheckStep n={2} icon={Combine} title="Juntar as partes">Com todas lidas, o texto é remontado na ordem certa.</CheckStep>
 <CheckStep n={3} icon={FingerprintPattern} title="Recalcular a corrente de hashes">O app calcula de novo o SHA-512 de cada parte e compara com o impresso.</CheckStep>
 <CheckStep n={4} icon={Landmark} title="Conferir o certificado">Verifica que o certificado foi assinado pela autoridade da Justiça Eleitoral e que pertence à urna do boletim.</CheckStep>

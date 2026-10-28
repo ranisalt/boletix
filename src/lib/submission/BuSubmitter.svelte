@@ -178,7 +178,7 @@
             onclick={() => (submit = { phase: "idle" })}>{m.retry()}</button
           >
         {/if}
-        <a href={resolve("/contribuicoes")} class="btn border-2 border-input"
+        <a href="{resolve('/totais')}#minhas-contribuicoes" class="btn border-2 border-input"
           >{m.nav_contributions()}</a
         >
       </div>

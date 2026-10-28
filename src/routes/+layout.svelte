@@ -6,8 +6,8 @@
   import ChartColumn from "@lucide/svelte/icons/chart-column";
   import House from "@lucide/svelte/icons/house";
   import Info from "@lucide/svelte/icons/info";
-  import ListChecks from "@lucide/svelte/icons/list-checks";
   import ScanLine from "@lucide/svelte/icons/scan-line";
+  import ShieldCheck from "@lucide/svelte/icons/shield-check";
 
   import favicon from "#lib/assets/favicon.svg";
   import { m } from "#lib/paraglide/messages.js";
@@ -23,10 +23,10 @@
     { href: resolve("/enviar"), label: m.nav_submit, short: m.nav_submit, icon: ScanLine },
     { href: resolve("/totais"), label: m.nav_totals, short: m.nav_totals, icon: ChartColumn },
     {
-      href: resolve("/contribuicoes"),
-      label: m.nav_contributions,
-      short: m.nav_contributions_short,
-      icon: ListChecks,
+      href: resolve("/como-funciona"),
+      label: m.how_it_works_title,
+      short: m.how_it_works_title,
+      icon: ShieldCheck,
     },
     { href: resolve("/sobre"), label: m.nav_about, short: m.nav_about, icon: Info },
   ];
@@ -67,7 +67,7 @@
           <a
             href={item.href}
             aria-current={current(item.href)}
-            class="btn min-h-11 px-3 font-medium text-muted-foreground hover:bg-muted aria-[current=page]:bg-accent aria-[current=page]:text-accent-foreground"
+            class="btn min-h-11 px-3 font-medium text-muted-foreground hover:bg-muted aria-[current=page]:bg-accent"
             >{item.label()}</a
           >
         {/each}
@@ -94,7 +94,7 @@
       <a
         href={item.href}
         aria-current={current(item.href)}
-        class="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium text-muted-foreground aria-[current=page]:text-primary"
+        class="flex min-h-16 flex-col items-center justify-center gap-1 text-center text-xs leading-tight font-medium text-muted-foreground aria-[current=page]:text-primary"
       >
         <item.icon class="size-5" aria-hidden="true" />
         {item.short()}
