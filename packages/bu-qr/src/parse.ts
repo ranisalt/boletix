@@ -38,8 +38,8 @@ function requiredValue(tokens: [string, string][], key: string): string {
 }
 
 /**
- * Our own sanity bound, not the manual's (it sets none): the longest real BU seen spans 9 QRs, so
- * this only rejects garbage before it costs any work.
+ * Our own bound. The manual sets no limit, and its largest example (a municipal BU) needs 4 QRs,
+ * so 32 leaves plenty of room and only rejects garbage before it costs any work.
  */
 export const MAX_QR_CODES = 32;
 
