@@ -1,0 +1,31 @@
+<script lang="ts">
+  import { resolve } from "$app/paths";
+  import { ChartColumn, ScanLine, Send, ShieldCheck } from "@lucide/svelte";
+
+  import { m } from "#lib/paraglide/messages.js";
+  import { NumberedStep, PageHead } from "#lib/ui/index.js";
+</script>
+
+<PageHead description={m.home_description()} />
+
+<div class="space-y-12">
+<section class="space-y-5">
+<p class="text-sm font-semibold tracking-wider text-primary uppercase">Eleições 2026</p>
+<h1 class="max-w-2xl text-4xl leading-tight font-bold md:text-5xl">Cada urna imprime o seu resultado. Ajude a somar todos.</h1>
+<p class="max-w-2xl text-lg text-muted-foreground">Quando a votação acaba, cada urna imprime um <strong class="text-foreground">Boletim de Urna (BU)</strong> com o total de votos da seção, e uma via fica afixada no local de votação. O boletim traz QR codes assinados digitalmente pela urna. Qualquer pessoa pode escanear esses QR codes com o Boletix, que soma os boletins recebidos.</p>
+<div class="flex flex-wrap gap-3">
+<a href={resolve("/enviar")} class="btn bg-primary text-lg text-primary-foreground"><ScanLine class="size-5" aria-hidden="true" />{m.submit_button()}</a>
+<a href={resolve("/totais")} class="btn border-2 border-input text-lg"><ChartColumn class="size-5" aria-hidden="true" />Ver totais</a>
+</div>
+</section>
+
+<section aria-labelledby="como">
+<h2 id="como" class="mb-5 text-2xl font-bold">Como funciona</h2>
+<ol class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+<NumberedStep n={1} icon={ScanLine} title="Escanear">{m.home_step_scan()}</NumberedStep>
+<NumberedStep n={2} icon={ShieldCheck} title="Verificar no aparelho">O seu celular confere a assinatura digital antes de enviar.</NumberedStep>
+<NumberedStep n={3} icon={Send} title="Enviar">O app envia só o boletim conferido, sem nenhum dado pessoal.</NumberedStep>
+<NumberedStep n={4} icon={ChartColumn} title="Totais públicos">O Boletix soma os votos de todas as seções recebidas e publica o resultado.</NumberedStep>
+</ol>
+</section>
+</div>

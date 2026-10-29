@@ -14,9 +14,8 @@
   } from "@lucide/svelte";
 
   import { m } from "#lib/paraglide/messages.js";
-  import { PageHead } from "#lib/ui/index.js";
+  import { NumberedStep, PageHead } from "#lib/ui/index.js";
 
-  import CheckStep from "./CheckStep.svelte";
   import Fact from "./Fact.svelte";
   import Field from "./Field.svelte";
   import HashDemo from "./HashDemo.svelte";
@@ -137,12 +136,12 @@
 ## Parte 2. No Boletix, o caminho de volta
 
 <ol class="grid gap-4 sm:grid-cols-2">
-<CheckStep n={1} icon={ScanLine} title="Ler os QR codes em qualquer ordem">Os do boletim (<code>QRBU:i:N</code>) e os do certificado (<code>QRCE:i:N</code>). Cada QR code diz qual parte é e quantas existem, e o app avisa quais faltam.</CheckStep>
-<CheckStep n={2} icon={Combine} title="Juntar as partes">Com todas lidas, o app remonta o texto na ordem certa.</CheckStep>
-<CheckStep n={3} icon={FingerprintPattern} title="Recalcular a corrente de hashes">O app calcula de novo o SHA-512 de cada parte e compara com o impresso.</CheckStep>
-<CheckStep n={4} icon={Landmark} title="Conferir o certificado">Confere se a autoridade da Justiça Eleitoral assinou o certificado e se ele é da urna do boletim.</CheckStep>
-<CheckStep n={5} icon={KeyRound} title="Conferir a assinatura">Usa a chave pública do certificado para conferir a assinatura do hash final.</CheckStep>
-<CheckStep n={6} icon={BadgeCheck} title="Extrair e enviar os votos">Só então o app lê os números e envia o boletim. O servidor repete a conferência inteira e vê se a seção já tinha um boletim. Veja <a class="underline" href="{resolve('/sobre')}#conflito">o que acontece em um conflito</a>.</CheckStep>
+<NumberedStep n={1} icon={ScanLine} title="Ler os QR codes em qualquer ordem">Os do boletim (<code>QRBU:i:N</code>) e os do certificado (<code>QRCE:i:N</code>). Cada QR code diz qual parte é e quantas existem, e o app avisa quais faltam.</NumberedStep>
+<NumberedStep n={2} icon={Combine} title="Juntar as partes">Com todas lidas, o app remonta o texto na ordem certa.</NumberedStep>
+<NumberedStep n={3} icon={FingerprintPattern} title="Recalcular a corrente de hashes">O app calcula de novo o SHA-512 de cada parte e compara com o impresso.</NumberedStep>
+<NumberedStep n={4} icon={Landmark} title="Conferir o certificado">Confere se a autoridade da Justiça Eleitoral assinou o certificado e se ele é da urna do boletim.</NumberedStep>
+<NumberedStep n={5} icon={KeyRound} title="Conferir a assinatura">Usa a chave pública do certificado para conferir a assinatura do hash final.</NumberedStep>
+<NumberedStep n={6} icon={BadgeCheck} title="Extrair e enviar os votos">Só então o app lê os números e envia o boletim. O servidor repete a conferência inteira e vê se a seção já tinha um boletim. Veja <a class="underline" href="{resolve('/sobre')}#conflito">o que acontece em um conflito</a>.</NumberedStep>
 </ol>
 
 </section>
