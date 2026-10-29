@@ -60,7 +60,7 @@ try {
 | `assembleCertificate(certs)`                  | Joins the QRCE parts of one urna into the certificate DER (accepts DER or PEM inside `CERT`).                                                                                                                                              |
 | `bytesToHex(bytes)`, `hexToBytes(hex)`        | Lowercase hex encoding; strict decoding (either case) that throws `INVALID_FIELD` on odd length or non-hex characters.                                                                                                                     |
 | `BuError`, `BuErrorCode`                      | Thrown for QRs that cannot be read or assembled. Signature and certificate failures are `@boletix/bu-verify`'s `VerificationError`.                                                                                                        |
-| `MAX_QR_CHARS`, `MAX_QR_CODES`                | Limits: 1100 characters per QR (manual), 32 QRs per BU (our bound, since the manual sets none).                                                                                                                                            |
+| `MAX_QR_CHARS`, `MAX_QR_CODES`                | Limits: 1100 characters per QR (manual), 32 QRs per BU (a safety bound, since the manual sets none).                                                                                                                                       |
 | `Bu`, `BuCargo`, `BuQr`, `CertQr`, `ParsedQr` | Types. Field names follow the manual; doc comments note the QR key each field comes from.                                                                                                                                                  |
 
 ## Format rules
@@ -81,4 +81,4 @@ These were verified against real 2026 BUs, not just the manual.
 
 ## License
 
-MIT
+[BSD-3-Clause](LICENSE)

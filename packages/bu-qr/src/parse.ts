@@ -38,7 +38,7 @@ function requiredValue(tokens: [string, string][], key: string): string {
 }
 
 /**
- * Our own bound. The manual sets no limit, and its largest example (a municipal BU) needs 4 QRs,
+ * A safety bound. The manual sets no limit, and its largest example (a municipal BU) needs 4 QRs,
  * so 32 leaves plenty of room and only rejects garbage before it costs any work.
  */
 export const MAX_QR_CODES = 32;

@@ -63,4 +63,4 @@ There is no `ed521ph`. No deployment or reference implementation defines a preha
 
 ## License
 
-MIT
+[BSD-3-Clause](LICENSE)

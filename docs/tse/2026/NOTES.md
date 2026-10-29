@@ -1,6 +1,6 @@
 # Findings from real 2026 BUs
 
-The TSE manual leaves some details out. These notes record what we checked against 12 real 2026 BUs (`fixtures/2026`) and against the official Boletim na Mão app (4.0.5). All 12 pass the HASH recomputation, the certificate chain and the ASSI check.
+The TSE manual leaves some details out. These notes record what was checked against 12 real 2026 BUs (`fixtures/2026`) and against the official Boletim na Mão app (4.0.5). All 12 pass the HASH recomputation, the certificate chain and the ASSI check.
 
 ## HASH
 
@@ -17,7 +17,7 @@ To verify a BU, the official app:
 1. Recomputes HASH from the BU parts. A mismatch makes the BU invalid.
 2. Joins the `CERT` hex of every `QRCE:i:n` in order of `i` and parses the result as X.509.
 3. Picks the algorithm from the SPKI OID: `1.3.6.1.4.1.44588.2.1` is Ed521 and `1.2.840.10045.2.1` is ECDSA P-521.
-4. Checks the certificate against one of the CA certificates it embeds, which we pin in `fixtures/tse-roots/`.
+4. Checks the certificate against one of the CA certificates it embeds, pinned in `fixtures/tse-roots/`.
 5. Checks ASSI against the certificate key.
 
 Two certificate families coexist in 2026:
@@ -29,7 +29,7 @@ Two certificate families coexist in 2026:
 
 - AC UE2020 signs urna certificates with Ed521 over the raw TBS bytes. AC URNA uses standard `ecdsa-with-SHA512`.
 - AC URNA expired on 2026-07-18 but still certifies most 2026 urnas, whose own certificates run until 2027 or 2030. Like the official app, Boletix trusts the pinned CA certificates directly and doesn't enforce their expiry.
-- The app also embeds AC UE2022. We haven't seen an urna certified by it yet. MDUE 2022 urnas probably use Ed521 like 2020.
+- The app also embeds AC UE2022. No urna certified by it has turned up yet. MDUE 2022 urnas probably use Ed521 like 2020.
 - In every sample `QRCE` has 2 parts, its `IDUE` equals the BU's `IDUE`, and the certificate CN is `UEAO0<IDUE>` or `ueao0<IDUE>`.
 - Urnas don't normalise P-521 signatures to low S, so verification must use `lowS: false`.
 

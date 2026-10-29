@@ -93,7 +93,13 @@ pnpm build
 pnpm exec wrangler deploy
 ```
 
+## License
+
+The app is [AGPL-3.0-only](LICENSE): if you run a modified version for others, you must publish its source. The three packages are BSD-3-Clause, so you can reuse them in any project. TSE data, certificates and documents in this repository keep their own terms, and the data in `static/tse` is CC BY. [NOTICE.md](NOTICE.md) lists what covers each path.
+
+To contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Documentation
 
-- [`docs/tse/2026`](docs/tse/2026) has the TSE manual for the QR codes and what we learned from real BUs.
+- [`docs/tse/2026`](docs/tse/2026) has the TSE manual for the QR codes and findings from real BUs.
 - [`docs/known-gaps.md`](docs/known-gaps.md) lists inputs the parser accepts although the manual forbids them, and why that is safe for now.

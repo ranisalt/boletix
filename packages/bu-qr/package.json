@@ -10,7 +10,7 @@
   ],
   "homepage": "https://github.com/ranisalt/boletix/tree/main/packages/bu-qr#readme",
   "bugs": "https://github.com/ranisalt/boletix/issues",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "author": "Ranieri Althoff",
   "repository": {
     "type": "git",

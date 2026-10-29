@@ -69,4 +69,4 @@ Pass your own `TrustedRoot[]` to trust a different set.
 
 ## License
 
-MIT
+[BSD-3-Clause](LICENSE)
