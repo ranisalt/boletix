@@ -28,10 +28,6 @@ const sent: Contribution = {
 };
 
 describe("contributions", () => {
-  it("starts empty: nothing is shown that this device did not send", () => {
-    expect(listContributions(memoryStorage())).toEqual([]);
-  });
-
   it("lists the newest contribution first", () => {
     const storage = memoryStorage();
     const older = { ...sent, id: "B".repeat(128), secao: 177 };

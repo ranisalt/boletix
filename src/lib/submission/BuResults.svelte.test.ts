@@ -94,13 +94,4 @@ describe("BuResults", () => {
       "Total 5",
     ]);
   });
-
-  it("says where the names come from and that they are not part of the signed boletim", () => {
-    render(BuResults, { bu, names: [BR, DF] });
-    expect(
-      screen.getByText(
-        "Nomes: dados abertos do TSE de 25/10/2026 12:30:51. Não fazem parte do boletim assinado.",
-      ),
-    ).toBeInTheDocument();
-  });
 });

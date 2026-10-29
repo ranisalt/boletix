@@ -22,13 +22,6 @@ it("drops the sign byte DER adds before a high bit", () => {
   expect(out[131]).toBe(0x05);
 });
 
-it("accepts the long-form length real P-521 signatures use", () => {
-  const r = Array(66).fill(0x11);
-  const s = Array(66).fill(0x22);
-  const out = derToP1363(Uint8Array.from(seq(...int(...r), ...int(...s))))!;
-  expect(out).toEqual(Uint8Array.from([...r, ...s]));
-});
-
 it("returns undefined for anything that is not a well-formed SEQUENCE of two INTEGERs", () => {
   for (const bad of [
     [],

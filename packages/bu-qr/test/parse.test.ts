@@ -13,7 +13,6 @@ it("parses the real VRQR 6.0 payload and returns content after the header", () =
   const expectedHash = raw.match(/(?:^| )HASH:([0-9A-F]+)/)?.[1];
 
   expect(parsed).toMatchObject({ kind: "bu", index: 1, total: 1, version });
-  expect(parsed.kind).toBe("bu");
   if (parsed.kind !== "bu") return;
 
   expect(parsed.content).toBe(raw.slice(header.length, hashStart));
@@ -31,10 +30,6 @@ it("parses a certificate QR when one is present", () => {
     mdue: "UE2020",
     cert: "ABCD",
   });
-});
-
-it("parses a BU QR independently of certificate QRs", () => {
-  expect(parseQr(REAL_2026).kind).toBe("bu");
 });
 
 it("rejects an unknown first field", () => {

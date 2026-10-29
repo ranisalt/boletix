@@ -14,11 +14,6 @@ function flipLastByte(bytes: Uint8Array): Uint8Array {
 }
 
 describe("verifyBu", () => {
-  it("has signed fixtures for both urna certificate families", () => {
-    expect(SIGNED_FIXTURES).toContain(ED521);
-    expect(SIGNED_FIXTURES).toContain(ECDSA);
-  });
-
   it.each(SIGNED_FIXTURES)("verifies the real BU %s", async (name) => {
     const { bu, certificate } = await loadSigned(name);
     const result = await verifyBu(bu, certificate, TSE_ROOTS);

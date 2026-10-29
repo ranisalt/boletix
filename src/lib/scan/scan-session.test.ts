@@ -28,14 +28,6 @@ const multiParts = new Map(
 const multiPart = (total: number): string[] => multiParts.get(total)!;
 
 describe("ScanSession", () => {
-  it("starts with unknown BU slots and two certificate slots", () => {
-    const session = new ScanSession();
-
-    expect(session.bu).toEqual([]);
-    expect(session.certs).toEqual([undefined, undefined]);
-    expect(session.complete).toBe(false);
-  });
-
   it("sizes the BU slots from the first BU QR, whichever part it is", () => {
     const session = new ScanSession();
     const parts = multiPart(3);

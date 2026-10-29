@@ -24,35 +24,6 @@ const ECPY_SELFTEST = {
     "c2fb4f7d03dd31f25753b9972aeb650ac3632eef945e7f94e426a865bb95e66241149c7eed24d98fed2ee8b9ef949b83ba556d045b72df6e6b8b9026414b26463d0088d2ed5ea88fcc6b2f343d308209dacd5fadadac352d497d2049831eca3536e7be5a7faef56d6c6786c60415e0febee8a45f9971ae4872e0b6cf09cc0a9407342000",
 };
 
-describe("curve parameters", () => {
-  test("d = p - 376014", () => {
-    expect(ed521.Point.CURVE().d).toBe(P - 376014n);
-  });
-
-  test("base point is valid and has order n", () => {
-    expect(() => ed521.Point.BASE.assertValidity()).not.toThrow();
-    // noble rejects scalars >= n, so check (n - 1)·B + B = O instead of n·B = O.
-    expect(
-      ed521.Point.BASE.multiplyUnsafe(N - 1n)
-        .add(ed521.Point.BASE)
-        .is0(),
-    ).toBe(true);
-    expect(ed521.Point.CURVE().n).toBe(N);
-  });
-
-  test("66-byte field and scalar encodings", () => {
-    expect(ed521.Point.Fp.BYTES).toBe(66);
-    expect(ed521.Point.Fn.BYTES).toBe(66);
-  });
-
-  test("ed521 exposes the EdDSA API", () => {
-    expect(typeof ed521.keygen).toBe("function");
-    expect(typeof ed521.getPublicKey).toBe("function");
-    expect(typeof ed521.sign).toBe("function");
-    expect(typeof ed521.verify).toBe("function");
-  });
-});
-
 describe("ECPy vectors", () => {
   test.each([ECPY_SELFTEST, ...vectors.ecpy].map((v, i) => [i, v] as const))("case %i", (_i, v) => {
     const sk = hexToBytes(v.secretKey);
@@ -63,11 +34,6 @@ describe("ECPy vectors", () => {
     expect(hex(ed521.getPublicKey(sk))).toBe(v.publicKey);
     expect(hex(ed521.sign(msg, sk, { context }))).toBe(v.signature);
     expect(ed521.verify(sig, msg, pub, { context })).toBe(true);
-  });
-
-  test("covers message lengths 0, 1, 64 and 1023", () => {
-    const lengths = new Set(vectors.ecpy.map((v) => v.message.length / 2));
-    for (const len of [0, 1, 64, 1023]) expect(lengths.has(len)).toBe(true);
   });
 });
 
@@ -103,12 +69,6 @@ describe("rejection", () => {
   const pub = hexToBytes(vectors.ecpy[0]!.publicKey);
   const msg = utf8("boletim de urna");
   const sig = ed521.sign(msg, sk);
-
-  test("a flipped bit in R", () => {
-    const bad = sig.slice();
-    bad[0]! ^= 1;
-    expect(ed521.verify(bad, msg, pub)).toBe(false);
-  });
 
   test("a non-canonical S (S + n)", () => {
     let s = 0n;

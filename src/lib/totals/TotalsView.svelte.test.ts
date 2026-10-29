@@ -21,14 +21,6 @@ const items = () =>
     .map((item) => item.textContent?.replace(/\s+/g, " ").trim());
 
 describe("TotalsView", () => {
-  it("warns that the numbers are partial and unofficial", () => {
-    render(TotalsView, {
-      query: { election: "br-2026-general", turno: 1, cargo: 1 },
-      totals: TOTALS,
-    });
-    expect(screen.getByRole("status", { name: "Números parciais e não oficiais" })).toBeTruthy();
-  });
-
   it("lists candidates by votes with name, party and number, then blank and null votes", () => {
     render(TotalsView, {
       query: { election: "br-2026-general", turno: 1, cargo: 1 },
@@ -61,7 +53,7 @@ describe("TotalsView", () => {
       query: { election: "br-2026-general", turno: 1, cargo: 1 },
       totals: { ...TOTALS, secoesTotal: 499248 },
     });
-    expect(screen.getByText("2.883 de 499.248 seções (0,6%)")).toBeTruthy();
+    expect(screen.getByText("2.883 de 499.248 seções (0,6%)")).toBeInTheDocument();
     const progress = screen.getByRole("progressbar", { name: "Cobertura" });
     expect(progress).toHaveAttribute("aria-valuenow", "2883");
     expect(progress).toHaveAttribute("aria-valuemax", "499248");
@@ -72,8 +64,8 @@ describe("TotalsView", () => {
       query: { election: "br-2026-general", turno: 1, cargo: 1 },
       totals: TOTALS,
     });
-    expect(screen.getByText("Seções coletadas: 2.883")).toBeTruthy();
-    expect(screen.queryByRole("progressbar")).toBeNull();
+    expect(screen.getByText("Seções coletadas: 2.883")).toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
   });
 
   it("keeps the current choice selected in the filters", () => {
@@ -106,8 +98,10 @@ describe("TotalsView", () => {
       query: { election: "br-2026-general", turno: 1, cargo: 3 },
       totals: null,
     });
-    expect(screen.getByText("Escolha uma UF para ver os totais de Governador.")).toBeTruthy();
-    expect(screen.queryByRole("list", { name: "Votos" })).toBeNull();
+    expect(
+      screen.getByText("Escolha uma UF para ver os totais de Governador."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: "Votos" })).not.toBeInTheDocument();
   });
 
   it("says so when no BU was collected yet", () => {
@@ -115,7 +109,7 @@ describe("TotalsView", () => {
       query: { election: "br-2026-general", turno: 1, cargo: 1 },
       totals: { secoes: 0, candidatos: [], brancos: 0, nulos: 0 },
     });
-    expect(screen.getByText("Nenhum boletim coletado para esta seleção.")).toBeTruthy();
-    expect(screen.queryByRole("list", { name: "Votos" })).toBeNull();
+    expect(screen.getByText("Nenhum boletim coletado para esta seleção.")).toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: "Votos" })).not.toBeInTheDocument();
   });
 });

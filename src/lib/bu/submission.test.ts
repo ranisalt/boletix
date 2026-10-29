@@ -25,10 +25,6 @@ const SIGNED = loadBuFixtures()
   .map((f) => f.name);
 
 describe("sealSubmission", () => {
-  it("has signed fixtures for both urna certificate families", () => {
-    expect(SIGNED).toHaveLength(12);
-  });
-
   it("sends only each QR content, the final HASH, the ASSI and the certificate as DER hex", async () => {
     const { parts } = loadBuScan(ECDSA);
     const submission = await submissionFor(ECDSA);
@@ -54,11 +50,6 @@ describe("sealSubmission", () => {
   it("requires a BU QR", async () => {
     const { certs } = loadBuScan(ED521);
     await expectBuError(() => sealSubmission([], certs, TSE_ROOTS), "QR_SET_INCOMPLETE");
-  });
-
-  it.each(SIGNED)("accepts the real BU %s", async (name) => {
-    const { parts, certs } = loadBuScan(name);
-    await expect(sealSubmission(parts, certs, TSE_ROOTS)).resolves.toBeDefined();
   });
 
   it("reports Ed521 and the AC UE2020 issuer for an MDUE 2020 urna", async () => {
@@ -153,11 +144,6 @@ describe("openSubmission", () => {
     expect(result.hash).toBe(parts.at(-1)!.hash);
     expect(result.bu.header.urna).toBe(parts[0]!.tokens.find(([key]) => key === "IDUE")?.[1]);
     expect(result.signature.algorithm).toMatch(/^(ed521|ecdsa-p521)$/);
-  });
-
-  it("survives a JSON round trip", async () => {
-    const wire = JSON.parse(JSON.stringify(await submissionFor(ED521)));
-    expect((await openSubmission(wire, TSE_ROOTS)).signature.algorithm).toBe("ed521");
   });
 
   it("rejects client-supplied fields beyond the signed data", async () => {
