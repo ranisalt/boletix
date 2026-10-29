@@ -19,9 +19,7 @@
 
 ## Metodologia
 
-- **Verificação criptográfica:** a <a class="underline" href="{resolve('/como-funciona')}#passo-5">assinatura digital</a> de cada BU é conferida contra o <a class="underline" href="{resolve('/como-funciona')}#passo-6">certificado da urna</a>, no aparelho e no servidor.
-- **Sem dados pessoais:** não há cadastro, login ou rastreamento.
-- **Transparência:** os totais mostram sempre a cobertura (seções coletadas versus total).
+<p class="text-muted-foreground">O Boletix confere a <a class="underline" href="{resolve('/como-funciona')}#passo-5">assinatura digital</a> de cada BU com o <a class="underline" href="{resolve('/como-funciona')}#passo-6">certificado da urna</a>, primeiro no seu aparelho e depois no servidor. Não há cadastro, login nem rastreamento. Ao lado dos totais aparece sempre a cobertura, ou seja, quantas seções já foram coletadas de quantas existem.</p>
 
 <a class="btn border-2" href={resolve("/como-funciona")}>Ver o passo a passo da criptografia <ArrowRight class="size-4" aria-hidden="true" /></a>
 
@@ -34,31 +32,31 @@
 <div class="divide-y rounded-lg border bg-card">
 <FaqItem question="O Boletix é oficial?">
 
-Não. É um projeto independente, sem vínculo com o TSE ou a Justiça Eleitoral. Resultados oficiais só no site do TSE.
+Não. É um projeto independente, sem vínculo com o TSE nem com a Justiça Eleitoral. O resultado oficial sai no site do TSE.
 
 </FaqItem>
 <FaqItem question="Como sei que um boletim é verdadeiro?">
 
-Cada BU é assinado digitalmente pela urna. O Boletix confere essa assinatura no seu aparelho antes do envio, e de novo no servidor. <a class="underline" href="{resolve('/como-funciona')}#conferencia">Veja como a conferência funciona</a>.
+A urna assina cada BU digitalmente. O Boletix confere essa assinatura no seu aparelho antes do envio e de novo no servidor. <a class="underline" href="{resolve('/como-funciona')}#conferencia">Veja como a conferência funciona</a>.
 
 </FaqItem>
 <FaqItem question="Que dados meus são coletados?">
 
-Nenhum dado pessoal. Enviamos apenas o conteúdo do boletim. Seu histórico fica só no seu aparelho.
+Nenhum dado pessoal. O app envia só o conteúdo do boletim, e o seu histórico de envios fica no seu aparelho.
 
 </FaqItem>
 <FaqItem question="Os totais incluem todas as seções?">
 
-Não. Somamos apenas os boletins que alguém já enviou. Uma seção sem boletim fica de fora da soma, em vez de entrar como se ninguém tivesse votado nela; por isso os totais sempre vêm com a cobertura, que mostra quantas seções já foram coletadas.
+Não. A soma inclui só os boletins que alguém já enviou. Uma seção sem boletim fica de fora, e não entra como se ninguém tivesse votado nela. É por isso que os totais vêm com a cobertura, que mostra quantas seções já foram coletadas.
 
 </FaqItem>
 <FaqItem id="conflito" question="O que é um conflito?">
 
-Quando chegam dois boletins diferentes, ambos com assinatura válida, para a mesma seção.
+É quando chegam dois boletins diferentes para a mesma seção, os dois com assinatura válida.
 
-Isso não deveria acontecer. Cada seção tem um único boletim, e a assinatura da urna impede que alguém altere um voto sem invalidá-la. Se alguém enviar o mesmo boletim de novo, ele é reconhecido como repetido e descartado, sem conflito. Por isso, dois boletins diferentes e válidos para a mesma seção não deveriam existir.
+Cada seção tem um único boletim, e ninguém consegue alterar um voto sem invalidar a assinatura da urna. O mesmo boletim enviado de novo conta como repetido e não gera conflito. Dois boletins diferentes e válidos para a mesma seção não deveriam existir.
 
-Se acontecer, mantemos o primeiro nos totais, guardamos o segundo como evidência e a equipe é avisada para investigar.
+Se aparecerem, o primeiro fica nos totais e o segundo fica guardado como evidência. A equipe recebe um aviso e investiga.
 
 </FaqItem>
 </div>

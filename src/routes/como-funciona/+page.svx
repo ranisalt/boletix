@@ -31,13 +31,13 @@
 
 # Como funciona
 
-<p class="text-lg text-muted-foreground">Do voto na urna até a tela do seu celular: como o boletim vira QR codes que ninguém consegue falsificar, e como o Boletix confere isso de volta. Os números abaixo são de exemplo.</p>
+<p class="text-lg text-muted-foreground">A urna transforma o resultado da seção em QR codes assinados. Esta página mostra cada passo desse processo e depois como o Boletix confere a assinatura. Os números são de exemplo.</p>
 </header>
 
-## Parte 1 — Na urna
+## Parte 1. Na urna
 
 <Step n={1} icon={FileKey} title="Os votos da seção">
-<p>Ao fim da votação, a urna soma os votos da seção. Cada cor abaixo mostra onde cada informação vai parar no próximo passo.</p>
+<p>Ao fim da votação, a urna soma os votos da seção. As cores mostram onde cada número aparece no próximo passo.</p>
 <div class="overflow-x-auto rounded-lg border">
 <table class="w-full text-left text-sm sm:text-base">
 <thead class="bg-muted text-sm"><tr><th class="p-3">Informação</th><th class="p-3">Valor</th><th class="p-3">Vira o campo</th></tr></thead>
@@ -54,18 +54,18 @@
 
 <ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
 
-<Step n={2} icon={Combine} title="Serialização: tudo vira um texto padronizado">
-<p>As informações são escritas em uma ordem fixa, no formato <code>CAMPO:valor</code>. Assim qualquer programa lê o boletim do mesmo jeito.</p>
+<Step n={2} icon={Combine} title="O boletim vira texto">
+<p>A urna escreve cada informação no formato <code>CAMPO:valor</code>, sempre na mesma ordem. Qualquer programa que siga a especificação do TSE lê o boletim igual.</p>
 <p class="rounded-lg border-2 bg-background p-4 font-mono text-sm leading-9">
 <Field tone="plain">QRBU:1:3 VRQR:6.0</Field> … <Field tone="meta">MUNI:71072 ZONA:123 SECA:456</Field> … <Field tone="plain">CARG:1</Field> <Field tone="a">13:142</Field> <Field tone="b">22:128</Field> <Field tone="c">15:31</Field> <Field tone="blank">BRAN:7 NULO:12</Field> <Field tone="plain">TOTC:320</Field>
 </p>
-<p class="text-sm text-muted-foreground"><code>QRBU:1:3</code> quer dizer “parte 1 de 3”, e <code>VRQR:6.0</code> é a versão do formato usada em 2026. As reticências marcam campos omitidos, como o código da eleição e o identificador da urna. O arquivo completo do boletim usa outro formato, binário; o QR code usa este, em texto, definido pelo TSE.</p>
+<p class="text-sm text-muted-foreground"><code>QRBU:1:3</code> quer dizer "parte 1 de 3", e <code>VRQR:6.0</code> é a versão do formato usada em 2026. As reticências marcam campos omitidos, como o código da eleição e o identificador da urna. O arquivo completo do boletim é binário. Os QR codes usam este formato em texto, definido pelo TSE.</p>
 </Step>
 
 <ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
 
-<Step n={3} icon={Split} title="Divisão em vários QR codes">
-<p>Um QR code impresso na fita estreita da urna só cabe uma quantidade limitada de texto. Por isso o boletim é cortado em partes, cada uma em seu QR code.</p>
+<Step n={3} icon={Split} title="O texto é dividido em vários QR codes">
+<p>A fita da urna é estreita, e um QR code impresso nela comporta pouco texto. Por isso a urna corta o boletim em partes e imprime um QR code para cada uma.</p>
 <div class="grid grid-cols-3 gap-3">
 <div class="flex flex-col items-center gap-2 rounded-lg border-2 bg-background p-3 text-center"><QrCode class="size-14" aria-hidden="true" /><span class="text-sm font-bold">Parte 1/3</span><span class="font-mono text-xs text-muted-foreground">HASH:9f2c…</span></div>
 <div class="flex flex-col items-center gap-2 rounded-lg border-2 bg-background p-3 text-center"><QrCode class="size-14" aria-hidden="true" /><span class="text-sm font-bold">Parte 2/3</span><span class="font-mono text-xs text-muted-foreground">HASH:41ab…</span></div>
@@ -75,8 +75,8 @@
 
 <ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
 
-<Step n={4} icon={FingerprintPattern} title="Hash: uma impressão digital de cada parte">
-<p>Um <strong>hash</strong> (SHA-512) é um resumo de tamanho fixo calculado a partir do texto. Mudar um único voto muda o resumo por completo. O hash de cada parte é calculado sobre o texto dela somado ao hash da parte anterior, formando uma corrente:</p>
+<Step n={4} icon={FingerprintPattern} title="Cada parte ganha um hash">
+<p>Um <strong>hash</strong> (aqui, SHA-512) é um resumo de tamanho fixo calculado a partir de um texto. Se um único voto muda, o resumo inteiro muda. A urna calcula o hash de cada parte sobre o texto dela mais o hash da parte anterior. As partes ficam encadeadas assim:</p>
 <div class="flex flex-wrap items-center gap-2 text-sm">
 <span class="rounded border-2 px-2 py-1">Parte 1 → 9f2c…</span>→<span class="rounded border-2 px-2 py-1">Parte 2 + 9f2c → 41ab…</span>→<span class="rounded border-2 px-2 py-1">Parte 3 + 41ab → d07e…</span>
 </div>
@@ -90,8 +90,8 @@
 <ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
 
 <Step n={5} icon={KeyRound} title="Assinatura digital da urna">
-<p>Cada urna tem um <strong>par de chaves</strong>, criadas juntas e ligadas matematicamente. A <strong>chave privada</strong> fica guardada no hardware da urna e nunca sai dela; é com ela que a urna assina o hash final. A <strong>chave pública</strong> pode ser divulgada para todo mundo e serve só para conferir: ela diz se uma assinatura foi feita pela chave privada correspondente, mas não permite criar uma.</p>
-<p>A matemática por trás é a de <strong>curvas elípticas</strong>: as urnas de 2020 em diante usam Ed521, e as mais antigas, ECDSA com a curva P-521.</p>
+<p>Cada urna tem um <strong>par de chaves</strong>, geradas juntas. A <strong>chave privada</strong> fica no hardware da urna e nunca sai de lá. A urna usa essa chave para assinar o hash final. A <strong>chave pública</strong> pode ser divulgada. Com ela, qualquer pessoa confere se uma assinatura saiu da chave privada do par, mas ninguém consegue assinar.</p>
+<p>As duas chaves vêm da matemática de <strong>curvas elípticas</strong>. As urnas de 2020 em diante usam Ed521. As mais antigas usam ECDSA com a curva P-521.</p>
 <div class="grid items-center gap-3 text-center sm:grid-cols-[1fr_auto_1fr_auto_1fr]">
 <div class="rounded-lg bg-accent p-3 text-sm text-accent-foreground">hash d07e…</div>
 <span aria-hidden="true">+</span>
@@ -100,49 +100,49 @@
 <div class="rounded-lg bg-success p-3 font-semibold text-primary-foreground">ASSINATURA</div>
 </div>
 <Fact title="Por que não dá para falsificar">
-<p>Descobrir a chave privada a partir da pública exige resolver um problema matemático (o logaritmo discreto em curvas elípticas) para o qual não se conhece atalho. Com chaves de 521 bits, testar as possibilidades levaria muito mais tempo que a idade do universo, mesmo com todos os computadores do mundo.</p>
-<p>A assinatura também vale só para aquele hash. Mudar um voto muda o hash, e a assinatura deixa de conferir; copiar a assinatura de outro boletim também não funciona.</p>
+<p>Descobrir a chave privada a partir da pública exige resolver um problema matemático (o logaritmo discreto em curvas elípticas) para o qual não se conhece atalho. Com chaves de 521 bits, testar todas as possibilidades levaria mais tempo que a idade do universo, mesmo usando todos os computadores que existem.</p>
+<p>Cada assinatura vale para um único hash. Se alguém muda um voto, o hash muda e a assinatura deixa de conferir. Copiar a assinatura de outro boletim dá no mesmo.</p>
 </Fact>
 <Fact title="Não repúdio">
-<p>Como só aquela urna tem a chave privada, uma assinatura válida prova que foi ela que gerou o boletim. Ninguém pode depois negar que aquele resultado saiu da urna, nem atribuir a ela um boletim que ela não assinou.</p>
+<p>Só aquela urna tem a chave privada, então uma assinatura válida prova que o boletim saiu dela. Depois disso, ninguém consegue negar esse resultado. Também não dá para atribuir à urna um boletim que ela não assinou.</p>
 </Fact>
-<Fact title="Assinar não é esconder">
-<p>A assinatura não cifra nada: o boletim continua legível por qualquer pessoa, e é para ser. Ela garante <strong>integridade</strong> (nada mudou) e <strong>autoria</strong> (quem gerou), não sigilo. O sigilo do voto vem de outro lugar: o boletim só traz os totais da seção, nunca quem votou em quem.</p>
+<Fact title="A assinatura não esconde nada">
+<p>Qualquer pessoa consegue ler o boletim assinado, e a ideia é essa mesma. A assinatura prova duas coisas: que o conteúdo não mudou e qual urna o gerou. O sigilo do voto vem do conteúdo, que só traz os totais da seção.</p>
 </Fact>
 </Step>
 
 <ArrowDown class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
 
-<Step n={6} icon={Landmark} title="Certificado digital: prova de que é uma urna real">
-<p>A chave pública da urna vem dentro de um <strong>certificado digital</strong>, assinado pela autoridade certificadora da Justiça Eleitoral. Funciona como um documento de identidade: o TSE “carimba” que aquela chave pertence a uma urna oficial. O certificado é impresso no boletim em QR codes próprios, marcados <code>QRCE</code>, ao lado dos QR codes dos votos.</p>
+<Step n={6} icon={Landmark} title="O certificado prova que a urna é oficial">
+<p>A chave pública da urna vem dentro de um <strong>certificado digital</strong>, assinado pela autoridade certificadora da Justiça Eleitoral. É parecido com um documento de identidade, em que o TSE atesta que aquela chave pertence a uma urna oficial. O boletim traz o certificado em QR codes próprios, marcados <code>QRCE</code>, ao lado dos QR codes dos votos.</p>
 <ol class="space-y-2">
-<li class="rounded-lg border-2 p-3"><strong>Raiz de confiança</strong> — certificado da autoridade da Justiça Eleitoral, publicado pelo TSE.</li>
-<li class="ml-6 rounded-lg border-2 p-3"><strong>Certificado da urna</strong> — assinado por essa autoridade, contém a chave pública da urna.</li>
-<li class="ml-12 rounded-lg border-2 border-success p-3"><strong>Assinatura do boletim</strong> — feita pela chave privada daquela urna.</li>
+<li class="rounded-lg border-2 p-3"><strong>Raiz de confiança.</strong> O certificado da autoridade da Justiça Eleitoral, publicado pelo TSE.</li>
+<li class="ml-6 rounded-lg border-2 p-3"><strong>Certificado da urna.</strong> Assinado por essa autoridade, traz a chave pública da urna.</li>
+<li class="ml-12 rounded-lg border-2 border-success p-3"><strong>Assinatura do boletim.</strong> Feita com a chave privada daquela urna.</li>
 </ol>
-<p class="text-sm text-muted-foreground">Se a corrente inteira confere, sabemos que o boletim saiu de uma urna oficial e não foi alterado depois.</p>
+<p class="text-sm text-muted-foreground">Se os três conferem, o boletim saiu de uma urna oficial e ninguém o alterou depois.</p>
 <Fact title="Por que a chave sozinha não basta">
-<p>Uma chave pública é só um número. Qualquer pessoa pode gerar um par de chaves, assinar um boletim falso e dizer que a chave é de uma urna. O certificado resolve isso: é a autoridade da Justiça Eleitoral, com a própria assinatura, afirmando que aquela chave pertence a uma urna oficial. É o mesmo esquema do cadeado do navegador, que confere o certificado de um site antes de confiar nele.</p>
+<p>Uma chave pública é só um número. Qualquer pessoa pode gerar um par de chaves, assinar um boletim falso e dizer que a chave é de uma urna. O certificado impede isso, porque traz a assinatura da autoridade da Justiça Eleitoral afirmando que a chave pertence a uma urna oficial. O navegador faz o mesmo quando confere o certificado de um site antes de mostrar o cadeado.</p>
 </Fact>
 <Fact title="De onde vem a raiz">
-<p>Alguém precisa ser o ponto de partida da confiança. O Boletix usa os mesmos certificados raiz que vêm dentro do aplicativo oficial do TSE, o Boletim na Mão. Eles ficam gravados no código, e não são baixados na hora de conferir.</p>
+<p>O certificado raiz não tem ninguém acima dele para assinar, então o Boletix precisa já tê-lo. São os mesmos certificados raiz que vêm no aplicativo oficial do TSE, o Boletim na Mão. Ficam gravados no código do Boletix, e nada é baixado na hora de conferir.</p>
 </Fact>
 <Fact title="Certificado de outra urna não serve">
-<p>O certificado traz a identificação da urna, e o boletim também. O Boletix confere que são a mesma, então nem uma urna verdadeira, com certificado válido, consegue assinar um boletim se passando por outra.</p>
+<p>O certificado e o boletim trazem a identificação da urna, e o Boletix confere se as duas batem. Assim, nem uma urna verdadeira, com certificado válido, consegue assinar um boletim em nome de outra.</p>
 </Fact>
 </Step>
 
 <section id="conferencia" class="scroll-mt-4 space-y-4">
 
-## Parte 2 — No Boletix, o caminho de volta
+## Parte 2. No Boletix, o caminho de volta
 
 <ol class="grid gap-4 sm:grid-cols-2">
-<CheckStep n={1} icon={ScanLine} title="Ler os QR codes em qualquer ordem">Os do boletim (<code>QRBU:i:N</code>) e os do certificado (<code>QRCE:i:N</code>). Cada um diz qual parte é e quantas existem, então o app avisa quais faltam.</CheckStep>
-<CheckStep n={2} icon={Combine} title="Juntar as partes">Com todas lidas, o texto é remontado na ordem certa.</CheckStep>
+<CheckStep n={1} icon={ScanLine} title="Ler os QR codes em qualquer ordem">Os do boletim (<code>QRBU:i:N</code>) e os do certificado (<code>QRCE:i:N</code>). Cada QR code diz qual parte é e quantas existem, e o app avisa quais faltam.</CheckStep>
+<CheckStep n={2} icon={Combine} title="Juntar as partes">Com todas lidas, o app remonta o texto na ordem certa.</CheckStep>
 <CheckStep n={3} icon={FingerprintPattern} title="Recalcular a corrente de hashes">O app calcula de novo o SHA-512 de cada parte e compara com o impresso.</CheckStep>
-<CheckStep n={4} icon={Landmark} title="Conferir o certificado">Verifica que o certificado foi assinado pela autoridade da Justiça Eleitoral e que pertence à urna do boletim.</CheckStep>
-<CheckStep n={5} icon={KeyRound} title="Conferir a assinatura">Usa a chave pública do certificado para checar a assinatura do hash final.</CheckStep>
-<CheckStep n={6} icon={BadgeCheck} title="Extrair e enviar os votos">Só então os números são lidos e enviados. O servidor repete toda a verificação e confere se a seção já tinha um boletim; veja <a class="underline" href="{resolve('/sobre')}#conflito">o que acontece em um conflito</a>.</CheckStep>
+<CheckStep n={4} icon={Landmark} title="Conferir o certificado">Confere se a autoridade da Justiça Eleitoral assinou o certificado e se ele é da urna do boletim.</CheckStep>
+<CheckStep n={5} icon={KeyRound} title="Conferir a assinatura">Usa a chave pública do certificado para conferir a assinatura do hash final.</CheckStep>
+<CheckStep n={6} icon={BadgeCheck} title="Extrair e enviar os votos">Só então o app lê os números e envia o boletim. O servidor repete a conferência inteira e vê se a seção já tinha um boletim. Veja <a class="underline" href="{resolve('/sobre')}#conflito">o que acontece em um conflito</a>.</CheckStep>
 </ol>
 
 </section>
@@ -156,11 +156,11 @@
 <ul class="grid gap-3 sm:grid-cols-2">
 <ReadMore href="https://www.tse.jus.br/comunicacao/noticias/2022/Outubro/voce-ja-ouviu-falar-do-boletim-de-urna-mas-sabe-o-que-ele-e-tire-suas-duvidas" title="Boletim de Urna (TSE)">O que é o boletim e como conferir, explicado pelo TSE.</ReadMore>
 <ReadMore href="https://www.tse.jus.br/eleicoes/urna-eletronica/seguranca-da-urna" title="Segurança da urna eletrônica (TSE)">Cerimônias, lacração e chaves de cada urna.</ReadMore>
-<ReadMore href="https://pt.wikipedia.org/wiki/Função_hash_criptográfica" title="Função hash criptográfica">O que é um resumo (hash) e por que não dá para falsificar.</ReadMore>
+<ReadMore href="https://pt.wikipedia.org/wiki/Função_hash_criptográfica" title="Função hash criptográfica">O que é um hash e por que é difícil achar dois textos com o mesmo.</ReadMore>
 <ReadMore href="https://pt.wikipedia.org/wiki/SHA-2" title="SHA-2 (SHA-512)">A família de hash usada para encadear os QR codes.</ReadMore>
-<ReadMore href="https://pt.wikipedia.org/wiki/Assinatura_digital" title="Assinatura digital">Como chave privada e chave pública garantem autoria.</ReadMore>
-<ReadMore href="https://pt.wikipedia.org/wiki/Certificado_digital" title="Certificado digital">Como uma autoridade garante a quem pertence uma chave pública.</ReadMore>
-<ReadMore href="https://pt.wikipedia.org/wiki/Código_QR" title="QR Code">Como os dados viram quadradinhos e a correção de erros.</ReadMore>
+<ReadMore href="https://pt.wikipedia.org/wiki/Assinatura_digital" title="Assinatura digital">Como o par de chaves prova quem assinou.</ReadMore>
+<ReadMore href="https://pt.wikipedia.org/wiki/Certificado_digital" title="Certificado digital">Como uma autoridade atesta de quem é uma chave pública.</ReadMore>
+<ReadMore href="https://pt.wikipedia.org/wiki/Código_QR" title="QR Code">Como os dados viram quadradinhos, e como o QR code corrige erros de leitura.</ReadMore>
 </ul>
 
 </section>

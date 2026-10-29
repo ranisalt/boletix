@@ -12,7 +12,7 @@ describe("/como-funciona", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Como funciona" })).toBeInTheDocument();
     expect(
       screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
-    ).toEqual(["Parte 1 — Na urna", "Parte 2 — No Boletix, o caminho de volta", "Para saber mais"]);
+    ).toEqual(["Parte 1. Na urna", "Parte 2. No Boletix, o caminho de volta", "Para saber mais"]);
     expect(
       screen.getByRole("heading", { level: 3, name: "Os votos da seção" }),
     ).toBeInTheDocument();
@@ -35,7 +35,7 @@ describe("/como-funciona", () => {
     ).toEqual([
       "Por que não dá para falsificar",
       "Não repúdio",
-      "Assinar não é esconder",
+      "A assinatura não esconde nada",
       "Por que a chave sozinha não basta",
       "De onde vem a raiz",
       "Certificado de outra urna não serve",

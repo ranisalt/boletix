@@ -227,7 +227,7 @@ describe("BuSubmitter", () => {
     await fireEvent.click(await screen.findByRole("button", { name: "Enviar boletim" }));
 
     const outcome = await screen.findByRole("status", { name: "Boletim enviado" });
-    expect(outcome).toHaveTextContent("Obrigado! Ele foi verificado e guardado.");
+    expect(outcome).toHaveTextContent("Obrigado! O boletim foi conferido e guardado.");
     // The send button is gone, so focus moves to the outcome instead of falling back to the page.
     expect(document.activeElement).not.toBe(document.body);
     expect(document.activeElement).toContainElement(outcome);

@@ -28,7 +28,7 @@ describe("Thanks", () => {
     render(Thanks, { names: ["Ana", "Bruno"] });
 
     const section = screen.getByRole("region", { name: "Agradecimentos" });
-    expect(section).toHaveTextContent("Pessoas que tornaram o Boletix possível.");
+    expect(section).toHaveTextContent("Quem ajudou a fazer o Boletix.");
     expect(screen.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
       "Ana",
       "Bruno",

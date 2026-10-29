@@ -57,7 +57,7 @@ describe("sendBoletim", () => {
     expect(await send(storage)).toEqual({
       tone: "success",
       title: "Boletim enviado",
-      message: "Obrigado! Ele foi verificado e guardado.",
+      message: "Obrigado! O boletim foi conferido e guardado.",
       retry: false,
     });
     expect(received).toEqual([verified.submission]);

@@ -13,7 +13,7 @@ describe("/sobre", () => {
     expect(
       screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
     ).toEqual(["Metodologia", "Perguntas frequentes", "Fontes oficiais"]);
-    expect(screen.getByText("Verificação criptográfica:")).toBeInTheDocument();
+    expect(screen.getByText(/Não há cadastro, login nem rastreamento/)).toBeInTheDocument();
     expect(screen.getByText("O que é um conflito?")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Ver o passo a passo da criptografia" }),

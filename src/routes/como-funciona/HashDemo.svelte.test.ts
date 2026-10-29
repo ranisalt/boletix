@@ -18,7 +18,7 @@ describe("HashDemo", () => {
 
     expect(screen.getByRole("textbox", { name: LABEL })).toHaveValue("");
     expect(screen.getByRole("textbox", { name: LABEL })).toHaveAccessibleDescription(
-      /^Efeito avalanche:/,
+      /efeito avalanche/,
     );
     const output = screen.getByRole("status", { name: "SHA-512" });
     const expected = await hex("");
