@@ -4,7 +4,6 @@ import { describe, expect, test } from "vitest";
 import { ed521 } from "../src/index.ts";
 import vectors from "./vectors/ed521.json" with { type: "json" };
 
-const P = 2n ** 521n - 1n;
 const N =
   0x7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd15b6c64746fc85f736b8af5e7ec53f04fbd8c4569a8f1f4540ea2435f5180d6bn;
 
