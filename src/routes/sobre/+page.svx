@@ -63,7 +63,7 @@ Se aparecerem, o primeiro fica nos totais e o segundo fica guardado como evidên
 
 </section>
 
-<Thanks names={CONTRIBUTORS} />
+<Thanks people={CONTRIBUTORS} />
 
 <section>
 
