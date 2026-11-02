@@ -1,6 +1,6 @@
 {
   "name": "@boletix/ed521",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Ed521 (E-521 EdDSA) signatures built on @noble/curves, as used by Brazilian TSE voting machines.",
   "keywords": [
     "e-521",

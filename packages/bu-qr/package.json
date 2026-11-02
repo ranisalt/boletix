@@ -1,6 +1,6 @@
 {
   "name": "@boletix/bu-qr",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Parse and assemble the QR codes printed on Brazilian boletins de urna (TSE, VRQR 6.0).",
   "keywords": [
     "boletim-de-urna",
