@@ -1,6 +1,6 @@
 {
   "name": "@boletix/bu-verify",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Verify the signature and certificate chain of Brazilian boletins de urna (TSE) with WebCrypto.",
   "keywords": [
     "boletim-de-urna",
