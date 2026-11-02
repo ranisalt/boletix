@@ -23,7 +23,7 @@
     "packages:test": "pnpm -r --filter './packages/*' test",
     "prepare": "pnpm packages:build && (svelte-kit sync || echo '')",
     "preview": "vite preview",
-    "release": "pnpm packages:build && changeset publish",
+    "release": "node scripts/stage-release.ts",
     "test": "pnpm packages:build && vitest run",
     "test:unit": "vitest",
     "version-packages": "changeset version && pnpm install --lockfile-only"
